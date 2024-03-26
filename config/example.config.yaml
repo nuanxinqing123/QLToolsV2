@@ -1,0 +1,21 @@
+app:
+  # 运行模式【debug、release】
+  mode:        "release"
+  # 运行地址
+  address:     "0.0.0.0"
+  # 运行端口
+  port:        1500
+
+# 以下内容如果不懂, 请不要修改
+
+# 日志配置
+zap:
+  level: info # 日志级别
+  prefix: '[QLToolsV2]' # 日志前缀
+  format: json # 输出
+  director: logs # 日志存放的文件
+  encode_level: LowercaseColorLevelEncoder # 编码级别
+  stacktrace_key: stacktrace # 栈名
+  max_age: 30 # 日志留存时间, 单位：天
+  show_line: true # 显示行
+  log_in_console: true # 输出控制台

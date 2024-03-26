@@ -1,0 +1,23 @@
+package config
+
+import (
+	"github.com/bluele/gcache"
+	"github.com/spf13/viper"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+
+	"QLToolsV2/config/autoload"
+)
+
+type Configuration struct {
+	App autoload.App `mapstructure:"app" json:"app" yaml:"app"`
+	Zap autoload.Zap `mapstructure:"zap" json:"zap" yaml:"zap"`
+}
+
+var (
+	GinConfig Configuration
+	GinDB     *gorm.DB
+	GinCache  gcache.Cache
+	GinLOG    *zap.Logger
+	GinVP     *viper.Viper
+)
