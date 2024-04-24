@@ -66,6 +66,12 @@ type UpdateEnv struct {
 	IsEnable    bool   `json:"is_enable"`                   // 是否启用
 }
 
+// BindPanel 绑定面板
+type BindPanel struct {
+	EnvID    int   `json:"env_id" binding:"required"`    // 变量ID
+	PanelIDs []int `json:"panel_ids" binding:"required"` // 面板ID
+}
+
 // DeleteEnv 删除
 type DeleteEnv struct {
 	IDs []int `json:"ids"` // ID

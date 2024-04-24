@@ -1,6 +1,8 @@
 package service
 
 import (
+	"gorm.io/gorm"
+
 	"QLToolsV2/config"
 	_const "QLToolsV2/const"
 	"QLToolsV2/internal/db"
@@ -77,6 +79,31 @@ func UpdateEnv(p *model.UpdateEnv) (res.ResCode, any) {
 		return res.CodeServerBusy, _const.ServerBusy
 	}
 	return res.CodeSuccess, "修改成功"
+}
+
+// BindPanel 绑定面板
+func BindPanel(p *model.BindPanel) (res.ResCode, any) {
+	m, err := db.GetEnvByID(p.EnvID)
+	if err != nil {
+		config.GinLOG.Error(err.Error())
+		return res.CodeServerBusy, _const.ServerBusy
+	}
+
+	for _, id := range p.PanelIDs {
+		m.Panels = append(m.Panels, model.Panel{
+			Model: gorm.Model{
+				ID: uint(id),
+			},
+		})
+	}
+
+	// 更新数据
+	if err = m.Save(); err != nil {
+		config.GinLOG.Error(err.Error())
+		return res.CodeServerBusy, _const.ServerBusy
+	}
+
+	return res.CodeSuccess, "绑定成功"
 }
 
 // DeleteEnv 删除

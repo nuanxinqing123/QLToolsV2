@@ -36,6 +36,14 @@ func (m *Env) Create() error {
 	return nil
 }
 
+// Save 保存数据
+func (m *Env) Save() error {
+	if err := config.GinDB.Save(&m).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 // Update 修改数据
 func (m *Env) Update(data map[string]any) error {
 	if err := config.GinDB.Model(&m).Where("id = ?", m.ID).

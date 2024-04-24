@@ -24,6 +24,9 @@ type Panel struct {
 	Token string `gorm:"column:token;type:varchar(255);not null;comment:Token" json:"token"`
 	// Params
 	Params int `gorm:"column:params;type:int(11);not null;comment:Params" json:"params"`
+
+	// 关联变量[Many To Many]
+	Envs []Env `gorm:"many2many:env_panels;" json:"envs"`
 }
 
 // TestPanel 测试连接
