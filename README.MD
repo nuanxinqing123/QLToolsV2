@@ -33,3 +33,7 @@ TG：[https://t.me/Nuanxinqing](https://t.me/Nuanxinqing)
 青龙Tools频道：[https://t.me/qltool](https://t.me/qltool)
 
 青龙Tools吹水群：[https://t.me/qltools](https://t.me/qltools)
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=nuanxinqing123/QLToolsV2&type=Date)](https://star-history.com/#nuanxinqing123/QLToolsV2&Date)
