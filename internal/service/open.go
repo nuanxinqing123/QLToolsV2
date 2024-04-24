@@ -35,47 +35,36 @@ func Login(p *model.Login) (res.ResCode, any) {
 		return res.CodeGenericError, "密码错误"
 	}
 
-	// 判断是否已封禁
-	if m.Status == model.Inactive {
-		return res.CodeGenericError, "该账号还未激活"
-	} else if m.Status == model.Suspend {
-		return res.CodeGenericError, "该账号已被暂停"
-	}
-
-	return res.CodeSuccess, ""
+	return res.CodeSuccess, m.UserID
 }
 
 // Register 用户注册
 func Register(p *model.Register) (res.ResCode, any) {
 	var userCount int64
 
-	if err := config.GinDB.Model(&db.User{}).Where("username = ?", p.UserName).
-		Count(&userCount).Error; err != nil {
+	if err := config.GinDB.Model(&db.User{}).Count(&userCount).Error; err != nil {
 		config.GinLOG.Error(err.Error())
 		return res.CodeServerBusy, _const.ServerBusy
 	}
 	if userCount > 0 {
-		return res.CodeGenericError, "用户名已存在"
+		return res.CodeGenericError, "已存在管理员, 自动关闭注册功能"
 	}
 
 	// 创建用户
-	user := db.User{
+	m := db.User{
 		User: model.User{
 			UserID:   utils.GenID(),
 			UserName: p.UserName,
-			Avatar:   "也许大概没有头像吧",
-			Balance:  0,
-			Role:     model.UserRole,
-			Status:   model.Active,
 		},
 	}
 	// 处理密码【根据自己对密码强度的需求进行修改】
-	user.BcryptHash(p.Password)
+	m.BcryptHash(p.Password)
 
-	if err := config.GinDB.Create(&user).Error; err != nil {
+	// 写入数据
+	if err := m.Create(); err != nil {
 		config.GinLOG.Error(err.Error())
 		return res.CodeServerBusy, _const.ServerBusy
 	}
 
-	return res.CodeSuccess, ""
+	return res.CodeSuccess, m.UserID
 }

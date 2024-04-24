@@ -8,6 +8,19 @@ import (
 
 // InitRouterAdmin API
 func InitRouterAdmin(r *gin.RouterGroup) {
+	// 用户路由
 	user := controllers.UserController{}
 	user.Router(r)
+
+	// KEY路由
+	key := controllers.KEYController{}
+	key.Router(r)
+
+	// 变量路由
+	env := controllers.EnvController{}
+	env.Router(r)
+
+	// 面板路由
+	panel := controllers.PanelController{}
+	panel.Router(r)
 }

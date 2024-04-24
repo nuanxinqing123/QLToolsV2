@@ -18,6 +18,7 @@ import (
 	"QLToolsV2/config"
 	"QLToolsV2/initialize"
 	"QLToolsV2/utils"
+	"QLToolsV2/utils/validator"
 )
 
 func main() {
@@ -47,6 +48,12 @@ func main() {
 	// 初始化雪花 ID 算法
 	if err := utils.InitSnowflake(); err != nil {
 		fmt.Println("初始化雪花 ID 算法失败...")
+		return
+	}
+
+	// 初始化翻译器
+	if err := validator.InitTrans("zh"); err != nil {
+		fmt.Printf("翻译器初始化失败, err:%v\n", err)
 		return
 	}
 

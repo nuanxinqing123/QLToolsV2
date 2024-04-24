@@ -9,8 +9,6 @@ import (
 
 const CtxUserID = "UserID"
 
-/*  用户操作  */
-
 type UserController struct{}
 
 // Router 注册路由
@@ -24,6 +22,8 @@ func (c *UserController) Router(r *gin.RouterGroup) {
 
 // Logout 登出
 func (c *UserController) Logout(ctx *gin.Context) {
+	// 删除Cookie
+	ctx.SetCookie("token", "", -1, "/", "localhost", false, true)
 	res.ResSuccess(ctx, "退出成功")
 }
 

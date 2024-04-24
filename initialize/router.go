@@ -21,15 +21,12 @@ func Routers() *gin.Engine {
 	// 地址: https://github.com/bytedance/pid_limits
 	// Router.Use(adaptive.PlatoMiddlewareGinDefault(0.8))
 
-	PingGroup := Router.Group("")
-	{
-		// 存活检测
-		PingGroup.GET("/ping", func(c *gin.Context) {
-			res.ResSuccess(c, "pong")
-		})
-	}
+	// 存活检测
+	Router.GET("/ping", func(c *gin.Context) {
+		res.ResSuccess(c, "pong")
+	})
 
-	ApiGroupOpen := Router.Group("/")
+	ApiGroupOpen := Router.Group("/api")
 	router.InitRouterOpen(ApiGroupOpen)
 
 	ApiGroupAdmin := Router.Group("/api/admin")

@@ -5,4 +5,6 @@ const (
 	TimeFormat    = "2006-01-02"          // 时间格式
 
 	ServerBusy = "服务器正在开小差, 请稍后再试～"
+
+	KeyFile = "Key.txt"
 )

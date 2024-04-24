@@ -2,7 +2,6 @@ package db
 
 import (
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 
 	"QLToolsV2/config"
 	"QLToolsV2/internal/model"
@@ -15,7 +14,7 @@ type User struct {
 // GetUserByUserID 用户ID 获取数据
 func GetUserByUserID(userId string) (User, error) {
 	var m User
-	if err := config.GinDB.Model(&m).Omit("password").Where("user_id = ?", userId).
+	if err := config.GinDB.Model(&m).Where("user_id = ?", userId).
 		First(&m).Error; err != nil {
 		return m, err
 	}
@@ -32,6 +31,14 @@ func GetUserByUsername(username string) (User, error) {
 	return m, nil
 }
 
+// Create 创建数据
+func (m *User) Create() error {
+	if err := config.GinDB.Create(&m).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 // BcryptHash 使用 bcrypt 对密码进行加密
 func (m *User) BcryptHash(password string) {
 	bytes, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -44,37 +51,10 @@ func (m *User) BcryptCheck(password string) bool {
 	return err == nil
 }
 
-// Updates 修改数据
-func (m *User) Updates(data map[string]any) error {
+// Update 修改数据
+func (m *User) Update(data map[string]any) error {
 	if err := config.GinDB.Model(&m).Where("user_id = ?", m.UserID).
 		Updates(&data).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-// Delete 删除数据
-func (m *User) Delete() error {
-	if err := config.GinDB.Model(&m).Where("user_id = ?", m.UserID).
-		Delete(&m).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-// AddBalance 增加余额
-func (m *User) AddBalance(amount float64) error {
-	if err := config.GinDB.Model(&m).Where("user_id = ?", m.UserID).
-		Update("balance", gorm.Expr("`balance` + ?", amount)).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
-// SubBalance 减少余额
-func (m *User) SubBalance(amount float64) error {
-	if err := config.GinDB.Model(&m).Where("user_id = ?", m.UserID).
-		Update("balance", gorm.Expr("`balance` - ?", amount)).Error; err != nil {
 		return err
 	}
 	return nil
