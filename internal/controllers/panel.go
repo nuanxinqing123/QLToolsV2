@@ -22,11 +22,11 @@ func (c *PanelController) Router(r *gin.RouterGroup) {
 	// 添加
 	r.POST("/panel/add", c.Add)
 	// 批量操作[启用/禁用]
-	r.POST("/panel/batch/operation", c.BatchOperation)
+	r.PUT("/panel/batch/operation", c.BatchOperation)
 	// 修改
-	r.POST("/panel/update", c.Update)
+	r.PUT("/panel/update", c.Update)
 	// 删除
-	r.POST("/panel/delete", c.Delete)
+	r.DELETE("/panel/delete", c.Delete)
 }
 
 // List 分页查询

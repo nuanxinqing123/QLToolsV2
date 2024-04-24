@@ -6,5 +6,5 @@ const (
 
 	ServerBusy = "服务器正在开小差, 请稍后再试～"
 
-	KeyFile = "Key.txt"
+	CtxUserID = "UserID"
 )

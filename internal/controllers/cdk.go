@@ -24,11 +24,11 @@ func (c *KEYController) Router(r *gin.RouterGroup) {
 	// 批量添加
 	r.POST("/cdk/batch/add", c.BatchAdd)
 	// 批量操作[启用/禁用]
-	r.POST("/cdk/batch/operation", c.BatchOperation)
+	r.PUT("/cdk/batch/operation", c.BatchOperation)
 	// 修改
-	r.POST("/cdk/update", c.Update)
+	r.PUT("/cdk/update", c.Update)
 	// 删除
-	r.POST("/cdk/delete", c.Delete)
+	r.DELETE("/cdk/delete", c.Delete)
 }
 
 // List 分页查询

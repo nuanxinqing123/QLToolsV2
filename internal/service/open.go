@@ -35,7 +35,21 @@ func Login(p *model.Login) (res.ResCode, any) {
 		return res.CodeGenericError, "密码错误"
 	}
 
-	return res.CodeSuccess, m.UserID
+	// 初始化 JWT
+	j := utils.NewJWT()
+
+	// 已存在用户, 生成授权 Token
+	claims := j.CreateClaims(utils.BaseClaims{
+		UserID: m.UserID,
+	})
+
+	token, err := j.CreateToken(claims)
+	if err != nil {
+		config.GinLOG.Error("[生成 Token]失败，原因：" + err.Error())
+		return res.CodeServerBusy, "系统繁忙，请稍候再试"
+	}
+
+	return res.CodeSuccess, token
 }
 
 // Register 用户注册
@@ -47,7 +61,7 @@ func Register(p *model.Register) (res.ResCode, any) {
 		return res.CodeServerBusy, _const.ServerBusy
 	}
 	if userCount > 0 {
-		return res.CodeGenericError, "已存在管理员, 自动关闭注册功能"
+		return res.CodeGenericError, "管理员已存在, 已自动关闭注册功能"
 	}
 
 	// 创建用户
@@ -66,5 +80,19 @@ func Register(p *model.Register) (res.ResCode, any) {
 		return res.CodeServerBusy, _const.ServerBusy
 	}
 
-	return res.CodeSuccess, m.UserID
+	// 初始化 JWT
+	j := utils.NewJWT()
+
+	// 已存在用户, 生成授权 Token
+	claims := j.CreateClaims(utils.BaseClaims{
+		UserID: m.UserID,
+	})
+
+	token, err := j.CreateToken(claims)
+	if err != nil {
+		config.GinLOG.Error("[生成 Token]失败，原因：" + err.Error())
+		return res.CodeServerBusy, "系统繁忙，请稍候再试"
+	}
+
+	return res.CodeSuccess, token
 }

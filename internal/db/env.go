@@ -12,7 +12,7 @@ type Env struct {
 // GetEnvByID ID 获取数据
 func GetEnvByID(id int) (Env, error) {
 	var m Env
-	if err := config.GinDB.Model(&m).Preload("Panel").Where("id = ?", id).
+	if err := config.GinDB.Model(&m).Where("id = ?", id).
 		First(&m).Error; err != nil {
 		return m, err
 	}
@@ -22,7 +22,7 @@ func GetEnvByID(id int) (Env, error) {
 // GetEnvs 分页查询
 func GetEnvs(page, pageSize int) ([]Env, error) {
 	var m []Env
-	if err := config.GinDB.Scopes(Paginate(page, pageSize)).Find(&m).Error; err != nil {
+	if err := config.GinDB.Scopes(PaginateIdDesc(page, pageSize)).Find(&m).Error; err != nil {
 		return m, err
 	}
 	return m, nil

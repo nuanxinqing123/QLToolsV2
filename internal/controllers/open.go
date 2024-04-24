@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"errors"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -18,9 +17,9 @@ type OpenController struct{}
 // Router 注册路由
 func (c *OpenController) Router(r *gin.RouterGroup) {
 	// 登录
-	r.POST("login", c.Login)
+	r.POST("/login", c.Login)
 	// 注册
-	r.POST("register", c.Register)
+	r.POST("/register", c.Register)
 }
 
 // Login 用户登录
@@ -44,7 +43,6 @@ func (c *OpenController) Login(ctx *gin.Context) {
 	// 业务处理
 	resCode, msg := service.Login(p)
 	if resCode == res.CodeSuccess {
-		ctx.SetCookie("token", msg.(string), int(3*24*time.Hour), "/", "localhost", false, true)
 		res.ResSuccess(ctx, msg) // 成功
 	} else {
 		res.ResErrorWithMsg(ctx, resCode, msg) // 失败
@@ -72,7 +70,6 @@ func (c *OpenController) Register(ctx *gin.Context) {
 	// 业务处理
 	resCode, msg := service.Register(p)
 	if resCode == res.CodeSuccess {
-		ctx.SetCookie("token", msg.(string), int(3*24*time.Hour), "/", "localhost", false, true)
 		res.ResSuccess(ctx, msg) // 成功
 	} else {
 		res.ResErrorWithMsg(ctx, resCode, msg) // 失败

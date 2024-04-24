@@ -22,11 +22,11 @@ func (c *EnvController) Router(r *gin.RouterGroup) {
 	// 添加
 	r.POST("/env/add", c.Add)
 	// 批量操作[启用/禁用]
-	r.POST("/env/batch/operation", c.BatchOperation)
+	r.PUT("/env/batch/operation", c.BatchOperation)
 	// 修改
-	r.POST("/env/update", c.Update)
+	r.PUT("/env/update", c.Update)
 	// 删除
-	r.POST("/env/delete", c.Delete)
+	r.DELETE("/env/delete", c.Delete)
 }
 
 // List 分页查询

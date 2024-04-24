@@ -11,6 +11,15 @@ type User struct {
 	model.User
 }
 
+// GetFirstUser 获取第一个用户
+func GetFirstUser() (User, error) {
+	var m User
+	if err := config.GinDB.Model(&m).First(&m).Error; err != nil {
+		return m, err
+	}
+	return m, nil
+}
+
 // GetUserByUserID 用户ID 获取数据
 func GetUserByUserID(userId string) (User, error) {
 	var m User

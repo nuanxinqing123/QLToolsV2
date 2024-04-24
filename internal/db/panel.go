@@ -12,7 +12,7 @@ type Panel struct {
 // GetPanelByID ID 获取数据
 func GetPanelByID(id int) (Panel, error) {
 	var m Panel
-	if err := config.GinDB.Model(&m).Preload("Panel").Where("id = ?", id).
+	if err := config.GinDB.Model(&m).Where("id = ?", id).
 		First(&m).Error; err != nil {
 		return m, err
 	}
@@ -22,7 +22,7 @@ func GetPanelByID(id int) (Panel, error) {
 // GetPanels 分页查询
 func GetPanels(page, pageSize int) ([]Panel, error) {
 	var m []Panel
-	if err := config.GinDB.Scopes(Paginate(page, pageSize)).Find(&m).Error; err != nil {
+	if err := config.GinDB.Scopes(PaginateIdDesc(page, pageSize)).Find(&m).Error; err != nil {
 		return m, err
 	}
 	return m, nil

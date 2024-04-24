@@ -22,7 +22,7 @@ func GetKeyByID(id int) (CdKey, error) {
 // GetKeys 分页查询
 func GetKeys(page, pageSize int) ([]CdKey, error) {
 	var m []CdKey
-	if err := config.GinDB.Scopes(Paginate(page, pageSize)).Find(&m).Error; err != nil {
+	if err := config.GinDB.Scopes(PaginateIdDesc(page, pageSize)).Find(&m).Error; err != nil {
 		return m, err
 	}
 	return m, nil

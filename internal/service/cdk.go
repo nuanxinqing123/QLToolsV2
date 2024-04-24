@@ -127,7 +127,11 @@ func UpdateCDK(p *model.UpdateCDK) (res.ResCode, any) {
 	}
 
 	// 更新数据
-	if err = m.Update(map[string]any{"key": p.Key, "count": p.Count, "is_enable": p.IsEnable}); err != nil {
+	if err = m.Update(map[string]any{
+		"key":       p.Key,
+		"count":     p.Count,
+		"is_enable": p.IsEnable,
+	}); err != nil {
 		config.GinLOG.Error(err.Error())
 		return res.CodeServerBusy, _const.ServerBusy
 	}

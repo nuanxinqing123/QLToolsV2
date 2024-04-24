@@ -18,7 +18,7 @@ var codeMsgMap = map[ResCode]string{
 	CodeSuccess: "Success",
 
 	CodeInvalidParam:           "请求参数错误",
-	CodeServerBusy:             "系统繁忙，请稍候再试",
+	CodeServerBusy:             "系统繁忙, 请稍候再试",
 	CodeInvalidRouterRequested: "请求无效路由",
 
 	CodeInvalidToken: "无效的Token",
