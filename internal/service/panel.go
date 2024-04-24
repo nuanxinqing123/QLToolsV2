@@ -21,6 +21,16 @@ func PanelList(p *model.Pagination) (res.ResCode, any) {
 	return res.CodeSuccess, ms
 }
 
+// PanelAllList 获取全部面板列表
+func PanelAllList() (res.ResCode, any) {
+	ms, err := db.GetAllPanels()
+	if err != nil {
+		config.GinLOG.Error(err.Error())
+		return res.CodeServerBusy, _const.ServerBusy
+	}
+	return res.CodeSuccess, ms
+}
+
 // AddPanel 添加面板
 func AddPanel(p *model.AddPanel) (res.ResCode, any) {
 	// 获取面板Token

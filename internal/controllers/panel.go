@@ -18,6 +18,8 @@ type PanelController struct{}
 func (c *PanelController) Router(r *gin.RouterGroup) {
 	// 分页查询
 	r.GET("/panel/list", c.List)
+	// 全部查询
+	r.GET("/panel/all/list", c.AllList)
 
 	// 添加
 	r.POST("/panel/add", c.Add)
@@ -49,6 +51,17 @@ func (c *PanelController) List(ctx *gin.Context) {
 
 	// 业务处理
 	resCode, msg := service.PanelList(p)
+	if resCode == res.CodeSuccess {
+		res.ResSuccess(ctx, msg) // 成功
+	} else {
+		res.ResErrorWithMsg(ctx, resCode, msg) // 失败
+	}
+}
+
+// AllList 全部查询
+func (c *PanelController) AllList(ctx *gin.Context) {
+	// 业务处理
+	resCode, msg := service.PanelAllList()
 	if resCode == res.CodeSuccess {
 		res.ResSuccess(ctx, msg) // 成功
 	} else {

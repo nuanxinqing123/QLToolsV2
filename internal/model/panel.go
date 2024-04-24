@@ -29,6 +29,12 @@ type Panel struct {
 	Envs []Env `gorm:"many2many:env_panels;" json:"envs"`
 }
 
+// AllPanel 全部面板数据
+type AllPanel []struct {
+	ID   uint
+	Name string `json:"name"`
+}
+
 // TestPanel 测试连接
 type TestPanel struct {
 	URL          string `json:"url" binding:"required"`           // 连接地址

@@ -28,6 +28,16 @@ func GetPanels(page, pageSize int) ([]Panel, error) {
 	return m, nil
 }
 
+// GetAllPanels 获取全部数据
+func GetAllPanels() (model.AllPanel, error) {
+	var m Panel
+	var ms model.AllPanel
+	if err := config.GinDB.Model(&m).Find(&ms).Error; err != nil {
+		return ms, err
+	}
+	return ms, nil
+}
+
 // Create 创建数据
 func (m *Panel) Create() error {
 	if err := config.GinDB.Create(&m).Error; err != nil {
