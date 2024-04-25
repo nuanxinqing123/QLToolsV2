@@ -19,6 +19,7 @@
 ## 🍳技术栈
 - 语言: Golang
 - 框架: Gin框架
+- 数据库: SQLite (使用非CGO的依赖库 _[ 相比于CGO版本性能要低一丢丢, 主要是开发方便 ]_ )
  
 ## 🎯开发计划
 
@@ -26,13 +27,13 @@
 
 【联系方式】
 
-TG：[https://t.me/Nuanxinqing](https://t.me/Nuanxinqing)
+TG：[@Nuanxinqing](https://t.me/Nuanxinqing)
 
 【交流群】
 
-青龙Tools频道：[https://t.me/qltool](https://t.me/qltool)
+青龙Tools频道：[@qltool](https://t.me/qltool)
 
-青龙Tools吹水群：[https://t.me/qltools](https://t.me/qltools)
+青龙Tools吹水群：[@qltools](https://t.me/qltools)
 
 ## Star History
 
