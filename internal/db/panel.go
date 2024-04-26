@@ -20,12 +20,16 @@ func GetPanelByID(id int) (Panel, error) {
 }
 
 // GetPanels 分页查询
-func GetPanels(page, pageSize int) ([]Panel, error) {
+func GetPanels(page, pageSize int) ([]Panel, int64, int64, error) {
 	var m []Panel
-	if err := config.GinDB.Scopes(PaginateIdDesc(page, pageSize)).Find(&m).Error; err != nil {
-		return m, err
+	var count int64
+	if err := config.GinDB.Model(&m).Count(&count).Scopes(PaginateIdDesc(page, pageSize)).Count(&count).Find(&m).Error; err != nil {
+		return m, count, 0, err
 	}
-	return m, nil
+
+	pn := PaginateCount(count, pageSize)
+
+	return m, count, pn, nil
 }
 
 // GetAllPanels 获取全部数据

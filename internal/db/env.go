@@ -20,9 +20,24 @@ func GetEnvByID(id int) (Env, error) {
 }
 
 // GetEnvs 分页查询
-func GetEnvs(page, pageSize int) ([]Env, error) {
+func GetEnvs(page, pageSize int) ([]Env, int64, int64, error) {
 	var m []Env
-	if err := config.GinDB.Scopes(PaginateIdDesc(page, pageSize)).Find(&m).Error; err != nil {
+	var count int64
+	if err := config.GinDB.Model(&m).Count(&count).Scopes(PaginateIdDesc(page, pageSize)).Find(&m).Error; err != nil {
+		return m, count, 0, err
+	}
+
+	pn := PaginateCount(count, pageSize)
+
+	return m, count, pn, nil
+}
+
+// GetAllEnvs 获取全部数据
+func GetAllEnvs() ([]Env, error) {
+	var m []Env
+	if err := config.GinDB.Model(&m).Where("is_enable = ?", true).
+		Preload("Panels", "is_enable = ?", true).
+		Find(&m).Error; err != nil {
 		return m, err
 	}
 	return m, nil

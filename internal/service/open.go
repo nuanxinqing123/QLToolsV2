@@ -3,6 +3,8 @@ package service
 import (
 	"errors"
 
+	"github.com/bluele/gcache"
+	jsoniter "github.com/json-iterator/go"
 	"gorm.io/gorm"
 
 	"QLToolsV2/config"
@@ -13,7 +15,7 @@ import (
 	"QLToolsV2/utils"
 )
 
-// var json = jsoniter.ConfigCompatibleWithStandardLibrary
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // Login 用户登录
 func Login(p *model.Login) (res.ResCode, any) {
@@ -95,4 +97,42 @@ func Register(p *model.Register) (res.ResCode, any) {
 	}
 
 	return res.CodeSuccess, token
+}
+
+// OnlineService 在线服务
+func OnlineService() (res.ResCode, any) {
+	// 查询缓存是否存在
+	cache, err := config.GinCache.GetIFPresent("onlineService")
+	if err != nil {
+		// 如果不是缓存不存在的错误
+		if !errors.Is(gcache.KeyNotFoundError, err) {
+			config.GinLOG.Error(err.Error())
+			return res.CodeServerBusy, _const.ServerBusy
+		}
+
+		/*
+			执行实时计算
+		*/
+		// 获取启用的所有变量以及绑定的面板
+		envs, err := db.GetAllEnvs()
+		if err != nil {
+			config.GinLOG.Error(err.Error())
+			return res.CodeServerBusy, _const.ServerBusy
+		}
+		// for _, x := range envs {
+		// 	// 变量总数
+		// 	envTotal := x.Quantity * len(x.Panels)
+		// 	// 变量剩余总数
+		// 	envTotalRemaining := 0
+		// 	for _, y := range x.Panels {
+		// 		// 获取面板所有变量数据
+		// 	}
+		//
+		// }
+
+		return res.CodeSuccess, envs
+	} else {
+		// 序列化缓存数据
+		return res.CodeSuccess, cache
+	}
 }

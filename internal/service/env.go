@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
 	"QLToolsV2/config"
@@ -12,12 +13,16 @@ import (
 
 // EnvList 获取变量列表
 func EnvList(p *model.Pagination) (res.ResCode, any) {
-	ms, err := db.GetEnvs(p.Page, p.Size)
+	ms, count, pn, err := db.GetEnvs(p.Page, p.Size)
 	if err != nil {
 		config.GinLOG.Error(err.Error())
 		return res.CodeServerBusy, _const.ServerBusy
 	}
-	return res.CodeSuccess, ms
+	return res.CodeSuccess, gin.H{
+		"data":   ms,
+		"totals": count,
+		"pages":  pn,
+	}
 }
 
 // AddEnv 添加变量

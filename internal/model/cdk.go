@@ -18,6 +18,10 @@ type CdKey struct {
 	IsEnable bool `gorm:"column:is_enable;type:tinyint(1);default:1;comment:是否启用" json:"is_enable"`
 }
 
+type KeyCheck struct {
+	Key string `json:"key" binding:"required"` // 卡密
+}
+
 // AddCDK 添加卡密
 type AddCDK struct {
 	Key   string `json:"key" binding:"required"`   // 卡密

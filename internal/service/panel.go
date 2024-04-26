@@ -3,6 +3,8 @@ package service
 import (
 	"fmt"
 
+	"github.com/gin-gonic/gin"
+
 	"QLToolsV2/config"
 	_const "QLToolsV2/const"
 	"QLToolsV2/internal/db"
@@ -13,12 +15,16 @@ import (
 
 // PanelList 获取面板列表
 func PanelList(p *model.Pagination) (res.ResCode, any) {
-	ms, err := db.GetPanels(p.Page, p.Size)
+	ms, count, pn, err := db.GetPanels(p.Page, p.Size)
 	if err != nil {
 		config.GinLOG.Error(err.Error())
 		return res.CodeServerBusy, _const.ServerBusy
 	}
-	return res.CodeSuccess, ms
+	return res.CodeSuccess, gin.H{
+		"data":   ms,
+		"totals": count,
+		"pages":  pn,
+	}
 }
 
 // PanelAllList 获取全部面板列表

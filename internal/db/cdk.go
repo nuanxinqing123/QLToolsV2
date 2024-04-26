@@ -19,13 +19,27 @@ func GetKeyByID(id int) (CdKey, error) {
 	return m, nil
 }
 
-// GetKeys 分页查询
-func GetKeys(page, pageSize int) ([]CdKey, error) {
-	var m []CdKey
-	if err := config.GinDB.Scopes(PaginateIdDesc(page, pageSize)).Find(&m).Error; err != nil {
+// GetKeyByKey KEY 获取数据
+func GetKeyByKey(key string) (CdKey, error) {
+	var m CdKey
+	if err := config.GinDB.Model(&m).Where("key = ?", key).
+		First(&m).Error; err != nil {
 		return m, err
 	}
 	return m, nil
+}
+
+// GetKeys 分页查询
+func GetKeys(page, pageSize int) ([]CdKey, int64, int64, error) {
+	var m []CdKey
+	var count int64
+	if err := config.GinDB.Model(&m).Count(&count).Scopes(PaginateIdDesc(page, pageSize)).Find(&m).Error; err != nil {
+		return m, count, 0, err
+	}
+
+	pn := PaginateCount(count, pageSize)
+
+	return m, count, pn, nil
 }
 
 // Create 创建数据

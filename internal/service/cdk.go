@@ -1,7 +1,11 @@
 package service
 
 import (
+	"errors"
+
+	"github.com/gin-gonic/gin"
 	"github.com/segmentio/ksuid"
+	"gorm.io/gorm"
 
 	"QLToolsV2/config"
 	_const "QLToolsV2/const"
@@ -10,14 +14,38 @@ import (
 	res "QLToolsV2/pkg/response"
 )
 
+// KeyCheck 检查KEY
+func KeyCheck(p *model.KeyCheck) (res.ResCode, any) {
+	m, err := db.GetKeyByKey(p.Key)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return res.CodeGenericError, "卡密不存在"
+		}
+		config.GinLOG.Error(err.Error())
+		return res.CodeServerBusy, _const.ServerBusy
+	}
+	if m.IsEnable == false {
+		return res.CodeGenericError, "卡密已被禁用"
+	}
+	if m.Count <= 0 {
+		return res.CodeGenericError, "卡密使用次数不足"
+	}
+
+	return res.CodeSuccess, m
+}
+
 // CDKList 获取KEY列表
 func CDKList(p *model.Pagination) (res.ResCode, any) {
-	ms, err := db.GetKeys(p.Page, p.Size)
+	ms, count, pn, err := db.GetKeys(p.Page, p.Size)
 	if err != nil {
 		config.GinLOG.Error(err.Error())
 		return res.CodeServerBusy, _const.ServerBusy
 	}
-	return res.CodeSuccess, ms
+	return res.CodeSuccess, gin.H{
+		"data":   ms,
+		"totals": count,
+		"pages":  pn,
+	}
 }
 
 // AddCDK 添加卡密
