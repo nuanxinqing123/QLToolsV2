@@ -138,4 +138,25 @@ func OnlineService() (res.ResCode, any) {
 	}
 }
 
-// OfflineService 离线服务
+// SubmitService 提交服务
+func SubmitService(p *model.Submit) (res.ResCode, any) {
+	/*
+		- 判断是否为空内容
+		- 检查变量名是否存在并启用
+		- 检查是否启用KEY, 并且用户提交的KEY是否有效
+		- 校验正则, 判断是否满足提交条件
+		- 执行实时计算, 判断是否还有空余提交位置
+		- 判断是否启用插件, 并且执行插件处理[未开发逻辑]
+		- 提交数据, 并自动自用改变量
+		- 执行结束
+	*/
+
+	// 判断是否为空内容
+	if p.Value == "" {
+		return res.CodeInvalidParam, "提交内容不能为空"
+	}
+
+	return res.CodeSuccess, "提交成功"
+}
+
+// KeyCheck KEY检查

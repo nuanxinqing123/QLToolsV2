@@ -86,7 +86,7 @@ func GetOnlineService() (any, error) {
 				"prompt_content": xx.PromptContent,
 				"enable_key":     xx.EnableKey,
 			})
-			defer mu.Unlock()
+			mu.Unlock() // 解锁
 		}(x)
 	}
 

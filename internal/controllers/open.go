@@ -25,6 +25,8 @@ func (c *OpenController) Router(r *gin.RouterGroup) {
 	r.POST("/key_check", c.KeyCheck)
 	// 在线服务
 	r.GET("/online/service", c.OnlineService)
+	// 提交服务
+	r.POST("/submit/service", c.SubmitService)
 }
 
 // Login 用户登录
@@ -112,6 +114,33 @@ func (c *OpenController) KeyCheck(ctx *gin.Context) {
 func (c *OpenController) OnlineService(ctx *gin.Context) {
 	// 业务处理
 	resCode, msg := service.OnlineService()
+	if resCode == res.CodeSuccess {
+		res.ResSuccess(ctx, msg) // 成功
+	} else {
+		res.ResErrorWithMsg(ctx, resCode, msg) // 失败
+	}
+}
+
+// SubmitService 提交服务
+func (c *OpenController) SubmitService(ctx *gin.Context) {
+	// 获取参数
+	p := new(model.Submit)
+	if err := ctx.ShouldBindJSON(&p); err != nil {
+		// 判断err是不是validator.ValidationErrors类型
+		var errs validator.ValidationErrors
+		ok := errors.As(err, &errs)
+		if !ok {
+			res.ResError(ctx, res.CodeInvalidParam)
+			return
+		}
+
+		// 翻译错误
+		res.ResErrorWithMsg(ctx, res.CodeInvalidParam, val.RemoveTopStruct(errs.Translate(val.Trans)))
+		return
+	}
+
+	// 业务处理
+	resCode, msg := service.SubmitService(p)
 	if resCode == res.CodeSuccess {
 		res.ResSuccess(ctx, msg) // 成功
 	} else {
