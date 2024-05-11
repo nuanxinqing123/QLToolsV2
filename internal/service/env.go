@@ -29,15 +29,18 @@ func EnvList(p *model.Pagination) (res.ResCode, any) {
 func AddEnv(p *model.AddEnv) (res.ResCode, any) {
 	m := db.Env{
 		Env: model.Env{
-			Name:        p.Name,
-			Remarks:     p.Remarks,
-			Quantity:    p.Quantity,
-			Regex:       p.Regex,
-			Mode:        p.Mode,
-			Division:    p.Division,
-			RegexUpdate: p.RegexUpdate,
-			EnableKey:   p.EnableKey,
-			IsEnable:    p.IsEnable,
+			Name:          p.Name,
+			Remarks:       p.Remarks,
+			Quantity:      p.Quantity,
+			Regex:         p.Regex,
+			Mode:          p.Mode,
+			Division:      p.Division,
+			RegexUpdate:   p.RegexUpdate,
+			EnableKey:     p.EnableKey,
+			IsPrompt:      p.IsPrompt,
+			PromptLevel:   p.PromptLevel,
+			PromptContent: p.PromptContent,
+			IsEnable:      p.IsEnable,
 		},
 	}
 
@@ -70,15 +73,18 @@ func UpdateEnv(p *model.UpdateEnv) (res.ResCode, any) {
 
 	// 更新数据
 	if err = m.Update(map[string]any{
-		"name":         p.Name,
-		"remarks":      p.Remarks,
-		"quantity":     p.Quantity,
-		"regex":        p.Regex,
-		"mode":         p.Mode,
-		"division":     p.Division,
-		"regex_update": p.RegexUpdate,
-		"enable_key":   p.EnableKey,
-		"is_enable":    p.IsEnable,
+		"name":           p.Name,
+		"remarks":        p.Remarks,
+		"quantity":       p.Quantity,
+		"regex":          p.Regex,
+		"mode":           p.Mode,
+		"division":       p.Division,
+		"regex_update":   p.RegexUpdate,
+		"enable_key":     p.EnableKey,
+		"is_prompt":      p.IsPrompt,
+		"prompt_level":   p.PromptLevel,
+		"prompt_content": p.PromptContent,
+		"is_enable":      p.IsEnable,
 	}); err != nil {
 		config.GinLOG.Error(err.Error())
 		return res.CodeServerBusy, _const.ServerBusy
