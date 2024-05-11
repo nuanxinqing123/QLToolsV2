@@ -26,6 +26,12 @@ type Env struct {
 	RegexUpdate string `gorm:"column:regex_update;type:text;comment:匹配正则[更新]" json:"regex_update"`
 	// 是否启用KEY
 	EnableKey bool `gorm:"column:enable_key;type:tinyint(1);default:0;comment:是否启用KEY" json:"enable_key"`
+	// 是否提示
+	IsPrompt bool `gorm:"column:is_prompt;type:tinyint(1);default:0;comment:是否提示" json:"is_prompt"`
+	// 提示等级[info、warn、error]
+	PromptLevel string `gorm:"column:prompt_level;type:varchar(255);comment:提示等级" json:"prompt_level"`
+	// 提示内容
+	PromptContent string `gorm:"column:prompt_content;type:text;comment:提示内容" json:"prompt_content"`
 	// 是否启用
 	IsEnable bool `gorm:"column:is_enable;type:tinyint(1);default:0;comment:是否启用" json:"is_enable"`
 
@@ -35,15 +41,18 @@ type Env struct {
 
 // AddEnv 添加变量
 type AddEnv struct {
-	Name        string `json:"name" binding:"required"`     // 名称
-	Remarks     string `json:"remarks"`                     // 备注
-	Quantity    int    `json:"quantity" binding:"required"` // 负载数量
-	Regex       string `json:"regex"`                       // 匹配正则
-	Mode        int    `json:"mode" binding:"required"`     // 模式
-	Division    string `json:"division"`                    // 分隔符
-	RegexUpdate string `json:"regex_update"`                // 匹配正则
-	EnableKey   bool   `json:"enable_key"`                  // 是否启用KEY
-	IsEnable    bool   `json:"is_enable"`                   // 是否启用变量
+	Name          string `json:"name" binding:"required"`     // 名称
+	Remarks       string `json:"remarks"`                     // 备注
+	Quantity      int    `json:"quantity" binding:"required"` // 负载数量
+	Regex         string `json:"regex"`                       // 匹配正则
+	Mode          int    `json:"mode" binding:"required"`     // 模式
+	Division      string `json:"division"`                    // 分隔符
+	RegexUpdate   string `json:"regex_update"`                // 匹配正则
+	EnableKey     bool   `json:"enable_key"`                  // 是否启用KEY
+	IsEnable      bool   `json:"is_enable"`                   // 是否启用变量
+	IsPrompt      bool   `json:"is_prompt"`                   // 是否提示
+	PromptLevel   string `json:"prompt_level"`                // 提示等级
+	PromptContent string `json:"prompt_content"`              // 提示内容
 }
 
 // BatchOperationEnv 批量操作
@@ -54,16 +63,19 @@ type BatchOperationEnv struct {
 
 // UpdateEnv 修改
 type UpdateEnv struct {
-	ID          int    `json:"id" binding:"required"`       // ID
-	Name        string `json:"name" binding:"required"`     // 名称
-	Remarks     string `json:"remarks"`                     // 备注
-	Quantity    int    `json:"quantity" binding:"required"` // 负载数量
-	Regex       string `json:"regex"`                       // 匹配正则
-	Mode        int    `json:"mode" binding:"required"`     // 模式
-	Division    string `json:"division"`                    // 分隔符
-	RegexUpdate string `json:"regex_update"`                // 匹配正则
-	EnableKey   bool   `json:"enable_key"`                  // 是否启用KEY
-	IsEnable    bool   `json:"is_enable"`                   // 是否启用
+	ID            int    `json:"id" binding:"required"`       // ID
+	Name          string `json:"name" binding:"required"`     // 名称
+	Remarks       string `json:"remarks"`                     // 备注
+	Quantity      int    `json:"quantity" binding:"required"` // 负载数量
+	Regex         string `json:"regex"`                       // 匹配正则
+	Mode          int    `json:"mode" binding:"required"`     // 模式
+	Division      string `json:"division"`                    // 分隔符
+	RegexUpdate   string `json:"regex_update"`                // 匹配正则
+	EnableKey     bool   `json:"enable_key"`                  // 是否启用KEY
+	IsEnable      bool   `json:"is_enable"`                   // 是否启用
+	IsPrompt      bool   `json:"is_prompt"`                   // 是否提示
+	PromptLevel   string `json:"prompt_level"`                // 提示等级
+	PromptContent string `json:"prompt_content"`              // 提示内容
 }
 
 // BindPanel 绑定面板

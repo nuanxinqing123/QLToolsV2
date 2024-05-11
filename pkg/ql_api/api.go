@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -59,10 +60,10 @@ func (api QlConfig) GetConfig() (TokenRes, error) {
 type QlApi struct {
 	URL    string // 连接地址
 	Token  string // token
-	Params string // params
+	Params int    // params
 }
 
-func (api QlApi) InitPanel(url, token, params string) *QlApi {
+func (api QlApi) InitPanel(url, token string, params int) *QlApi {
 	api.URL = url
 	api.Token = token
 	api.Params = params
@@ -77,7 +78,7 @@ func (api QlApi) GetEnvs() (EnvRes, error) {
 	ads := fmt.Sprintf("%s/open/envs", api.URL)
 
 	params := url.Values{}
-	params.Add("t", api.Params)
+	params.Add("t", strconv.Itoa(api.Params))
 
 	// 发送请求
 	response, err := requests.Requests("GET", ads, params, "", api.Token)
@@ -107,7 +108,7 @@ func (api QlApi) PostEnvs(env PostEnv) (PostEnvRes, error) {
 	ads := fmt.Sprintf("%s/open/envs", api.URL)
 
 	params := url.Values{}
-	params.Add("t", api.Params)
+	params.Add("t", strconv.Itoa(api.Params))
 
 	// 转换为String
 	bytes, err := json.Marshal(env)
@@ -143,7 +144,7 @@ func (api QlApi) PutEnvs(env PutEnv) (PutEnvRes, error) {
 	ads := fmt.Sprintf("%s/open/envs", api.URL)
 
 	params := url.Values{}
-	params.Add("t", api.Params)
+	params.Add("t", strconv.Itoa(api.Params))
 
 	// 转换为String
 	bytes, err := json.Marshal(env)
@@ -179,7 +180,7 @@ func (api QlApi) PutDisableEnvs(env PutDisableEnv) (PutDisableEnvRes, error) {
 	ads := fmt.Sprintf("%s/open/envs/disable", api.URL)
 
 	params := url.Values{}
-	params.Add("t", api.Params)
+	params.Add("t", strconv.Itoa(api.Params))
 
 	// 转换为String
 	bytes, err := json.Marshal(env)
@@ -215,7 +216,7 @@ func (api QlApi) PutEnableEnvs(env PutEnableEnv) (PutEnableEnvRes, error) {
 	ads := fmt.Sprintf("%s/open/envs/enable", api.URL)
 
 	params := url.Values{}
-	params.Add("t", api.Params)
+	params.Add("t", strconv.Itoa(api.Params))
 
 	// 转换为String
 	bytes, err := json.Marshal(env)
@@ -251,7 +252,7 @@ func (api QlApi) DeleteEnvs(env DeleteEnv) (DeleteEnvRes, error) {
 	ads := fmt.Sprintf("%s/open/envs", api.URL)
 
 	params := url.Values{}
-	params.Add("t", api.Params)
+	params.Add("t", strconv.Itoa(api.Params))
 
 	// 转换为String
 	bytes, err := json.Marshal(env)

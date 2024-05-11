@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/bluele/gcache"
 	jsoniter "github.com/json-iterator/go"
@@ -11,6 +12,7 @@ import (
 	_const "QLToolsV2/const"
 	"QLToolsV2/internal/db"
 	"QLToolsV2/internal/model"
+	api "QLToolsV2/pkg/ql_api"
 	res "QLToolsV2/pkg/response"
 	"QLToolsV2/utils"
 )
@@ -113,26 +115,27 @@ func OnlineService() (res.ResCode, any) {
 		/*
 			执行实时计算
 		*/
-		// 获取启用的所有变量以及绑定的面板
-		envs, err := db.GetAllEnvs()
+		config.GinLOG.Debug("开始执行实时计算")
+
+		result, err := api.GetOnlineService()
+		if err != nil {
+			return res.CodeServerBusy, _const.ServerBusy
+		}
+
+		return res.CodeSuccess, result
+	} else {
+		config.GinLOG.Debug(fmt.Sprintf("读取缓存成功, 缓存数据为: %s", cache.(string)))
+
+		// 反序列化缓存数据
+		var result []map[string]any
+		err = json.Unmarshal([]byte(cache.(string)), &result)
 		if err != nil {
 			config.GinLOG.Error(err.Error())
 			return res.CodeServerBusy, _const.ServerBusy
 		}
-		// for _, x := range envs {
-		// 	// 变量总数
-		// 	envTotal := x.Quantity * len(x.Panels)
-		// 	// 变量剩余总数
-		// 	envTotalRemaining := 0
-		// 	for _, y := range x.Panels {
-		// 		// 获取面板所有变量数据
-		// 	}
-		//
-		// }
-
-		return res.CodeSuccess, envs
-	} else {
 		// 序列化缓存数据
-		return res.CodeSuccess, cache
+		return res.CodeSuccess, result
 	}
 }
+
+// OfflineService 离线服务
