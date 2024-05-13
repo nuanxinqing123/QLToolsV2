@@ -19,6 +19,17 @@ func GetEnvByID(id int) (Env, error) {
 	return m, nil
 }
 
+// GetEnvByName 获取数据
+func GetEnvByName(name string) (Env, error) {
+	var m Env
+	if err := config.GinDB.Model(&m).Where("name = ?", name).
+		Preload("Panels", "is_enable = ?", true).
+		First(&m).Error; err != nil {
+		return m, err
+	}
+	return m, nil
+}
+
 // GetEnvs 分页查询
 func GetEnvs(page, pageSize int) ([]Env, int64, int64, error) {
 	var m []Env

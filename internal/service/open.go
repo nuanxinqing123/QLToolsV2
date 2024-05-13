@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"regexp"
 
 	"github.com/bluele/gcache"
 	jsoniter "github.com/json-iterator/go"
@@ -154,6 +155,47 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 	// 判断是否为空内容
 	if p.Value == "" {
 		return res.CodeInvalidParam, "提交内容不能为空"
+	}
+
+	// 检查变量名是否存在并启用
+	env, err := db.GetEnvByName(p.Name)
+	if err != nil {
+		config.GinLOG.Error(err.Error())
+		return res.CodeGenericError, "变量不存在或未启用"
+	}
+	if !env.IsEnable {
+		return res.CodeGenericError, "变量未启用"
+	}
+
+	// 检查是否启用KEY, 并且用户提交的KEY是否有效
+	if env.EnableKey {
+		m, err := db.GetKeyByKey(p.Key)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return res.CodeGenericError, "卡密不存在"
+			}
+			config.GinLOG.Error(err.Error())
+			return res.CodeServerBusy, _const.ServerBusy
+		}
+		if m.IsEnable == false {
+			return res.CodeGenericError, "卡密已被禁用"
+		}
+		if m.Count <= 0 {
+			return res.CodeGenericError, "卡密使用次数不足"
+		}
+	}
+
+	// 校验正则, 判断是否满足提交条件
+	if env.Regex != "" {
+		if !regexp.MustCompile(env.Regex).MatchString(p.Value) {
+			return res.CodeGenericError, "提交内容不符合规则要求"
+		}
+	}
+
+	// 执行实时计算, 判断是否还有空余提交位置
+	panels, err := api.GetEnvsAndPanels(env)
+	if err != nil {
+		return 0, nil
 	}
 
 	return res.CodeSuccess, "提交成功"

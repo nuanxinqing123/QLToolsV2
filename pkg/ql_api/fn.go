@@ -32,48 +32,8 @@ func GetOnlineService() (any, error) {
 		go func(xx db.Env) {
 			defer wg.Done()
 
-			// 变量总数
-			envTotal := xx.Quantity * len(xx.Panels)
-			config.GinLOG.Debug(fmt.Sprintf("变量总数: %d", envTotal))
-			config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量模式: %d", xx.Name, xx.Mode))
-			for _, y := range xx.Panels {
-				config.GinLOG.Debug(fmt.Sprintf("面板名称: %s", y.Name))
-				// 初始化面板
-				ql := &QlApi{
-					URL:    y.URL,
-					Token:  y.Token,
-					Params: y.Params,
-				}
-				// 获取面板所有变量数据
-				getEnvs, err := ql.GetEnvs()
-				if err != nil {
-					// 减去失效的面板配额
-					envTotal -= xx.Quantity
-					config.GinLOG.Error(err.Error())
-					continue
-				}
-
-				// 面板存在变量
-				config.GinLOG.Debug(fmt.Sprintf("面板名称: %s, 面板存在变量: %d个", y.Name, len(getEnvs.Data)))
-				if len(getEnvs.Data) > 0 {
-					for _, z := range getEnvs.Data {
-						config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量值: %s, 变量备注: %s", z.Name, z.Value, z.Remarks))
-						if xx.Mode == 1 || xx.Mode == 3 {
-							// 新建模式 || 更新模式
-							if z.Name == xx.Name {
-								envTotal--
-							}
-						} else {
-							// 合并模式
-							if z.Name == xx.Name {
-								zL := strings.Split(z.Value, xx.Division)
-								envTotal -= len(zL)
-							}
-						}
-					}
-				}
-			}
-			config.GinLOG.Debug(fmt.Sprintf("可使用变量总数: %d", envTotal))
+			// 计算剩余位置数
+			envTotal := GetEnvRemainder(xx)
 
 			// 开启互斥锁
 			mu.Lock()
@@ -106,4 +66,55 @@ func GetOnlineService() (any, error) {
 		config.GinLOG.Error(err.Error())
 	}
 	return result, nil
+}
+
+// GetEnvRemainder 计算变量剩余位置及配额
+func GetEnvRemainder(env db.Env) int {
+	envTotal := env.Quantity * len(env.Panels)
+	config.GinLOG.Debug(fmt.Sprintf("变量总数: %d", envTotal))
+	config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量模式: %d", env.Name, env.Mode))
+	for _, y := range env.Panels {
+		config.GinLOG.Debug(fmt.Sprintf("面板名称: %s", y.Name))
+		// 初始化面板
+		ql := &QlApi{
+			URL:    y.URL,
+			Token:  y.Token,
+			Params: y.Params,
+		}
+		// 获取面板所有变量数据
+		getEnvs, err := ql.GetEnvs()
+		if err != nil {
+			// 减去失效的面板配额
+			envTotal -= env.Quantity
+			config.GinLOG.Error(err.Error())
+			continue
+		}
+
+		// 面板存在变量
+		config.GinLOG.Debug(fmt.Sprintf("面板名称: %s, 面板存在变量: %d个", y.Name, len(getEnvs.Data)))
+		if len(getEnvs.Data) > 0 {
+			for _, z := range getEnvs.Data {
+				config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量值: %s, 变量备注: %s", z.Name, z.Value, z.Remarks))
+				if env.Mode == 1 || env.Mode == 3 {
+					// 新建模式 || 更新模式
+					if z.Name == env.Name {
+						envTotal--
+					}
+				} else {
+					// 合并模式
+					if z.Name == env.Name {
+						zL := strings.Split(z.Value, env.Division)
+						envTotal -= len(zL)
+					}
+				}
+			}
+		}
+	}
+	config.GinLOG.Debug(fmt.Sprintf("可使用变量总数: %d", envTotal))
+	return envTotal
+}
+
+// GetEnvsAndPanels 获取指定变量的可用值以及上传的面板
+func GetEnvsAndPanels(env db.Env) (any, error) {
+	return nil, nil
 }
