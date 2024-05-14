@@ -192,10 +192,21 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 		}
 	}
 
-	// 执行实时计算, 判断是否还有空余提交位置
-	panels, err := api.GetEnvsAndPanels(env)
-	if err != nil {
-		return 0, nil
+	// 判断执行模式
+	switch env.Mode {
+	case 1:
+		// 新增模式
+		pd := api.GetPanelByEnvM1(env)
+		if pd == nil {
+			return res.CodeGenericError, "暂无空余位置"
+		}
+	case 2:
+		// 合并模式
+	case 3:
+		// 更新模式
+	default:
+		// 未知模式
+		return res.CodeGenericError, "未知内容, 拒绝提交"
 	}
 
 	return res.CodeSuccess, "提交成功"

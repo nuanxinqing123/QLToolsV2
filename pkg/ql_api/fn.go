@@ -2,6 +2,7 @@ package ql_api
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -73,13 +74,13 @@ func GetEnvRemainder(env db.Env) int {
 	envTotal := env.Quantity * len(env.Panels)
 	config.GinLOG.Debug(fmt.Sprintf("变量总数: %d", envTotal))
 	config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量模式: %d", env.Name, env.Mode))
-	for _, y := range env.Panels {
-		config.GinLOG.Debug(fmt.Sprintf("面板名称: %s", y.Name))
+	for _, p := range env.Panels {
+		config.GinLOG.Debug(fmt.Sprintf("面板名称: %s", p.Name))
 		// 初始化面板
 		ql := &QlApi{
-			URL:    y.URL,
-			Token:  y.Token,
-			Params: y.Params,
+			URL:    p.URL,
+			Token:  p.Token,
+			Params: p.Params,
 		}
 		// 获取面板所有变量数据
 		getEnvs, err := ql.GetEnvs()
@@ -91,7 +92,7 @@ func GetEnvRemainder(env db.Env) int {
 		}
 
 		// 面板存在变量
-		config.GinLOG.Debug(fmt.Sprintf("面板名称: %s, 面板存在变量: %d个", y.Name, len(getEnvs.Data)))
+		config.GinLOG.Debug(fmt.Sprintf("面板名称: %s, 面板存在变量: %d个", p.Name, len(getEnvs.Data)))
 		if len(getEnvs.Data) > 0 {
 			for _, z := range getEnvs.Data {
 				config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量值: %s, 变量备注: %s", z.Name, z.Value, z.Remarks))
@@ -114,7 +115,55 @@ func GetEnvRemainder(env db.Env) int {
 	return envTotal
 }
 
-// GetEnvsAndPanels 获取指定变量的可用值以及上传的面板
-func GetEnvsAndPanels(env db.Env) (any, error) {
-	return nil, nil
+// GetPanelByEnvM1 根据变量获取面板M1
+func GetPanelByEnvM1(env db.Env) map[string]any {
+	var ps []map[string]any
+
+	for _, p := range env.Panels {
+		// 初始化面板
+		ql := &QlApi{
+			URL:    p.URL,
+			Token:  p.Token,
+			Params: p.Params,
+		}
+		// 获取面板所有变量数据
+		getEnvs, err := ql.GetEnvs()
+		if err != nil {
+			// 失效面板
+			config.GinLOG.Error(err.Error())
+			continue
+		}
+
+		// 判断面板存在变量
+		if len(getEnvs.Data) <= 0 {
+			ps = append(ps, map[string]any{
+				"id":    p.ID,
+				"count": p.Name,
+			})
+		} else {
+			// 面板存在数据
+			count := env.Quantity
+			for _, x := range getEnvs.Data {
+				if x.Name == env.Name {
+					count--
+				}
+			}
+
+			ps = append(ps, map[string]any{
+				"id":    p.ID,
+				"count": count,
+			})
+		}
+	}
+
+	// 判断是否有可用面板
+	if len(ps) <= 0 {
+		return nil
+	}
+
+	// 根据map中的count进行排序【降序】
+	sort.Slice(ps, func(i, j int) bool {
+		return ps[i]["count"].(int) > ps[j]["count"].(int)
+	})
+	return ps[0]
 }
