@@ -11,6 +11,10 @@ import (
 	"QLToolsV2/internal/db"
 )
 
+type QlApiFn struct {
+	db.Env
+}
+
 // GetOnlineService 获取在线服务
 func GetOnlineService() (any, error) {
 	// 获取启用的所有变量以及绑定的面板
@@ -34,7 +38,10 @@ func GetOnlineService() (any, error) {
 			defer wg.Done()
 
 			// 计算剩余位置数
-			envTotal := GetEnvRemainder(xx)
+			fn := QlApiFn{
+				xx,
+			}
+			envTotal := fn.GetEnvRemainder()
 
 			// 开启互斥锁
 			mu.Lock()
@@ -70,11 +77,11 @@ func GetOnlineService() (any, error) {
 }
 
 // GetEnvRemainder 计算变量剩余位置及配额
-func GetEnvRemainder(env db.Env) int {
-	envTotal := env.Quantity * len(env.Panels)
+func (api *QlApiFn) GetEnvRemainder() int {
+	envTotal := api.Quantity * len(api.Panels)
 	config.GinLOG.Debug(fmt.Sprintf("变量总数: %d", envTotal))
-	config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量模式: %d", env.Name, env.Mode))
-	for _, p := range env.Panels {
+	config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量模式: %d", api.Name, api.Mode))
+	for _, p := range api.Panels {
 		config.GinLOG.Debug(fmt.Sprintf("面板名称: %s", p.Name))
 		// 初始化面板
 		ql := &QlApi{
@@ -86,7 +93,7 @@ func GetEnvRemainder(env db.Env) int {
 		getEnvs, err := ql.GetEnvs()
 		if err != nil {
 			// 减去失效的面板配额
-			envTotal -= env.Quantity
+			envTotal -= api.Quantity
 			config.GinLOG.Error(err.Error())
 			continue
 		}
@@ -96,15 +103,15 @@ func GetEnvRemainder(env db.Env) int {
 		if len(getEnvs.Data) > 0 {
 			for _, z := range getEnvs.Data {
 				config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量值: %s, 变量备注: %s", z.Name, z.Value, z.Remarks))
-				if env.Mode == 1 || env.Mode == 3 {
+				if api.Mode == 1 || api.Mode == 3 {
 					// 新建模式 || 更新模式
-					if z.Name == env.Name {
+					if z.Name == api.Name {
 						envTotal--
 					}
 				} else {
 					// 合并模式
-					if z.Name == env.Name {
-						zL := strings.Split(z.Value, env.Division)
+					if z.Name == api.Name {
+						zL := strings.Split(z.Value, api.Division)
 						envTotal -= len(zL)
 					}
 				}
@@ -115,11 +122,11 @@ func GetEnvRemainder(env db.Env) int {
 	return envTotal
 }
 
-// GetPanelByEnvM1 根据变量获取面板M1
-func GetPanelByEnvM1(env db.Env) map[string]any {
+// GetPanelByEnvMode1 新增模式
+func (api *QlApiFn) GetPanelByEnvMode1() map[string]any {
 	var ps []map[string]any
 
-	for _, p := range env.Panels {
+	for _, p := range api.Panels {
 		// 初始化面板
 		ql := &QlApi{
 			URL:    p.URL,
@@ -138,13 +145,13 @@ func GetPanelByEnvM1(env db.Env) map[string]any {
 		if len(getEnvs.Data) <= 0 {
 			ps = append(ps, map[string]any{
 				"id":    p.ID,
-				"count": p.Name,
+				"count": api.Quantity,
 			})
 		} else {
 			// 面板存在数据
-			count := env.Quantity
+			count := api.Quantity
 			for _, x := range getEnvs.Data {
-				if x.Name == env.Name {
+				if x.Name == api.Name {
 					count--
 				}
 			}
@@ -166,4 +173,63 @@ func GetPanelByEnvM1(env db.Env) map[string]any {
 		return ps[i]["count"].(int) > ps[j]["count"].(int)
 	})
 	return ps[0]
+}
+
+// GetPanelByEnvMode2 合并模式
+func (api *QlApiFn) GetPanelByEnvMode2() map[string]any {
+	var ps []map[string]any
+
+	for _, p := range api.Panels {
+		// 初始化面板
+		ql := &QlApi{
+			URL:    p.URL,
+			Token:  p.Token,
+			Params: p.Params,
+		}
+		// 获取面板所有变量数据
+		getEnvs, err := ql.GetEnvs()
+		if err != nil {
+			// 失效面板
+			config.GinLOG.Error(err.Error())
+			continue
+		}
+
+		// 判断面板存在变量
+		if len(getEnvs.Data) <= 0 {
+			ps = append(ps, map[string]any{
+				"id":    p.ID,
+				"count": api.Quantity,
+			})
+		} else {
+			// 面板存在数据
+			count := api.Quantity
+			for _, x := range getEnvs.Data {
+				if x.Name == api.Name {
+					// 根据合并分隔符分割变量值
+					count -= len(strings.Split(x.Value, api.Division))
+				}
+			}
+
+			ps = append(ps, map[string]any{
+				"id":    p.ID,
+				"count": count,
+			})
+		}
+	}
+
+	// 判断是否有可用面板
+	if len(ps) <= 0 {
+		return nil
+	}
+
+	// 根据map中的count进行排序【降序】
+	sort.Slice(ps, func(i, j int) bool {
+		return ps[i]["count"].(int) > ps[j]["count"].(int)
+	})
+	return ps[0]
+}
+
+// GetPanelByEnvMode3 更新模式
+func (api *QlApiFn) GetPanelByEnvMode3() map[string]any {
+	return nil
 }

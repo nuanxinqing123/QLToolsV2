@@ -193,17 +193,29 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 	}
 
 	// 判断执行模式
+	var pd map[string]any = nil
+	fn := api.QlApiFn{
+		Env: env,
+	}
 	switch env.Mode {
 	case 1:
 		// 新增模式
-		pd := api.GetPanelByEnvM1(env)
+		pd = fn.GetPanelByEnvMode1()
 		if pd == nil {
 			return res.CodeGenericError, "暂无空余位置"
 		}
 	case 2:
 		// 合并模式
+		pd = fn.GetPanelByEnvMode2()
+		if pd == nil {
+			return res.CodeGenericError, "暂无空余位置"
+		}
 	case 3:
 		// 更新模式
+		pd = fn.GetPanelByEnvMode3()
+		if pd == nil {
+			return res.CodeGenericError, "暂无空余位置"
+		}
 	default:
 		// 未知模式
 		return res.CodeGenericError, "未知内容, 拒绝提交"
