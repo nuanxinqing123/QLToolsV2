@@ -96,7 +96,7 @@ func (api QlApi) GetEnvs() (EnvRes, error) {
 }
 
 // PostEnvs 添加环境变量
-func (api QlApi) PostEnvs(env PostEnv) (PostEnvRes, error) {
+func (api QlApi) PostEnvs(env []PostEnv) (PostEnvRes, error) {
 	var res PostEnvRes
 
 	// http://127.0.0.1:5700/api/envs?t=1713865007052

@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/bluele/gcache v0.0.2
 	github.com/bwmarrin/snowflake v0.3.0
+	github.com/dlclark/regexp2 v1.11.2
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/glebarez/sqlite v1.11.0

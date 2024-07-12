@@ -10,6 +10,8 @@ import (
 	"QLToolsV2/config"
 	"QLToolsV2/internal/db"
 	"QLToolsV2/internal/model"
+
+	regexp "github.com/dlclark/regexp2"
 )
 
 type QlApiFn struct {
@@ -27,9 +29,12 @@ type ResOS struct {
 }
 
 type ResQlNode struct {
-	PanelId    int `json:"panel_id"`     // 面板ID
-	Count      int `json:"count"`        // 可用数量
-	PanelEnvId int `json:"panel_env_id"` // 面板内的变量ID位置[更新模式]
+	PanelURL      string // 面板URL
+	PanelToken    string // 面板Token
+	PanelParams   int    // 面板参数
+	Count         int    // 可用数量
+	PanelEnvId    int    // 面板内的变量ID位置[更新模式]
+	PanelEnvValue string // 面板内的变量值[合并模式]
 }
 
 // GetOnlineService 获取在线服务
@@ -172,9 +177,11 @@ func (api *QlApiFn) GetPanelByEnvMode1() ResQlNode {
 				// 加锁
 				mu.Lock()
 				ps = append(ps, ResQlNode{
-					PanelId:    int(panel.ID),
-					Count:      api.Quantity,
-					PanelEnvId: 0,
+					PanelURL:    panel.URL,
+					PanelToken:  panel.Token,
+					PanelParams: panel.Params,
+					Count:       api.Quantity,
+					PanelEnvId:  0,
 				})
 				// 解锁
 				mu.Unlock()
@@ -190,9 +197,11 @@ func (api *QlApiFn) GetPanelByEnvMode1() ResQlNode {
 				// 加锁
 				mu.Lock()
 				ps = append(ps, ResQlNode{
-					PanelId:    int(panel.ID),
-					Count:      count,
-					PanelEnvId: 0,
+					PanelURL:    panel.URL,
+					PanelToken:  panel.Token,
+					PanelParams: panel.Params,
+					Count:       count,
+					PanelEnvId:  0,
 				})
 				// 解锁
 				mu.Unlock()
@@ -249,28 +258,38 @@ func (api *QlApiFn) GetPanelByEnvMode2() ResQlNode {
 				// 加锁
 				mu.Lock()
 				ps = append(ps, ResQlNode{
-					PanelId:    int(panel.ID),
-					Count:      api.Quantity,
-					PanelEnvId: 0,
+					PanelURL:    panel.URL,
+					PanelToken:  panel.Token,
+					PanelParams: panel.Params,
+					Count:       api.Quantity,
+					PanelEnvId:  0,
 				})
 				// 解锁
 				mu.Unlock()
 			} else {
+				var ID int
+				var Value string
+
 				// 面板存在数据
 				count := api.Quantity
 				for _, x := range getEnvs.Data {
 					if x.Name == api.Name {
 						// 根据合并分隔符分割变量值
 						count -= len(strings.Split(x.Value, api.Division))
+						Value = x.Value
+						ID = x.Id
 					}
 				}
 
 				// 加锁
 				mu.Lock()
 				ps = append(ps, ResQlNode{
-					PanelId:    int(panel.ID),
-					Count:      count,
-					PanelEnvId: 0,
+					PanelURL:      panel.URL,
+					PanelToken:    panel.Token,
+					PanelParams:   panel.Params,
+					Count:         count,
+					PanelEnvId:    ID,
+					PanelEnvValue: Value,
 				})
 				// 解锁
 				mu.Unlock()
@@ -294,12 +313,124 @@ func (api *QlApiFn) GetPanelByEnvMode2() ResQlNode {
 }
 
 // GetPanelByEnvMode3 更新模式
-func (api *QlApiFn) GetPanelByEnvMode3() ResQlNode {
+func (api *QlApiFn) GetPanelByEnvMode3(submitEnv string) ResQlNode {
 	/*
 		1、协程查找所有绑定面板的变量存在位置
 		2、如果找到, 则直接返回面板的ID, 以及变量的位置
 		3、如果找不到, 则判断计算还有没有空余位置可以上传
 	*/
 	var ps []ResQlNode
+	var psUpd []ResQlNode
+
+	// 开启并发处理
+	var wg sync.WaitGroup
+	// 互斥锁
+	var mu sync.Mutex
+
+	// 匹配正则内容
+	regSubmit, err := regexp.MustCompile(api.RegexUpdate, regexp.None).FindStringMatch(submitEnv)
+	if err != nil {
+		config.GinLOG.Error(err.Error())
+		return ResQlNode{}
+	}
+	if regSubmit == nil {
+		return ResQlNode{}
+	}
+	config.GinLOG.Debug(fmt.Sprintf("匹配正则内容: %s", regSubmit))
+
+	for _, p := range api.Panels {
+		wg.Add(1)
+
+		go func(panel model.Panel) {
+			defer wg.Done()
+
+			// 初始化面板
+			ql := &QlApi{
+				URL:    panel.URL,
+				Token:  panel.Token,
+				Params: panel.Params,
+			}
+			// 获取面板所有变量数据
+			getEnvs, err := ql.GetEnvs()
+			if err != nil {
+				// 失效面板
+				config.GinLOG.Error(err.Error())
+				return
+			}
+
+			// 判断面板存在变量
+			if len(getEnvs.Data) <= 0 {
+				// 加锁
+				mu.Lock()
+				ps = append(ps, ResQlNode{
+					PanelURL:    panel.URL,
+					PanelToken:  panel.Token,
+					PanelParams: panel.Params,
+					Count:       api.Quantity,
+					PanelEnvId:  0,
+				})
+				// 解锁
+				mu.Unlock()
+			} else {
+				// 面板存在数据
+				count := api.Quantity
+				for _, x := range getEnvs.Data {
+					if x.Name == api.Name {
+						// 判断是否符合更新条件
+						regPanel, err := regexp.MustCompile(api.RegexUpdate, regexp.None).FindStringMatch(x.Value)
+						if err != nil {
+							config.GinLOG.Error(err.Error())
+							continue
+						}
+						if regPanel == nil {
+							continue
+						}
+						if regSubmit == regPanel {
+							// 匹配成功
+							psUpd = append(psUpd, ResQlNode{
+								PanelURL:    panel.URL,
+								PanelToken:  panel.Token,
+								PanelParams: panel.Params,
+								Count:       count,
+								PanelEnvId:  x.Id,
+							})
+							// 跳出循环
+							break
+						}
+
+						count--
+					}
+				}
+
+				// 加锁
+				mu.Lock()
+				ps = append(ps, ResQlNode{
+					PanelURL:    panel.URL,
+					PanelToken:  panel.Token,
+					PanelParams: panel.Params,
+					Count:       count,
+					PanelEnvId:  0,
+				})
+				// 解锁
+				mu.Unlock()
+			}
+		}(p)
+	}
+
+	// 等待执行结束
+	wg.Wait()
+
+	// 判断是否有可用面板
+	if len(psUpd) > 0 {
+		return psUpd[0]
+	}
+	if len(ps) <= 0 {
+		return ResQlNode{}
+	}
+
+	// 根据map中的count进行排序【降序】
+	sort.Slice(ps, func(i, j int) bool {
+		return ps[i].Count > ps[j].Count
+	})
 	return ps[0]
 }

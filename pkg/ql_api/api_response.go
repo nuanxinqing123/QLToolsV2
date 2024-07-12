@@ -32,9 +32,9 @@ type EnvRes struct {
 }
 
 // PostEnv 创建环境变量
-type PostEnv []struct {
-	Value   string `json:"value"`
+type PostEnv struct {
 	Name    string `json:"name"`
+	Value   string `json:"value"`
 	Remarks string `json:"remarks,omitempty"`
 }
 
