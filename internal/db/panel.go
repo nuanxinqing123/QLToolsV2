@@ -32,10 +32,20 @@ func GetPanels(page, pageSize int) ([]Panel, int64, int64, error) {
 	return m, count, pn, nil
 }
 
-// GetAllPanels 获取全部数据
-func GetAllPanels() (model.AllPanel, error) {
+// GetAllPanelsEasy 获取全部数据[简易]
+func GetAllPanelsEasy() (model.AllPanel, error) {
 	var m Panel
 	var ms model.AllPanel
+	if err := config.GinDB.Model(&m).Find(&ms).Error; err != nil {
+		return ms, err
+	}
+	return ms, nil
+}
+
+// GetAllPanels 获取全部数据
+func GetAllPanels() ([]Panel, error) {
+	var m Panel
+	var ms []Panel
 	if err := config.GinDB.Model(&m).Find(&ms).Error; err != nil {
 		return ms, err
 	}

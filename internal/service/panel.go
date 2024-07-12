@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 
@@ -29,7 +30,7 @@ func PanelList(p *model.Pagination) (res.ResCode, any) {
 
 // PanelAllList 获取全部面板列表
 func PanelAllList() (res.ResCode, any) {
-	ms, err := db.GetAllPanels()
+	ms, err := db.GetAllPanelsEasy()
 	if err != nil {
 		config.GinLOG.Error(err.Error())
 		return res.CodeServerBusy, _const.ServerBusy
@@ -126,4 +127,43 @@ func DeletePanel(p *model.DeletePanel) (res.ResCode, any) {
 		return res.CodeServerBusy, _const.ServerBusy
 	}
 	return res.CodeSuccess, "删除成功"
+}
+
+// RefreshPanel 刷新Token
+func RefreshPanel() (res.ResCode, any) {
+	ms, err := db.GetAllPanels()
+	if err != nil {
+		config.GinLOG.Error(err.Error())
+		return res.CodeServerBusy, _const.ServerBusy
+	}
+
+	var wg sync.WaitGroup
+
+	for _, v := range ms {
+		wg.Add(1)
+
+		go func(v db.Panel) {
+			defer wg.Done()
+
+			// 获取面板Token
+			cf := api.InitConfig(v.URL, v.ClientID, v.ClientSecret)
+			cfRes, err := cf.GetConfig()
+			if err != nil {
+				config.GinLOG.Error(err.Error())
+				return
+			}
+			// 更新数据
+			if err = v.Update(map[string]any{
+				"token":  cfRes.Data.Token,
+				"params": cfRes.Data.Expiration,
+			}); err != nil {
+				config.GinLOG.Error(err.Error())
+				return
+			}
+		}(v)
+	}
+
+	wg.Wait()
+
+	return res.CodeSuccess, "刷新成功"
 }

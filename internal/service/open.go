@@ -208,16 +208,13 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 	switch env.Mode {
 	case 1:
 		// 新增模式
+		config.GinLOG.Debug("新增模式")
 		pd = fn.GetPanelByEnvMode1()
 		if pd.PanelURL == "" {
 			return res.CodeGenericError, "暂无空余位置"
 		}
 
-		ql := api.QlApi{
-			URL:    pd.PanelURL,
-			Token:  pd.PanelToken,
-			Params: pd.PanelParams,
-		}
+		ql := api.InitPanel(pd.PanelURL, pd.PanelToken, pd.PanelParams)
 
 		var pe []api.PostEnv
 		pe = append(pe, api.PostEnv{
@@ -226,26 +223,24 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 			Remarks: p.Remark,
 		})
 
-		_, err = ql.PostEnvs(pe)
+		resp, err := ql.PostEnvs(pe)
 		if err != nil {
 			config.GinLOG.Error(err.Error())
 			return res.CodeServerBusy, _const.ServerBusy
 		}
+		config.GinLOG.Debug(fmt.Sprintf("新增模式, 返回数据为: %v", resp.Code))
 		return res.CodeSuccess, gin.H{
 			"msg": "提交成功",
 		}
 	case 2:
 		// 合并模式
+		config.GinLOG.Debug("合并模式")
 		pd = fn.GetPanelByEnvMode2()
 		if pd.PanelURL == "" {
 			return res.CodeGenericError, "暂无空余位置"
 		}
 
-		ql := api.QlApi{
-			URL:    pd.PanelURL,
-			Token:  pd.PanelToken,
-			Params: pd.PanelParams,
-		}
+		ql := api.InitPanel(pd.PanelURL, pd.PanelToken, pd.PanelParams)
 
 		// 判断新建、合并
 		if pd.PanelEnvValue == "" {
@@ -281,16 +276,13 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 		}
 	case 3:
 		// 更新模式
+		config.GinLOG.Debug("更新模式")
 		pd = fn.GetPanelByEnvMode3(p.Value)
 		if pd.PanelURL == "" {
 			return res.CodeGenericError, "暂无空余位置"
 		}
 
-		ql := api.QlApi{
-			URL:    pd.PanelURL,
-			Token:  pd.PanelToken,
-			Params: pd.PanelParams,
-		}
+		ql := api.InitPanel(pd.PanelURL, pd.PanelToken, pd.PanelParams)
 
 		// 判断新建、合并
 		if pd.PanelEnvId == 0 {

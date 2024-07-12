@@ -29,6 +29,9 @@ func (c *EnvController) Router(r *gin.RouterGroup) {
 	r.PUT("/env/bind/panel", c.BindPanel)
 	// 删除
 	r.DELETE("/env/delete", c.Delete)
+
+	// 刷新缓存
+	r.POST("/env/refresh", c.Refresh)
 }
 
 // List 分页查询
@@ -186,6 +189,17 @@ func (c *EnvController) Delete(ctx *gin.Context) {
 
 	// 业务处理
 	resCode, msg := service.DeleteEnv(p)
+	if resCode == res.CodeSuccess {
+		res.ResSuccess(ctx, msg) // 成功
+	} else {
+		res.ResErrorWithMsg(ctx, resCode, msg) // 失败
+	}
+}
+
+// Refresh 刷新缓存
+func (c *EnvController) Refresh(ctx *gin.Context) {
+	// 业务处理
+	resCode, msg := service.RefreshEnv()
 	if resCode == res.CodeSuccess {
 		res.ResSuccess(ctx, msg) // 成功
 	} else {

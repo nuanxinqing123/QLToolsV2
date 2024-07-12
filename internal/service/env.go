@@ -8,6 +8,7 @@ import (
 	_const "QLToolsV2/const"
 	"QLToolsV2/internal/db"
 	"QLToolsV2/internal/model"
+	api "QLToolsV2/pkg/ql_api"
 	res "QLToolsV2/pkg/response"
 )
 
@@ -126,4 +127,15 @@ func DeleteEnv(p *model.DeleteEnv) (res.ResCode, any) {
 		return res.CodeServerBusy, _const.ServerBusy
 	}
 	return res.CodeSuccess, "删除成功"
+}
+
+// RefreshEnv 刷新缓存
+func RefreshEnv() (res.ResCode, any) {
+	_, err := api.GetOnlineService()
+	if err != nil {
+		config.GinLOG.Error(err.Error())
+		return res.CodeGenericError, "刷新缓存失败, 请检查日志"
+	}
+
+	return res.CodeSuccess, "刷新成功"
 }

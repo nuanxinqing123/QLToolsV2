@@ -20,14 +20,15 @@ type QlConfig struct {
 	ClientSecret string
 }
 
-func (api QlConfig) InitConfig(url, clientId, clientSecret string) *QlConfig {
-	api.URL = url
-	api.ClientID = clientId
-	api.ClientSecret = clientSecret
-	return &api
+func InitConfig(url, clientId, clientSecret string) *QlConfig {
+	return &QlConfig{
+		URL:          url,
+		ClientID:     clientId,
+		ClientSecret: clientSecret,
+	}
 }
 
-func (api QlConfig) GetConfig() (TokenRes, error) {
+func (api *QlConfig) GetConfig() (TokenRes, error) {
 	var cfRes TokenRes
 
 	ads := fmt.Sprintf("%s/open/auth/token", api.URL)
@@ -60,15 +61,16 @@ type QlApi struct {
 	Params int    // params
 }
 
-func (api QlApi) InitPanel(url, token string, params int) *QlApi {
-	api.URL = url
-	api.Token = token
-	api.Params = params
-	return &api
+func InitPanel(url, token string, params int) *QlApi {
+	return &QlApi{
+		URL:    url,
+		Token:  token,
+		Params: params,
+	}
 }
 
 // GetEnvs 获取环境变量列表
-func (api QlApi) GetEnvs() (EnvRes, error) {
+func (api *QlApi) GetEnvs() (EnvRes, error) {
 	var res EnvRes
 
 	// http://127.0.0.1:5700/api/envs?searchValue=&t=1713865007052
@@ -96,7 +98,7 @@ func (api QlApi) GetEnvs() (EnvRes, error) {
 }
 
 // PostEnvs 添加环境变量
-func (api QlApi) PostEnvs(env []PostEnv) (PostEnvRes, error) {
+func (api *QlApi) PostEnvs(env []PostEnv) (PostEnvRes, error) {
 	var res PostEnvRes
 
 	// http://127.0.0.1:5700/api/envs?t=1713865007052
@@ -130,7 +132,7 @@ func (api QlApi) PostEnvs(env []PostEnv) (PostEnvRes, error) {
 }
 
 // PutEnvs 更新环境变量
-func (api QlApi) PutEnvs(env PutEnv) (PutEnvRes, error) {
+func (api *QlApi) PutEnvs(env PutEnv) (PutEnvRes, error) {
 	var res PutEnvRes
 
 	// http://127.0.0.1:5700/api/envs?t=1713865007052
@@ -164,7 +166,7 @@ func (api QlApi) PutEnvs(env PutEnv) (PutEnvRes, error) {
 }
 
 // PutDisableEnvs 禁用环境变量
-func (api QlApi) PutDisableEnvs(env PutDisableEnv) (PutDisableEnvRes, error) {
+func (api *QlApi) PutDisableEnvs(env PutDisableEnv) (PutDisableEnvRes, error) {
 	var res PutDisableEnvRes
 
 	// http://127.0.0.1:5700/api/envs?t=1713865007052
@@ -198,7 +200,7 @@ func (api QlApi) PutDisableEnvs(env PutDisableEnv) (PutDisableEnvRes, error) {
 }
 
 // PutEnableEnvs 启用环境变量
-func (api QlApi) PutEnableEnvs(env PutEnableEnv) (PutEnableEnvRes, error) {
+func (api *QlApi) PutEnableEnvs(env PutEnableEnv) (PutEnableEnvRes, error) {
 	var res PutEnableEnvRes
 
 	// http://127.0.0.1:5700/api/envs?t=1713865007052
@@ -232,7 +234,7 @@ func (api QlApi) PutEnableEnvs(env PutEnableEnv) (PutEnableEnvRes, error) {
 }
 
 // DeleteEnvs 删除环境变量
-func (api QlApi) DeleteEnvs(env DeleteEnv) (DeleteEnvRes, error) {
+func (api *QlApi) DeleteEnvs(env DeleteEnv) (DeleteEnvRes, error) {
 	var res DeleteEnvRes
 
 	// http://127.0.0.1:5700/api/envs?t=1713865007052

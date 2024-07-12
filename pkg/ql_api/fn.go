@@ -101,16 +101,13 @@ func GetOnlineService() ([]ResOS, error) {
 // GetEnvRemainder 计算变量剩余位置及配额
 func (api *QlApiFn) GetEnvRemainder() int {
 	envTotal := api.Quantity * len(api.Panels)
-	config.GinLOG.Debug(fmt.Sprintf("变量总数: %d", envTotal))
-	config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量模式: %d", api.Name, api.Mode))
+	// config.GinLOG.Debug(fmt.Sprintf("变量总数: %d", envTotal))
+	// config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量模式: %d", api.Name, api.Mode))
 	for _, p := range api.Panels {
-		config.GinLOG.Debug(fmt.Sprintf("面板名称: %s", p.Name))
+		// config.GinLOG.Debug(fmt.Sprintf("面板名称: %s", p.Name))
 		// 初始化面板
-		ql := &QlApi{
-			URL:    p.URL,
-			Token:  p.Token,
-			Params: p.Params,
-		}
+		ql := InitPanel(p.URL, p.Token, p.Params)
+
 		// 获取面板所有变量数据
 		getEnvs, err := ql.GetEnvs()
 		if err != nil {
@@ -121,10 +118,10 @@ func (api *QlApiFn) GetEnvRemainder() int {
 		}
 
 		// 面板存在变量
-		config.GinLOG.Debug(fmt.Sprintf("面板名称: %s, 面板存在变量: %d个", p.Name, len(getEnvs.Data)))
+		// config.GinLOG.Debug(fmt.Sprintf("面板名称: %s, 面板存在变量: %d个", p.Name, len(getEnvs.Data)))
 		if len(getEnvs.Data) > 0 {
 			for _, z := range getEnvs.Data {
-				config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量值: %s, 变量备注: %s", z.Name, z.Value, z.Remarks))
+				// config.GinLOG.Debug(fmt.Sprintf("变量名称: %s, 变量值: %s, 变量备注: %s", z.Name, z.Value, z.Remarks))
 				if api.Mode == 1 || api.Mode == 3 {
 					// 新建模式 || 更新模式
 					if z.Name == api.Name {
@@ -140,7 +137,7 @@ func (api *QlApiFn) GetEnvRemainder() int {
 			}
 		}
 	}
-	config.GinLOG.Debug(fmt.Sprintf("可使用变量总数: %d", envTotal))
+	// config.GinLOG.Debug(fmt.Sprintf("可使用变量总数: %d", envTotal))
 	return envTotal
 }
 
@@ -159,11 +156,8 @@ func (api *QlApiFn) GetPanelByEnvMode1() ResQlNode {
 		go func(panel model.Panel) {
 			defer wg.Done()
 			// 初始化面板
-			ql := &QlApi{
-				URL:    panel.URL,
-				Token:  panel.Token,
-				Params: panel.Params,
-			}
+			ql := InitPanel(panel.URL, panel.Token, panel.Params)
+
 			// 获取面板所有变量数据
 			getEnvs, err := ql.GetEnvs()
 			if err != nil {
@@ -240,11 +234,8 @@ func (api *QlApiFn) GetPanelByEnvMode2() ResQlNode {
 			defer wg.Done()
 
 			// 初始化面板
-			ql := &QlApi{
-				URL:    panel.URL,
-				Token:  panel.Token,
-				Params: panel.Params,
-			}
+			ql := InitPanel(panel.URL, panel.Token, panel.Params)
+
 			// 获取面板所有变量数据
 			getEnvs, err := ql.GetEnvs()
 			if err != nil {
@@ -345,11 +336,8 @@ func (api *QlApiFn) GetPanelByEnvMode3(submitEnv string) ResQlNode {
 			defer wg.Done()
 
 			// 初始化面板
-			ql := &QlApi{
-				URL:    panel.URL,
-				Token:  panel.Token,
-				Params: panel.Params,
-			}
+			ql := InitPanel(panel.URL, panel.Token, panel.Params)
+
 			// 获取面板所有变量数据
 			getEnvs, err := ql.GetEnvs()
 			if err != nil {
@@ -376,6 +364,7 @@ func (api *QlApiFn) GetPanelByEnvMode3(submitEnv string) ResQlNode {
 				count := api.Quantity
 				for _, x := range getEnvs.Data {
 					if x.Name == api.Name {
+						config.GinLOG.Debug(fmt.Sprintf("匹配面板变量: %s", x.Name))
 						// 判断是否符合更新条件
 						regPanel, err := regexp.MustCompile(api.RegexUpdate, regexp.None).FindStringMatch(x.Value)
 						if err != nil {
@@ -383,10 +372,13 @@ func (api *QlApiFn) GetPanelByEnvMode3(submitEnv string) ResQlNode {
 							continue
 						}
 						if regPanel == nil {
+							config.GinLOG.Debug(fmt.Sprintf("没有匹配值, 面板变量值: %s", x.Value))
 							continue
 						}
-						if regSubmit == regPanel {
+						config.GinLOG.Debug(fmt.Sprintf("匹配结果: %t, 匹配值: %s", regSubmit.String() == regPanel.String(), regPanel))
+						if regSubmit.String() == regPanel.String() {
 							// 匹配成功
+							config.GinLOG.Debug(fmt.Sprintf("匹配成功, 面板变量值: %s", x.Value))
 							psUpd = append(psUpd, ResQlNode{
 								PanelURL:    panel.URL,
 								PanelToken:  panel.Token,

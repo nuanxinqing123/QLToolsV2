@@ -29,6 +29,9 @@ func (c *PanelController) Router(r *gin.RouterGroup) {
 	r.PUT("/panel/update", c.Update)
 	// 删除
 	r.DELETE("/panel/delete", c.Delete)
+
+	// 刷新Token
+	r.POST("/panel/refresh", c.Refresh)
 }
 
 // List 分页查询
@@ -170,6 +173,17 @@ func (c *PanelController) Delete(ctx *gin.Context) {
 
 	// 业务处理
 	resCode, msg := service.DeletePanel(p)
+	if resCode == res.CodeSuccess {
+		res.ResSuccess(ctx, msg) // 成功
+	} else {
+		res.ResErrorWithMsg(ctx, resCode, msg) // 失败
+	}
+}
+
+// Refresh 刷新
+func (c *PanelController) Refresh(ctx *gin.Context) {
+	// 业务处理
+	resCode, msg := service.RefreshPanel()
 	if resCode == res.CodeSuccess {
 		res.ResSuccess(ctx, msg) // 成功
 	} else {
