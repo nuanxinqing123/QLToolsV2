@@ -9,7 +9,6 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 
-	"QLToolsV2/config"
 	"QLToolsV2/pkg/requests"
 )
 
@@ -45,12 +44,10 @@ func (api QlConfig) GetConfig() (TokenRes, error) {
 
 	bytes, err := io.ReadAll(response.Body)
 	if err != nil {
-		config.GinLOG.Error(err.Error())
 		return cfRes, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
 	}
 
 	if err = json.Unmarshal(bytes, &cfRes); err != nil {
-		config.GinLOG.Error(err.Error())
 		return cfRes, err
 	}
 
@@ -88,12 +85,10 @@ func (api QlApi) GetEnvs() (EnvRes, error) {
 
 	bytes, err := io.ReadAll(response.Body)
 	if err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
 	}
 
 	if err = json.Unmarshal(bytes, &res); err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, err
 	}
 
@@ -124,12 +119,10 @@ func (api QlApi) PostEnvs(env PostEnv) (PostEnvRes, error) {
 
 	bytes, err = io.ReadAll(response.Body)
 	if err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
 	}
 
 	if err = json.Unmarshal(bytes, &res); err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, err
 	}
 
@@ -160,12 +153,10 @@ func (api QlApi) PutEnvs(env PutEnv) (PutEnvRes, error) {
 
 	bytes, err = io.ReadAll(response.Body)
 	if err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
 	}
 
 	if err = json.Unmarshal(bytes, &res); err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, err
 	}
 
@@ -196,12 +187,10 @@ func (api QlApi) PutDisableEnvs(env PutDisableEnv) (PutDisableEnvRes, error) {
 
 	bytes, err = io.ReadAll(response.Body)
 	if err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
 	}
 
 	if err = json.Unmarshal(bytes, &res); err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, err
 	}
 
@@ -232,12 +221,10 @@ func (api QlApi) PutEnableEnvs(env PutEnableEnv) (PutEnableEnvRes, error) {
 
 	bytes, err = io.ReadAll(response.Body)
 	if err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
 	}
 
 	if err = json.Unmarshal(bytes, &res); err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, err
 	}
 
@@ -268,12 +255,10 @@ func (api QlApi) DeleteEnvs(env DeleteEnv) (DeleteEnvRes, error) {
 
 	bytes, err = io.ReadAll(response.Body)
 	if err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
 	}
 
 	if err = json.Unmarshal(bytes, &res); err != nil {
-		config.GinLOG.Error(err.Error())
 		return res, err
 	}
 
