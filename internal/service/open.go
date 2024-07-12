@@ -330,5 +330,3 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 		return res.CodeGenericError, "未知内容, 拒绝提交"
 	}
 }
-
-// KeyCheck KEY检查
