@@ -28,7 +28,7 @@ func Login(p *model.Login) (res.ResCode, any) {
 	if err != nil {
 		// 判断是否注册
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return res.CodeGenericError, "用户名不存在, 请先注册"
+			return res.CodeGenericError, "用户名或密码错误"
 		}
 
 		// 记录日志
@@ -38,7 +38,7 @@ func Login(p *model.Login) (res.ResCode, any) {
 
 	// 判断密码是否正确
 	if !m.BcryptCheck(p.Password) {
-		return res.CodeGenericError, "密码错误"
+		return res.CodeGenericError, "用户名或密码错误"
 	}
 
 	// 初始化 JWT
