@@ -12,23 +12,23 @@ type User struct {
 }
 
 // GetFirstUser 获取第一个用户
-func GetFirstUser() (User, error) {
-	var m User
-	if err := config.GinDB.Model(&m).First(&m).Error; err != nil {
-		return m, err
-	}
-	return m, nil
-}
+// func GetFirstUser() (User, error) {
+// 	var m User
+// 	if err := config.GinDB.Model(&m).First(&m).Error; err != nil {
+// 		return m, err
+// 	}
+// 	return m, nil
+// }
 
 // GetUserByUserID 用户ID 获取数据
-func GetUserByUserID(userId string) (User, error) {
-	var m User
-	if err := config.GinDB.Model(&m).Where("user_id = ?", userId).
-		First(&m).Error; err != nil {
-		return m, err
-	}
-	return m, nil
-}
+// func GetUserByUserID(userId string) (User, error) {
+// 	var m User
+// 	if err := config.GinDB.Model(&m).Where("user_id = ?", userId).
+// 		First(&m).Error; err != nil {
+// 		return m, err
+// 	}
+// 	return m, nil
+// }
 
 // GetUserByUsername 用户名 获取数据
 func GetUserByUsername(username string) (User, error) {

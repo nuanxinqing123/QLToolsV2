@@ -17,6 +17,7 @@ func RegisterTables(db *gorm.DB) {
 	// 数据表：自动迁移
 	err := db.AutoMigrate(
 		&model.User{},
+		&model.LoginHistory{},
 		&model.Panel{},
 		&model.Env{},
 		&model.CdKey{})
