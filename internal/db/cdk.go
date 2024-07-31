@@ -1,6 +1,8 @@
 package db
 
 import (
+	"gorm.io/gorm"
+
 	"QLToolsV2/config"
 	"QLToolsV2/internal/model"
 )
@@ -71,6 +73,16 @@ func (m *CdKey) Updates(ids []int, data map[string]any) error {
 // Delete 删除数据
 func (m *CdKey) Delete(ids []int) error {
 	if err := config.GinDB.Model(&m).Delete("id IN ?", ids).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// Deduction 扣减次数
+func (m *CdKey) Deduction(count int) error {
+	if err := config.GinDB.Model(&m).Where("id = ?", m.ID).
+		Update("count", gorm.Expr("`count` - ?", count)).
+		Error; err != nil {
 		return err
 	}
 	return nil

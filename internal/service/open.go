@@ -169,8 +169,9 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 	}
 
 	// 检查是否启用KEY, 并且用户提交的KEY是否有效
+	var mKey db.CdKey
 	if env.EnableKey {
-		m, err := db.GetKeyByKey(p.Key)
+		mKey, err = db.GetKeyByKey(p.Key)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return res.CodeGenericError, "卡密不存在"
@@ -178,10 +179,10 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 			config.GinLOG.Error(err.Error())
 			return res.CodeServerBusy, _const.ServerBusy
 		}
-		if m.IsEnable == false {
+		if mKey.IsEnable == false {
 			return res.CodeGenericError, "卡密已被禁用"
 		}
-		if m.Count <= 0 {
+		if mKey.Count <= 0 {
 			return res.CodeGenericError, "卡密使用次数不足"
 		}
 	}
@@ -229,9 +230,6 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 			return res.CodeServerBusy, _const.ServerBusy
 		}
 		config.GinLOG.Debug(fmt.Sprintf("新增模式, 返回数据为: %v", resp.Code))
-		return res.CodeSuccess, gin.H{
-			"msg": "提交成功",
-		}
 	case 2:
 		// 合并模式
 		config.GinLOG.Debug("合并模式")
@@ -269,10 +267,6 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 				config.GinLOG.Error(err.Error())
 				return res.CodeServerBusy, _const.ServerBusy
 			}
-		}
-
-		return res.CodeSuccess, gin.H{
-			"msg": "提交成功",
 		}
 	case 3:
 		// 更新模式
@@ -313,12 +307,20 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 				return res.CodeServerBusy, _const.ServerBusy
 			}
 		}
-
-		return res.CodeSuccess, gin.H{
-			"msg": "提交成功",
-		}
 	default:
 		// 未知模式
 		return res.CodeGenericError, "未知内容, 拒绝提交"
+	}
+
+	// 检查是否启用KEY, 并且扣件库存
+	if env.EnableKey {
+		err = mKey.Deduction(1)
+		if err != nil {
+			config.GinLOG.Error(err.Error())
+		}
+	}
+
+	return res.CodeSuccess, gin.H{
+		"msg": "提交成功",
 	}
 }
