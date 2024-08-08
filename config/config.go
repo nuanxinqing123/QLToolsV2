@@ -11,7 +11,6 @@ import (
 
 type Configuration struct {
 	App autoload.App `mapstructure:"app" json:"app" yaml:"app"`
-	Zap autoload.Zap `mapstructure:"zap" json:"zap" yaml:"zap"`
 	JWT autoload.JWT `mapstructure:"jwt" json:"jwt" yaml:"jwt"`
 }
 

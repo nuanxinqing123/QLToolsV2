@@ -21,25 +21,19 @@ type fileRotateLogs struct{}
 // GetWriteSyncer 获取 zapcore.WriteSyncer
 func (r *fileRotateLogs) GetWriteSyncer(level string) (zapcore.WriteSyncer, error) {
 	fileWriter, err := rotatelogs.New(
-		path.Join(config.GinConfig.Zap.Director, "%Y-%m-%d", level+".log"),
+		path.Join("logs", "%Y-%m-%d", level+".log"),
 		rotatelogs.WithClock(rotatelogs.Local),
-		rotatelogs.WithMaxAge(time.Duration(config.GinConfig.Zap.MaxAge)*24*time.Hour), // 日志留存时间
+		rotatelogs.WithMaxAge(time.Duration(30)*24*time.Hour), // 日志留存时间
 		rotatelogs.WithRotationTime(time.Hour*24),
 	)
-	if config.GinConfig.Zap.LogInConsole {
-		return zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(fileWriter)), err
-	}
-	return zapcore.AddSync(fileWriter), err
+	return zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(fileWriter)), err
 }
 
 type _zap struct{}
 
 // GetEncoder 获取 zapcore.Encoder
 func (z *_zap) GetEncoder() zapcore.Encoder {
-	if config.GinConfig.Zap.Format == "json" {
-		return zapcore.NewJSONEncoder(z.GetEncoderConfig())
-	}
-	return zapcore.NewConsoleEncoder(z.GetEncoderConfig())
+	return zapcore.NewJSONEncoder(z.GetEncoderConfig())
 }
 
 // GetEncoderConfig 获取zapcore.EncoderConfig
@@ -50,7 +44,7 @@ func (z *_zap) GetEncoderConfig() zapcore.EncoderConfig {
 		TimeKey:        "time",
 		NameKey:        "logger",
 		CallerKey:      "caller",
-		StacktraceKey:  config.GinConfig.Zap.StacktraceKey,
+		StacktraceKey:  "stacktrace",
 		LineEnding:     zapcore.DefaultLineEnding,
 		EncodeLevel:    zapcore.CapitalLevelEncoder,
 		EncodeTime:     z.CustomTimeEncoder,
@@ -78,8 +72,14 @@ func (z *_zap) CustomTimeEncoder(t time.Time, encoder zapcore.PrimitiveArrayEnco
 // GetZapCores 根据配置文件的Level获取 []zapcore.Core
 func (z *_zap) GetZapCores() []zapcore.Core {
 	cores := make([]zapcore.Core, 0, 7)
-	for level := config.GinConfig.Zap.TransportLevel(); level <= zapcore.FatalLevel; level++ {
-		cores = append(cores, z.GetEncoderCore(level, z.GetLevelPriority(level)))
+	if config.GinConfig.App.Mode == "debug" {
+		for level := zapcore.DebugLevel; level <= zapcore.FatalLevel; level++ {
+			cores = append(cores, z.GetEncoderCore(level, z.GetLevelPriority(level)))
+		}
+	} else {
+		for level := zapcore.InfoLevel; level <= zapcore.FatalLevel; level++ {
+			cores = append(cores, z.GetEncoderCore(level, z.GetLevelPriority(level)))
+		}
 	}
 	return cores
 }
@@ -124,17 +124,14 @@ func (z *_zap) GetLevelPriority(level zapcore.Level) zap.LevelEnablerFunc {
 
 // Zap 初始化日志
 func Zap() (logger *zap.Logger) {
-	if ok, _ := utils.PathExists(config.GinConfig.Zap.Director); !ok { // 判断是否有Director文件夹
-		fmt.Printf("create %v directory\n", config.GinConfig.Zap.Director)
-		_ = os.Mkdir(config.GinConfig.Zap.Director, os.ModePerm)
+	if ok, _ := utils.PathExists("logs"); !ok { // 判断是否有Director文件夹
+		fmt.Printf("create %v directory\n", "logs")
+		_ = os.Mkdir("logs", os.ModePerm)
 	}
 	var z = new(_zap)
 	cores := z.GetZapCores()
 	logger = zap.New(zapcore.NewTee(cores...))
-
-	if config.GinConfig.Zap.ShowLine {
-		logger = logger.WithOptions(zap.AddCaller())
-	}
+	logger = logger.WithOptions(zap.AddCaller())
 
 	fmt.Println("Zap初始化成功")
 	return logger
