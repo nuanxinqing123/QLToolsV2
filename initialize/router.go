@@ -5,13 +5,13 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-bindata/go-bindata"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 
 	"QLToolsV2/internal/middleware"
 	"QLToolsV2/internal/router"
 	res "QLToolsV2/pkg/response"
+	"QLToolsV2/web/bindata"
 )
 
 func Routers() *gin.Engine {
@@ -37,13 +37,13 @@ func Routers() *gin.Engine {
 		Router.SetHTMLTemplate(t)
 
 		// 加载静态文件
-		fs := assetfs.AssetFS{
+		fs := &assetfs.AssetFS{
 			Asset:     bindata.Asset,
 			AssetDir:  bindata.AssetDir,
 			AssetInfo: nil,
 			Prefix:    "assets",
 		}
-		Router.StaticFS("/web", &fs)
+		Router.StaticFS("/assets", fs)
 
 		Router.GET("/", func(c *gin.Context) {
 			c.HTML(200, "index.html", nil)
