@@ -15,6 +15,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/json-iterator/go v1.1.12
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/viper v1.19.0
 	go.uber.org/zap v1.27.0
