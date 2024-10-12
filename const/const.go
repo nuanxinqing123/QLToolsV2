@@ -7,4 +7,6 @@ const (
 	ServerBusy = "服务器正在开小差, 请稍后再试～"
 
 	CtxUserID = "UserID"
+
+	Version = "1.0.0"
 )

@@ -16,7 +16,9 @@ import (
 	"go.uber.org/zap"
 
 	"QLToolsV2/config"
+	_const "QLToolsV2/const"
 	"QLToolsV2/initialize"
+	"QLToolsV2/internal/cron"
 	"QLToolsV2/utils"
 	"QLToolsV2/utils/validator"
 )
@@ -45,6 +47,13 @@ func main() {
 		fmt.Println("GCache初始化成功")
 	}
 
+	// 启动定时任务
+	if err := cron.InitTask(); err != nil {
+		fmt.Printf("定时任务初始化失败, err:%v\n", err)
+		return
+	}
+	zap.L().Debug("定时任务初始化成功...")
+
 	// 初始化雪花 ID 算法
 	if err := utils.InitSnowflake(); err != nil {
 		fmt.Println("初始化雪花 ID 算法失败...")
@@ -66,6 +75,14 @@ func main() {
 		fmt.Println("Router初始化成功")
 	}
 
+	fmt.Println(` _______  _    _________ _______  _______  _       _______ 
+(  ___  )( \   \__   __/(  ___  )(  ___  )( \     (  ____ \
+| (   ) || (      ) (   | (   ) || (   ) || (     | (    \/
+| |   | || |      | |   | |   | || |   | || |     | (_____ 
+| |   | || |      | |   | |   | || |   | || |     (_____  )
+| | /\| || |      | |   | |   | || |   | || |           ) |
+| (_\ \ || (____/\| |   | (___) || (___) || (____/Y\____) |
+(____\/_)(_______/)_(   (_______)(_______)(_______|_______)`)
 	fmt.Println(" ")
 	if config.GinConfig.App.Mode == "debug" {
 		fmt.Println("运行模式: Debug模式")
@@ -74,6 +91,9 @@ func main() {
 		fmt.Println("运行模式: Release模式")
 		gin.SetMode(gin.ReleaseMode)
 	}
+	fmt.Println("系统版本：" + _const.Version)
+	fmt.Println("登录地址：IP或域名:" + strconv.Itoa(config.GinConfig.App.Port) + "/#/login")
+	fmt.Println("注册地址：IP或域名:" + strconv.Itoa(config.GinConfig.App.Port) + "/#/register")
 	fmt.Println("监听端口: " + strconv.Itoa(config.GinConfig.App.Port))
 	fmt.Println(" ")
 

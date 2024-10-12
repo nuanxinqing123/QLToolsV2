@@ -320,6 +320,11 @@ func SubmitService(p *model.Submit) (res.ResCode, any) {
 		}
 	}
 
+	// 刷新缓存
+	go func() {
+		_, _ = api.GetOnlineService()
+	}()
+
 	return res.CodeSuccess, gin.H{
 		"msg": "提交成功",
 	}
