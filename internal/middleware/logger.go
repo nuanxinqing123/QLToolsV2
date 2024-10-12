@@ -45,6 +45,9 @@ func Logger() gin.HandlerFunc {
 		endTime := time.Now()
 
 		config.GinLOG.Info("请求响应",
+			zap.Int("status", c.Writer.Status()),
+			zap.String("method", c.Request.Method),
+			zap.String("url", c.Request.URL.String()),
 			zap.String("client_ip", c.ClientIP()),
 			zap.String("request_time", TimeFormat(startTime)),
 			zap.String("response_time", TimeFormat(endTime)),
