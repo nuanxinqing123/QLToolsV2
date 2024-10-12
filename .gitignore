@@ -17,4 +17,4 @@ temp/
 temp.yaml
 bin
 **/config/config.yaml
-static/assets
+web/dist/

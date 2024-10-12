@@ -34,7 +34,9 @@ func GetEnvByName(name string) (Env, error) {
 func GetEnvs(page, pageSize int) ([]Env, int64, int64, error) {
 	var m []Env
 	var count int64
-	if err := config.GinDB.Model(&m).Count(&count).Scopes(PaginateIdDesc(page, pageSize)).Find(&m).Error; err != nil {
+	if err := config.GinDB.Model(&m).
+		Preload("Panels", "is_enable = ?", true).
+		Count(&count).Scopes(PaginateIdDesc(page, pageSize)).Find(&m).Error; err != nil {
 		return m, count, 0, err
 	}
 

@@ -5,10 +5,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-bindata/go-bindata"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
-
-	"QLToolsV2/static/bindata"
 
 	"QLToolsV2/internal/middleware"
 	"QLToolsV2/internal/router"
@@ -44,7 +43,7 @@ func Routers() *gin.Engine {
 			AssetInfo: nil,
 			Prefix:    "assets",
 		}
-		Router.StaticFS("/static", &fs)
+		Router.StaticFS("/web", &fs)
 
 		Router.GET("/", func(c *gin.Context) {
 			c.HTML(200, "index.html", nil)
@@ -76,7 +75,7 @@ func loadTemplate() (*template.Template, error) {
 		if err != nil {
 			continue
 		}
-		name := strings.Replace(name, "assets/", "", 1)
+		name = strings.Replace(name, "assets/", "", 1)
 		t, err = t.New(name).Parse(string(asset))
 		if err != nil {
 			return nil, err
