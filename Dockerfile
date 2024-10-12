@@ -38,6 +38,6 @@ COPY --from=builder /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /usr/src/QLToolsV2/QLToolsV2-linux-$TARGETARCH /usr/src/QLToolsV2/docker-entrypoint.sh /usr/src/QLToolsV2/sample ./
 
-EXPOSE 15000
+EXPOSE 1500
 
 ENTRYPOINT ["sh", "docker-entrypoint.sh"]
