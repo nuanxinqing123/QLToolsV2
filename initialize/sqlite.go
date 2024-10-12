@@ -1,7 +1,6 @@
 package initialize
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -26,9 +25,7 @@ func NewWriter(w logger.Writer) *Writer {
 // Printf 格式化打印日志
 func (w *Writer) Printf(message string, data ...interface{}) {
 	mode := config.GinConfig.App.Mode
-	if mode == "release" {
-		config.GinLOG.Info(fmt.Sprintf(message+"\n", data...))
-	} else {
+	if mode != "release" {
 		w.Writer.Printf(message, data...)
 	}
 }

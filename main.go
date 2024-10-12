@@ -8,15 +8,12 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 
 	"QLToolsV2/config"
-	_const "QLToolsV2/const"
 	"QLToolsV2/initialize"
 	"QLToolsV2/internal/cron"
 	"QLToolsV2/utils"
@@ -71,31 +68,7 @@ func main() {
 	if router == nil {
 		fmt.Println("初始化路由失败...")
 		return
-	} else {
-		fmt.Println("Router初始化成功")
 	}
-
-	fmt.Println(` _______  _    _________ _______  _______  _       _______ 
-(  ___  )( \   \__   __/(  ___  )(  ___  )( \     (  ____ \
-| (   ) || (      ) (   | (   ) || (   ) || (     | (    \/
-| |   | || |      | |   | |   | || |   | || |     | (_____ 
-| |   | || |      | |   | |   | || |   | || |     (_____  )
-| | /\| || |      | |   | |   | || |   | || |           ) |
-| (_\ \ || (____/\| |   | (___) || (___) || (____/Y\____) |
-(____\/_)(_______/)_(   (_______)(_______)(_______|_______)`)
-	fmt.Println(" ")
-	if config.GinConfig.App.Mode == "debug" {
-		fmt.Println("运行模式: Debug模式")
-		gin.SetMode(gin.DebugMode)
-	} else {
-		fmt.Println("运行模式: Release模式")
-		gin.SetMode(gin.ReleaseMode)
-	}
-	fmt.Println("系统版本：" + _const.Version)
-	fmt.Println("登录地址：IP或域名:" + strconv.Itoa(config.GinConfig.App.Port) + "/#/login")
-	fmt.Println("注册地址：IP或域名:" + strconv.Itoa(config.GinConfig.App.Port) + "/#/register")
-	fmt.Println("监听端口: " + strconv.Itoa(config.GinConfig.App.Port))
-	fmt.Println(" ")
 
 	// 启动服务
 	srv := &http.Server{

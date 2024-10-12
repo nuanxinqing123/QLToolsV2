@@ -1,13 +1,17 @@
 package initialize
 
 import (
+	"fmt"
 	"html/template"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 
+	"QLToolsV2/config"
+	_const "QLToolsV2/const"
 	"QLToolsV2/internal/middleware"
 	"QLToolsV2/internal/router"
 	res "QLToolsV2/pkg/response"
@@ -15,6 +19,28 @@ import (
 )
 
 func Routers() *gin.Engine {
+	fmt.Println(` _______  _    _________ _______  _______  _       _______ 
+(  ___  )( \   \__   __/(  ___  )(  ___  )( \     (  ____ \
+| (   ) || (      ) (   | (   ) || (   ) || (     | (    \/
+| |   | || |      | |   | |   | || |   | || |     | (_____ 
+| |   | || |      | |   | |   | || |   | || |     (_____  )
+| | /\| || |      | |   | |   | || |   | || |           ) |
+| (_\ \ || (____/\| |   | (___) || (___) || (____/Y\____) |
+(____\/_)(_______/)_(   (_______)(_______)(_______|_______)`)
+	fmt.Println(" ")
+	if config.GinConfig.App.Mode == "debug" {
+		fmt.Println("运行模式: Debug模式")
+		gin.SetMode(gin.DebugMode)
+	} else {
+		fmt.Println("运行模式: Release模式")
+		gin.SetMode(gin.ReleaseMode)
+	}
+	fmt.Println("系统版本：" + _const.Version)
+	fmt.Println("登录地址：IP或域名:" + strconv.Itoa(config.GinConfig.App.Port) + "/#/login")
+	fmt.Println("注册地址：IP或域名:" + strconv.Itoa(config.GinConfig.App.Port) + "/#/register")
+	fmt.Println("监听端口: " + strconv.Itoa(config.GinConfig.App.Port))
+	fmt.Println(" ")
+
 	Router := gin.New()
 	Router.Use(middleware.Logger())
 	Router.Use(middleware.Recovery())
