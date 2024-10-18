@@ -14,6 +14,7 @@ import (
 	"go.uber.org/zap"
 
 	"QLToolsV2/config"
+	_const "QLToolsV2/const"
 	"QLToolsV2/initialize"
 	"QLToolsV2/internal/cron"
 	"QLToolsV2/utils"
@@ -60,6 +61,14 @@ func main() {
 	// 初始化翻译器
 	if err := validator.InitTrans("zh"); err != nil {
 		fmt.Printf("翻译器初始化失败, err:%v\n", err)
+		return
+	}
+
+	// 初始化 JWT 密钥
+	key := utils.GenRandomString(16)
+	// 写入缓存
+	if err := config.GinCache.Set(_const.JWTKey, key); err != nil {
+		fmt.Printf("初始化 JWT 密钥失败, err:%v\n", err)
 		return
 	}
 

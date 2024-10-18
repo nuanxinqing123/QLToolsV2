@@ -8,6 +8,7 @@ import (
 	"golang.org/x/sync/singleflight"
 
 	"QLToolsV2/config"
+	_const "QLToolsV2/const"
 )
 
 type CustomClaims struct {
@@ -32,8 +33,16 @@ var (
 )
 
 func NewJWT() *JWT {
+	// 获取缓存
+	jwtKey, err := config.GinCache.Get(_const.JWTKey)
+	if err != nil {
+		return &JWT{
+			[]byte(_const.Software),
+		}
+	}
+
 	return &JWT{
-		[]byte(config.GinConfig.JWT.SigningKey),
+		[]byte(jwtKey.(string)),
 	}
 }
 
@@ -44,7 +53,7 @@ func (j *JWT) CreateClaims(baseClaims BaseClaims) CustomClaims {
 		RegisteredClaims: jwt.RegisteredClaims{
 			NotBefore: jwt.NewNumericDate(time.Now().Add(-time.Millisecond)),                                                // 签名生效时间
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * time.Duration(config.GinConfig.JWT.ExpiresTime))), // 过期时间
-			Issuer:    config.GinConfig.JWT.Issuer,                                                                          // 签名的发行者
+			Issuer:    _const.Software,                                                                                      // 签名的发行者
 		},
 	}
 	return claims
