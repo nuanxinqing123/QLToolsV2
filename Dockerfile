@@ -36,7 +36,7 @@ WORKDIR /QLToolsV2
 
 COPY --from=builder /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /usr/src/QLToolsV2/QLToolsV2-linux-$TARGETARCH /usr/src/QLToolsV2/docker-entrypoint.sh /usr/src/QLToolsV2/sample ./
+COPY --from=builder /usr/src/QLToolsV2/QLToolsV2-linux-$TARGETARCH /usr/src/QLToolsV2/docker-entrypoint.sh /usr/src/QLToolsV2/config/example.config.yaml ./
 
 EXPOSE 1500
 
