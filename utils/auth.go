@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -13,12 +14,12 @@ import (
 
 type CustomClaims struct {
 	BaseClaims
-	BufferTime int64
+	BufferTime int64 `json:"buffer_time"`
 	jwt.RegisteredClaims
 }
 
 type BaseClaims struct {
-	UserID string
+	UserID string `json:"user_id"`
 }
 
 type JWT struct {
@@ -36,11 +37,11 @@ func NewJWT() *JWT {
 	// 获取缓存
 	jwtKey, err := config.GinCache.Get(_const.JWTKey)
 	if err != nil {
+		config.GinLOG.Warn(fmt.Sprintf("获取签名 KEY 失败, 已采用默认值。错误: %s", err.Error()))
 		return &JWT{
 			[]byte(_const.Software),
 		}
 	}
-
 	return &JWT{
 		[]byte(jwtKey.(string)),
 	}
