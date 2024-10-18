@@ -10,11 +10,7 @@ app:
 
 # JWT配置
 jwt:
-  # 签名密钥
-  signing-key: 'QLToolsV2'
   # 过期时间, 单位：天
   expires-time: 30
   # 缓冲时间, 单位：天
   buffer-time: 31
-  # 签发者
-  issuer: 'QLToolsV2'
