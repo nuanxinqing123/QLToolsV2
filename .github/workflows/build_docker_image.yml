@@ -26,6 +26,10 @@ on:
         type: boolean
         required: true
         default: 'true'
+      imageName:
+        description: '镜像名称'
+        required: true
+        default: 'qltools_v2'
       tags:
         description: 'tags：请填写镜像版本号，如1.0'
         required: true
@@ -67,7 +71,7 @@ jobs:
         name: image Name change
         id: read-docker-image-identifiers   # 去secrets中添加DOCKER_IMAGENAME 镜像名称，自动字母大写转换小写。
         run: |
-          echo DOCKER_IMAGENAME=$(echo ${{ secrets.DOCKER_IMAGENAME }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
+          echo DOCKER_IMAGENAME=$(echo ${{ github.event.inputs.imageName }} | tr '[:upper:]' '[:lower:]') >> $GITHUB_ENV
       -
         name: Extract metadata (tags, labels) for Docker
         if: ${{ github.event.inputs.pushdocker == 'true' || github.event.inputs.pushghcr == 'true' }}
@@ -75,8 +79,8 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            name=${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGENAME }},enable=${{ github.event.inputs.pushdocker == 'true' }}
-            name=ghcr.io/${{ github.repository_owner }}/${{ env.DOCKER_IMAGENAME }},enable=${{ github.event.inputs.pushghcr == 'true' }}
+            name=${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.imageName }},enable=${{ github.event.inputs.pushdocker == 'true' }}
+            name=ghcr.io/${{ github.repository_owner }}/${{ github.event.inputs.imageName }},enable=${{ github.event.inputs.pushghcr == 'true' }}
           # generate Docker tags based on the following events/attributes   # 推送到GitHub packages仓库，需要打开『 https://github.com/settings/tokens/new?scopes=write:packages 』创建一个 PAT，勾选 write:packages 权限，才可使用。
           # metadata 使用说明：https://github.com/docker/metadata-action
           #   nightly, master, pr-2, 1.2.3, 1.2, 1
