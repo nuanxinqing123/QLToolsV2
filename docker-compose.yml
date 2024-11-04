@@ -1,0 +1,8 @@
+services:
+  QLToolsV2:
+    image: ghcr.io/nuanxinqing123/qltools_v2:latest
+    volumes:
+      - ./config:/QLToolsV2/config # 映射配置文件夹
+    ports:
+      - "1500:1500"
+    restart: always

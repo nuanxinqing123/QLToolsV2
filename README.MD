@@ -21,6 +21,16 @@
 - 框架: Gin框架
 - 数据库: SQLite (使用非CGO的依赖库 _[ 相比于CGO版本性能要低一丢丢, 主要是开发方便 ]_ )
 
+## 🐳Docker运行
+```shell
+# 运行镜像
+docker run --restart=always -itd --name QLToolsV2 -v $PWD/config:/QLToolsV2/config -p 1500:1500 nuanxinqing123/qltools_v2:latest
+
+# docker compose 运行
+docker-compose up -d
+```
+
+
 ## Dockerfile构建运行
 ```shell
 # 编译镜像
@@ -29,7 +39,7 @@ docker build -t qltools_v2:latest .
 # 运行镜像
 docker run -d -p 1500:1500 qltools_v2:latest
 ```
- 
+
 ## 🎯开发计划
 
 - 开发文档: [ApiFox ->](https://apifox.com/apidoc/shared-85e6a037-263e-4a8f-8e96-3c56a924c242)
