@@ -23,7 +23,7 @@
 
 ## 🐳Docker运行
 ```shell
-# 运行镜像
+# docker 运行
 docker run --restart=always -itd --name QLToolsV2 -v $PWD/config:/QLToolsV2/config -p 1500:1500 nuanxinqing123/qltools_v2:latest
 
 # docker compose 运行
