@@ -79,7 +79,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            name=${{ secrets.DOCKER_USERNAME }}/${{ github.event.inputs.imageName }},enable=${{ github.event.inputs.pushdocker == 'true' }}
+            name=${{ github.repository_owner }}/${{ github.event.inputs.imageName }},enable=${{ github.event.inputs.pushdocker == 'true' }}
             name=ghcr.io/${{ github.repository_owner }}/${{ github.event.inputs.imageName }},enable=${{ github.event.inputs.pushghcr == 'true' }}
           # generate Docker tags based on the following events/attributes   # 推送到GitHub packages仓库，需要打开『 https://github.com/settings/tokens/new?scopes=write:packages 』创建一个 PAT，勾选 write:packages 权限，才可使用。
           # metadata 使用说明：https://github.com/docker/metadata-action
