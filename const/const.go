@@ -9,7 +9,7 @@ const (
 	CtxUserID = "UserID"
 
 	Software = "QLToolsV2"
-	Version  = "1.0.5"
+	Version  = "1.0.0"
 
 	JWTKey = "jwt_key"
 )
