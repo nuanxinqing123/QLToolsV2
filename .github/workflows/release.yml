@@ -13,7 +13,7 @@ permissions:
 jobs:
   update_release_draft:
     permissions:
-      contents: write # for release-drafter/release-drafter to create a github release
+      contents: write # for release-drafter/release-drafter to create a GitHub release
       pull-requests: write # for release-drafter/release-drafter to add label to PR
     runs-on: ubuntu-latest
     steps:
