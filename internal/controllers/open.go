@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 
 	"QLToolsV2/internal/model"
 	"QLToolsV2/internal/service"
@@ -21,8 +20,6 @@ func (c *OpenController) Router(r *gin.RouterGroup) {
 	r.POST("/login", c.Login)
 	// 注册
 	r.POST("/register", c.Register)
-	// 获取幂等Token
-	r.GET("/idempotent/token", c.GetIdempotentToken)
 
 	// KEY检查
 	r.POST("/key_check", c.KeyCheck)
@@ -149,15 +146,4 @@ func (c *OpenController) SubmitService(ctx *gin.Context) {
 	} else {
 		res.ResErrorWithMsg(ctx, resCode, msg) // 失败
 	}
-}
-
-// GetIdempotentToken 获取幂等Token
-func (c *OpenController) GetIdempotentToken(ctx *gin.Context) {
-	// 生成UUID作为幂等Token
-	token := uuid.NewString()
-
-	// 返回Token
-	res.ResSuccess(ctx, gin.H{
-		"token": token,
-	})
 }
