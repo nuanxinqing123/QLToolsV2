@@ -52,7 +52,7 @@ func Idempotent(cfg ...IdempotentConfig) gin.HandlerFunc {
 		_, err := config.GinCache.Get(cacheKey)
 		if !errors.Is(err, gcache.KeyNotFoundError) {
 			// 重复请求
-			res.ResErrorWithMsg(c, res.CodeInvalidParam, "重复请求")
+			res.ResErrorWithMsg(c, res.CodeInvalidParam, "请勿重复请求")
 			c.Abort()
 			return
 		}
