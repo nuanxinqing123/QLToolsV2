@@ -28,7 +28,7 @@ func Login(p *model.Login) (res.ResCode, any) {
 	if err != nil {
 		// 判断是否注册
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return res.CodeGenericError, "用户名或密码错误"
+			return res.CodeGenericError, "用户尚未注册"
 		}
 
 		// 记录日志
