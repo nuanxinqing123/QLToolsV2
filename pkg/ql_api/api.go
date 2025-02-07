@@ -1,10 +1,7 @@
 package ql_api
 
 import (
-	"errors"
 	"fmt"
-	"io"
-	"net/url"
 	"strconv"
 
 	jsoniter "github.com/json-iterator/go"
@@ -29,36 +26,35 @@ func InitConfig(url, clientId, clientSecret string) *QlConfig {
 }
 
 func (api *QlConfig) GetConfig() (TokenRes, error) {
-	var cfRes TokenRes
+	var res TokenRes
 
 	ads := fmt.Sprintf("%s/open/auth/token", api.URL)
 
-	params := url.Values{}
-	params.Add("client_id", api.ClientID)
-	params.Add("client_secret", api.ClientSecret)
+	params := map[string]string{
+		"client_id":     api.ClientID,
+		"client_secret": api.ClientSecret,
+	}
 
 	// 发送请求
-	response, err := requests.Requests("GET", ads, params, "", "")
+	client := requests.New("", params)
+	response, err := client.Get(ads)
 	if err != nil {
-		return cfRes, err
+		return res, err
 	}
 
-	bytes, err := io.ReadAll(response.Body)
-	if err != nil {
-		return cfRes, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
+	if err = json.Unmarshal(response.Body(), &res); err != nil {
+		return res, err
 	}
 
-	if err = json.Unmarshal(bytes, &cfRes); err != nil {
-		return cfRes, err
-	}
-
-	return cfRes, nil
+	return res, nil
 }
 
 type QlApi struct {
 	URL    string // 连接地址
 	Token  string // token
 	Params int    // params
+
+	client *requests.Request // client
 }
 
 func InitPanel(url, token string, params int) *QlApi {
@@ -66,6 +62,8 @@ func InitPanel(url, token string, params int) *QlApi {
 		URL:    url,
 		Token:  token,
 		Params: params,
+
+		client: requests.New(token, map[string]string{"t": strconv.Itoa(params)}),
 	}
 }
 
@@ -76,21 +74,13 @@ func (api *QlApi) GetEnvs() (EnvRes, error) {
 	// http://127.0.0.1:5700/api/envs?searchValue=&t=1713865007052
 	ads := fmt.Sprintf("%s/open/envs", api.URL)
 
-	params := url.Values{}
-	params.Add("t", strconv.Itoa(api.Params))
-
 	// 发送请求
-	response, err := requests.Requests("GET", ads, params, "", api.Token)
+	response, err := api.client.Get(ads)
 	if err != nil {
 		return res, err
 	}
 
-	bytes, err := io.ReadAll(response.Body)
-	if err != nil {
-		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
-	}
-
-	if err = json.Unmarshal(bytes, &res); err != nil {
+	if err = json.Unmarshal(response.Body(), &res); err != nil {
 		return res, err
 	}
 
@@ -104,9 +94,6 @@ func (api *QlApi) PostEnvs(env []PostEnv) (PostEnvRes, error) {
 	// http://127.0.0.1:5700/api/envs?t=1713865007052
 	ads := fmt.Sprintf("%s/open/envs", api.URL)
 
-	params := url.Values{}
-	params.Add("t", strconv.Itoa(api.Params))
-
 	// 转换为String
 	bytes, err := json.Marshal(env)
 	if err != nil {
@@ -114,17 +101,12 @@ func (api *QlApi) PostEnvs(env []PostEnv) (PostEnvRes, error) {
 	}
 
 	// 发送请求
-	response, err := requests.Requests("POST", ads, params, string(bytes), api.Token)
+	response, err := api.client.Post(ads, string(bytes))
 	if err != nil {
 		return res, err
 	}
 
-	bytes, err = io.ReadAll(response.Body)
-	if err != nil {
-		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
-	}
-
-	if err = json.Unmarshal(bytes, &res); err != nil {
+	if err = json.Unmarshal(response.Body(), &res); err != nil {
 		return res, err
 	}
 
@@ -138,9 +120,6 @@ func (api *QlApi) PutEnvs(env PutEnv) (PutEnvRes, error) {
 	// http://127.0.0.1:5700/api/envs?t=1713865007052
 	ads := fmt.Sprintf("%s/open/envs", api.URL)
 
-	params := url.Values{}
-	params.Add("t", strconv.Itoa(api.Params))
-
 	// 转换为String
 	bytes, err := json.Marshal(env)
 	if err != nil {
@@ -148,17 +127,12 @@ func (api *QlApi) PutEnvs(env PutEnv) (PutEnvRes, error) {
 	}
 
 	// 发送请求
-	response, err := requests.Requests("PUT", ads, params, string(bytes), api.Token)
+	response, err := api.client.Put(ads, string(bytes))
 	if err != nil {
 		return res, err
 	}
 
-	bytes, err = io.ReadAll(response.Body)
-	if err != nil {
-		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
-	}
-
-	if err = json.Unmarshal(bytes, &res); err != nil {
+	if err = json.Unmarshal(response.Body(), &res); err != nil {
 		return res, err
 	}
 
@@ -172,9 +146,6 @@ func (api *QlApi) PutDisableEnvs(env PutDisableEnv) (PutDisableEnvRes, error) {
 	// http://127.0.0.1:5700/api/envs?t=1713865007052
 	ads := fmt.Sprintf("%s/open/envs/disable", api.URL)
 
-	params := url.Values{}
-	params.Add("t", strconv.Itoa(api.Params))
-
 	// 转换为String
 	bytes, err := json.Marshal(env)
 	if err != nil {
@@ -182,17 +153,12 @@ func (api *QlApi) PutDisableEnvs(env PutDisableEnv) (PutDisableEnvRes, error) {
 	}
 
 	// 发送请求
-	response, err := requests.Requests("PUT", ads, params, string(bytes), api.Token)
+	response, err := api.client.Put(ads, string(bytes))
 	if err != nil {
 		return res, err
 	}
 
-	bytes, err = io.ReadAll(response.Body)
-	if err != nil {
-		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
-	}
-
-	if err = json.Unmarshal(bytes, &res); err != nil {
+	if err = json.Unmarshal(response.Body(), &res); err != nil {
 		return res, err
 	}
 
@@ -206,9 +172,6 @@ func (api *QlApi) PutEnableEnvs(env PutEnableEnv) (PutEnableEnvRes, error) {
 	// http://127.0.0.1:5700/api/envs?t=1713865007052
 	ads := fmt.Sprintf("%s/open/envs/enable", api.URL)
 
-	params := url.Values{}
-	params.Add("t", strconv.Itoa(api.Params))
-
 	// 转换为String
 	bytes, err := json.Marshal(env)
 	if err != nil {
@@ -216,17 +179,12 @@ func (api *QlApi) PutEnableEnvs(env PutEnableEnv) (PutEnableEnvRes, error) {
 	}
 
 	// 发送请求
-	response, err := requests.Requests("PUT", ads, params, string(bytes), api.Token)
+	response, err := api.client.Put(ads, string(bytes))
 	if err != nil {
 		return res, err
 	}
 
-	bytes, err = io.ReadAll(response.Body)
-	if err != nil {
-		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
-	}
-
-	if err = json.Unmarshal(bytes, &res); err != nil {
+	if err = json.Unmarshal(response.Body(), &res); err != nil {
 		return res, err
 	}
 
@@ -240,9 +198,6 @@ func (api *QlApi) DeleteEnvs(env DeleteEnv) (DeleteEnvRes, error) {
 	// http://127.0.0.1:5700/api/envs?t=1713865007052
 	ads := fmt.Sprintf("%s/open/envs", api.URL)
 
-	params := url.Values{}
-	params.Add("t", strconv.Itoa(api.Params))
-
 	// 转换为String
 	bytes, err := json.Marshal(env)
 	if err != nil {
@@ -250,17 +205,12 @@ func (api *QlApi) DeleteEnvs(env DeleteEnv) (DeleteEnvRes, error) {
 	}
 
 	// 发送请求
-	response, err := requests.Requests("DELETE", ads, params, string(bytes), api.Token)
+	response, err := api.client.Delete(ads, string(bytes))
 	if err != nil {
 		return res, err
 	}
 
-	bytes, err = io.ReadAll(response.Body)
-	if err != nil {
-		return res, errors.New(fmt.Sprintf("连接面板失败, 原因: %s", err))
-	}
-
-	if err = json.Unmarshal(bytes, &res); err != nil {
+	if err = json.Unmarshal(response.Body(), &res); err != nil {
 		return res, err
 	}
 
