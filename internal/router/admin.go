@@ -11,8 +11,6 @@ import (
 func InitRouterAdmin(r *gin.RouterGroup) {
 	// 权限认证
 	r.Use(middleware.Auth())
-	// 幂等中间件
-	r.Use(middleware.Idempotent())
 
 	// 用户路由
 	user := controllers.UserController{}
