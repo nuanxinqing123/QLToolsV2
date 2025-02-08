@@ -41,18 +41,18 @@ type Env struct {
 
 // AddEnv 添加变量
 type AddEnv struct {
-	Name          string `json:"name" binding:"required"`     // 名称
-	Remarks       string `json:"remarks"`                     // 备注
-	Quantity      int    `json:"quantity" binding:"required"` // 负载数量
-	Regex         string `json:"regex"`                       // 匹配正则
-	Mode          int    `json:"mode" binding:"required"`     // 模式
-	Division      string `json:"division"`                    // 分隔符
-	RegexUpdate   string `json:"regex_update"`                // 匹配正则
-	EnableKey     bool   `json:"enable_key"`                  // 是否启用KEY
-	IsEnable      bool   `json:"is_enable"`                   // 是否启用变量
-	IsPrompt      bool   `json:"is_prompt"`                   // 是否提示
-	PromptLevel   string `json:"prompt_level"`                // 提示等级
-	PromptContent string `json:"prompt_content"`              // 提示内容
+	Name          string `json:"name" binding:"required"`                   // 名称
+	Remarks       string `json:"remarks"`                                   // 备注
+	Quantity      int    `json:"quantity" binding:"required,min=1,max=999"` // 负载数量
+	Regex         string `json:"regex"`                                     // 匹配正则
+	Mode          int    `json:"mode" binding:"required"`                   // 模式
+	Division      string `json:"division"`                                  // 分隔符
+	RegexUpdate   string `json:"regex_update"`                              // 匹配正则
+	EnableKey     bool   `json:"enable_key"`                                // 是否启用KEY
+	IsEnable      bool   `json:"is_enable"`                                 // 是否启用变量
+	IsPrompt      bool   `json:"is_prompt"`                                 // 是否提示
+	PromptLevel   string `json:"prompt_level"`                              // 提示等级
+	PromptContent string `json:"prompt_content"`                            // 提示内容
 }
 
 // BatchOperationEnv 批量操作
@@ -63,19 +63,19 @@ type BatchOperationEnv struct {
 
 // UpdateEnv 修改
 type UpdateEnv struct {
-	ID            int    `json:"id" binding:"required"`       // ID
-	Name          string `json:"name" binding:"required"`     // 名称
-	Remarks       string `json:"remarks"`                     // 备注
-	Quantity      int    `json:"quantity" binding:"required"` // 负载数量
-	Regex         string `json:"regex"`                       // 匹配正则
-	Mode          int    `json:"mode" binding:"required"`     // 模式
-	Division      string `json:"division"`                    // 分隔符
-	RegexUpdate   string `json:"regex_update"`                // 匹配正则
-	EnableKey     bool   `json:"enable_key"`                  // 是否启用KEY
-	IsEnable      bool   `json:"is_enable"`                   // 是否启用
-	IsPrompt      bool   `json:"is_prompt"`                   // 是否提示
-	PromptLevel   string `json:"prompt_level"`                // 提示等级
-	PromptContent string `json:"prompt_content"`              // 提示内容
+	ID            int    `json:"id" binding:"required"`                     // ID
+	Name          string `json:"name" binding:"required"`                   // 名称
+	Remarks       string `json:"remarks"`                                   // 备注
+	Quantity      int    `json:"quantity" binding:"required,min=1,max=999"` // 负载数量
+	Regex         string `json:"regex"`                                     // 匹配正则
+	Mode          int    `json:"mode" binding:"required"`                   // 模式
+	Division      string `json:"division"`                                  // 分隔符
+	RegexUpdate   string `json:"regex_update"`                              // 匹配正则
+	EnableKey     bool   `json:"enable_key"`                                // 是否启用KEY
+	IsEnable      bool   `json:"is_enable"`                                 // 是否启用
+	IsPrompt      bool   `json:"is_prompt"`                                 // 是否提示
+	PromptLevel   string `json:"prompt_level"`                              // 提示等级
+	PromptContent string `json:"prompt_content"`                            // 提示内容
 }
 
 // BindPanel 绑定面板

@@ -16,19 +16,10 @@ type UserController struct{}
 
 // Router 注册路由
 func (c *UserController) Router(r *gin.RouterGroup) {
-	// 登出
-	r.POST("/logout", c.Logout)
-
 	// 获取用户信息
 	r.GET("/info", c.Info)
 	// 获取登录信息
 	r.GET("/login/info", c.LoginInfo)
-}
-
-// Logout 登出
-func (c *UserController) Logout(ctx *gin.Context) {
-	// 删除Cookie
-	res.ResSuccess(ctx, "退出成功")
 }
 
 // Info 获取用户信息
