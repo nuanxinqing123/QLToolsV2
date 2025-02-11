@@ -49,7 +49,7 @@ func Routers() *gin.Engine {
 	Router.Use(middleware.Cors())
 
 	// 幂等
-	Router.Use(middleware.Idempotent())
+	// Router.Use(middleware.Idempotent())
 
 	// (可选项)
 	// PID 限流基于实例的 CPU 使用率，通过拒绝一定比例的流量, 将实例的 CPU 使用率稳定在设定的阈值上。
