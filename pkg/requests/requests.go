@@ -53,9 +53,7 @@ func New(token string, params map[string]string) *Request {
 
 	// 添加Headers
 	if token != "" {
-		Token := fmt.Sprintf("Bearer %s", token)
-		client.SetHeader("Authorization", Token)
-		client.SetHeader("Token", Token)
+		client.SetAuthToken(token)
 	}
 	client.SetHeader("User-Agent", "QLToolsV2")
 
