@@ -4,4 +4,4 @@ gen:
 	go run cmd/generate/generate.go
 
 docs:
-	swag init -g cmd/main.go -o cmd/docs
+	swag init -g cmd/main.go -o docs
