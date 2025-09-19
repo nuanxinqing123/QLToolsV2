@@ -5,6 +5,8 @@ app:
   address:     "127.0.0.1"
   # 运行端口
   port:        1500
+  # JWT密钥
+  secret:      "QLToolsV2"
 
 db:
   # 数据库类型【mysql、postgresql、sqlite】
