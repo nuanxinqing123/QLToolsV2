@@ -47,5 +47,10 @@ func Routers() *gin.Engine {
 	HealthyCon := controller.NewHealthyController()
 	HealthyCon.HealthyRouter(HealthyGroup)
 
+	// 管理员准入
+	AuthGroup := api.Group("/auth")
+	AuthCon := controller.NewAuthController()
+	AuthCon.AuthRouter(AuthGroup)
+
 	return Router
 }
