@@ -9,7 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://swagger.io/terms/",
+        "termsOfService": "https://swagger.io/terms/",
         "contact": {
             "name": "API Support",
             "url": "https://www.swagger.io/support",
@@ -17,13 +17,430 @@ const docTemplate = `{
         },
         "license": {
             "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
         },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {},
+    "paths": {
+        "/api/auth/captcha": {
+            "get": {
+                "description": "生成算术验证码并返回验证码ID与Base64图片",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "获取验证码",
+                "responses": {
+                    "200": {
+                        "description": "验证码信息",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetCaptchaResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "验证码生成失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "description": "用户登录接口，需要验证码验证，返回访问令牌和刷新令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "用户登录",
+                "parameters": [
+                    {
+                        "description": "登录请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "登录成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.LoginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误或验证码错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "401": {
+                        "description": "认证失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "用户登出接口，注销当前用户的访问令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "用户登出",
+                "responses": {
+                    "200": {
+                        "description": "登出成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.LogoutResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "需要登录",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "登出失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/refresh": {
+            "post": {
+                "description": "使用刷新令牌获取新的访问令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "刷新访问令牌",
+                "parameters": [
+                    {
+                        "description": "刷新令牌请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "刷新成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.RefreshTokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "401": {
+                        "description": "刷新令牌无效",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/register": {
+            "post": {
+                "description": "用户注册接口，需要验证码验证",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "用户注册",
+                "parameters": [
+                    {
+                        "description": "注册请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "注册成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.RegisterResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误或验证码错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "注册失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "response.Data": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/response.ResCode"
+                },
+                "data": {},
+                "msg": {}
+            }
+        },
+        "response.ResCode": {
+            "type": "integer",
+            "format": "int64",
+            "enum": [
+                20000
+            ],
+            "x-enum-varnames": [
+                "CodeSuccess"
+            ]
+        },
+        "schema.GetCaptchaResponse": {
+            "type": "object",
+            "properties": {
+                "captcha_base64": {
+                    "description": "验证码图片Base64",
+                    "type": "string"
+                },
+                "captcha_id": {
+                    "description": "验证码ID",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.LoginRequest": {
+            "type": "object",
+            "required": [
+                "captcha_code",
+                "captcha_id",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "captcha_code": {
+                    "description": "验证码",
+                    "type": "string"
+                },
+                "captcha_id": {
+                    "description": "验证码ID",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "密码",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "用户名",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "description": "访问令牌",
+                    "type": "string"
+                },
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "description": "刷新令牌",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.LogoutResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "description": "刷新Token",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.RefreshTokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "description": "访问令牌",
+                    "type": "string"
+                },
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "captcha_code",
+                "captcha_id",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "captcha_code": {
+                    "description": "验证码",
+                    "type": "string"
+                },
+                "captcha_id": {
+                    "description": "验证码ID",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "密码",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "用户名",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        }
+    },
     "securityDefinitions": {
         "ApiKeyAuth": {
             "description": "Bearer token for API authentication",

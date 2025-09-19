@@ -1,18 +1,282 @@
 basePath: /api
+definitions:
+  response.Data:
+    properties:
+      code:
+        $ref: '#/definitions/response.ResCode'
+      data: {}
+      msg: {}
+    type: object
+  response.ResCode:
+    enum:
+    - 20000
+    format: int64
+    type: integer
+    x-enum-varnames:
+    - CodeSuccess
+  schema.GetCaptchaResponse:
+    properties:
+      captcha_base64:
+        description: 验证码图片Base64
+        type: string
+      captcha_id:
+        description: 验证码ID
+        type: string
+    type: object
+  schema.LoginRequest:
+    properties:
+      captcha_code:
+        description: 验证码
+        type: string
+      captcha_id:
+        description: 验证码ID
+        type: string
+      password:
+        description: 密码
+        type: string
+      username:
+        description: 用户名
+        type: string
+    required:
+    - captcha_code
+    - captcha_id
+    - password
+    - username
+    type: object
+  schema.LoginResponse:
+    properties:
+      access_token:
+        description: 访问令牌
+        type: string
+      message:
+        description: 消息
+        type: string
+      refresh_token:
+        description: 刷新令牌
+        type: string
+    type: object
+  schema.LogoutResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        description: 刷新Token
+        type: string
+    required:
+    - refresh_token
+    type: object
+  schema.RefreshTokenResponse:
+    properties:
+      access_token:
+        description: 访问令牌
+        type: string
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.RegisterRequest:
+    properties:
+      captcha_code:
+        description: 验证码
+        type: string
+      captcha_id:
+        description: 验证码ID
+        type: string
+      password:
+        description: 密码
+        type: string
+      username:
+        description: 用户名
+        type: string
+    required:
+    - captcha_code
+    - captcha_id
+    - password
+    - username
+    type: object
+  schema.RegisterResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
 host: localhost:1500
 info:
   contact:
     email: support@swagger.io
     name: API Support
-    url: http://www.swagger.io/support
+    url: https://www.swagger.io/support
   description: 青龙ToolsV2
   license:
     name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: http://swagger.io/terms/
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: https://swagger.io/terms/
   title: QLToolsV2
   version: "1.0"
-paths: {}
+paths:
+  /api/auth/captcha:
+    get:
+      consumes:
+      - application/json
+      description: 生成算术验证码并返回验证码ID与Base64图片
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 验证码信息
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.GetCaptchaResponse'
+              type: object
+        "500":
+          description: 验证码生成失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 获取验证码
+      tags:
+      - 认证管理
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户登录接口，需要验证码验证，返回访问令牌和刷新令牌
+      parameters:
+      - description: 登录请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登录成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.LoginResponse'
+              type: object
+        "400":
+          description: 请求参数错误或验证码错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "401":
+          description: 认证失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 用户登录
+      tags:
+      - 认证管理
+  /api/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: 用户登出接口，注销当前用户的访问令牌
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登出成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.LogoutResponse'
+              type: object
+        "401":
+          description: 需要登录
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 登出失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 用户登出
+      tags:
+      - 认证管理
+  /api/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: 使用刷新令牌获取新的访问令牌
+      parameters:
+      - description: 刷新令牌请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 刷新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.RefreshTokenResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "401":
+          description: 刷新令牌无效
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 刷新访问令牌
+      tags:
+      - 认证管理
+  /api/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: 用户注册接口，需要验证码验证
+      parameters:
+      - description: 注册请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 注册成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.RegisterResponse'
+              type: object
+        "400":
+          description: 请求参数错误或验证码错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 注册失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 用户注册
+      tags:
+      - 认证管理
 securityDefinitions:
   ApiKeyAuth:
     description: Bearer token for API authentication
