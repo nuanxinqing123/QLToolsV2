@@ -8,7 +8,7 @@ const (
 
 	JWTIssuer = "QLToolsV2"
 
-	// Mysql 数据库类型枚举
+	// Mysql 数据库类型
 	Mysql    = "mysql"
 	Postgres = "postgres"
 	SQLite   = "sqlite"

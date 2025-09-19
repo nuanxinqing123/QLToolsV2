@@ -13,9 +13,9 @@ import (
 
 // JWT配置常量
 const (
-	TokenExpiration  = 24 * time.Hour     // Token过期时间：24小时
-	RefreshTokenExp  = 7 * 24 * time.Hour // 刷新Token过期时间：7天
-	TokenCachePrefix = "jwt:token:"       // Cache中Token的前缀
+	TokenExpiration  = 2 * time.Hour       // Token过期时间：2小时
+	RefreshTokenExp  = 30 * 24 * time.Hour // 刷新Token过期时间：30天
+	TokenCachePrefix = "jwt:token:"        // Cache中Token的前缀
 )
 
 // JWTClaims JWT载荷结构
