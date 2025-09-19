@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/initializer"
+	"github.com/nuanxinqing123/QLToolsV2/internal/repository"
 	"go.uber.org/zap"
 )
 
@@ -46,7 +47,7 @@ func Start() {
 		// 初始化表
 		initializer.RegisterTables(config.DB)
 		// 设置 Gorm Gen 使用的默认数据库
-		// repository.SetDefault(config.DB)
+		repository.SetDefault(config.DB)
 		config.Log.Info("数据库连接成功")
 	}
 

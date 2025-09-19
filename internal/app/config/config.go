@@ -1,8 +1,8 @@
 package config
 
 import (
+	"github.com/bluele/gcache"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config/autoload"
-	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -18,6 +18,6 @@ var (
 	Config Configuration
 	Log    *zap.Logger
 	DB     *gorm.DB
-	Cache  *redis.Client
+	Cache  gcache.Cache
 	VP     *viper.Viper
 )

@@ -1,10 +1,9 @@
 package initializer
 
 import (
-	_redis "github.com/nuanxinqing123/QLToolsV2/internal/app/initializer/cache/redis"
-	"github.com/redis/go-redis/v9"
+	"github.com/bluele/gcache"
 )
 
-func Cache() *redis.Client {
-	return _redis.CacheRedis()
+func Cache() gcache.Cache {
+	return gcache.New(256).ARC().Build()
 }
