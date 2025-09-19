@@ -80,8 +80,8 @@ func (j *JWTManager) GenerateTokenPair(userID int64) (accessToken, refreshToken 
 	}
 
 	// 将Token存储到Cache中，用于主动注销管理
-	accessKey := TokenCachePrefix + "access:" + strconv.FormatInt(userID, 10)
-	refreshKey := TokenCachePrefix + "refresh:" + strconv.FormatInt(userID, 10)
+	accessKey := TokenCachePrefix + "access"
+	refreshKey := TokenCachePrefix + "refresh"
 
 	// 存储访问Token（设置过期时间）
 	if err = j.cache.SetWithExpire(accessKey, accessToken, TokenExpiration); err != nil {
@@ -118,9 +118,9 @@ func (j *JWTManager) ParseToken(tokenString string) (*JWTClaims, error) {
 	// 检查Token是否在Cache中存在（用于验证是否已被注销）
 	var cacheKey string
 	if claims.TokenType == "access" {
-		cacheKey = TokenCachePrefix + "access:" + strconv.FormatInt(claims.UserID, 10)
+		cacheKey = TokenCachePrefix + "access"
 	} else {
-		cacheKey = TokenCachePrefix + "refresh:" + strconv.FormatInt(claims.UserID, 10)
+		cacheKey = TokenCachePrefix + "refresh"
 	}
 
 	storedToken, err := j.cache.Get(cacheKey)
@@ -137,10 +137,10 @@ func (j *JWTManager) ParseToken(tokenString string) (*JWTClaims, error) {
 }
 
 // RevokeToken 注销Token（删除Cache中的记录）
-func (j *JWTManager) RevokeToken(userID int64) error {
+func (j *JWTManager) RevokeToken() error {
 	// 删除访问Token和刷新Token
-	accessKey := TokenCachePrefix + "access:" + strconv.FormatInt(userID, 10)
-	refreshKey := TokenCachePrefix + "refresh:" + strconv.FormatInt(userID, 10)
+	accessKey := TokenCachePrefix + "access"
+	refreshKey := TokenCachePrefix + "refresh"
 
 	j.cache.Remove(accessKey)
 	j.cache.Remove(refreshKey)
@@ -182,7 +182,7 @@ func (j *JWTManager) RefreshAccessToken(refreshToken string) (newAccessToken str
 	}
 
 	// 更新Cache中的访问Token
-	accessKey := TokenCachePrefix + "access:" + strconv.FormatInt(claims.UserID, 10)
+	accessKey := TokenCachePrefix + "access"
 	if err = j.cache.SetWithExpire(accessKey, newAccessToken, TokenExpiration); err != nil {
 		return "", fmt.Errorf("更新Cache中的访问token失败: %w", err)
 	}
