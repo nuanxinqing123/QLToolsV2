@@ -5,8 +5,11 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
 	"github.com/nuanxinqing123/QLToolsV2/internal/controller"
 	"github.com/nuanxinqing123/QLToolsV2/internal/middleware"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
 
@@ -31,6 +34,11 @@ func Routers() *gin.Engine {
 	Router.GET("/ping", func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
 	})
+
+	// 注册Swagger
+	if config.Config.App.Mode == gin.DebugMode {
+		Router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 
 	api := Router.Group("/api")
 
