@@ -1,0 +1,22 @@
+basePath: /api
+host: localhost:1500
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: 青龙ToolsV2
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: QLToolsV2
+  version: "1.0"
+paths: {}
+securityDefinitions:
+  ApiKeyAuth:
+    description: Bearer token for API authentication
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

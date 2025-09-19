@@ -1,0 +1,29 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "青龙ToolsV2",
+        "title": "QLToolsV2",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:1500",
+    "basePath": "/api",
+    "paths": {},
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "Bearer token for API authentication",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}
