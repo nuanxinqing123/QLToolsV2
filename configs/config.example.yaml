@@ -4,7 +4,7 @@ app:
   # 运行地址【不懂请写: 0.0.0.0】
   address:     "127.0.0.1"
   # 运行端口
-  port:        8090
+  port:        1500
 
 db:
   # 数据库类型【mysql、postgresql、sqlite】
@@ -14,7 +14,7 @@ db:
   # 数据库连接端口
   port:        3306
   # 数据库名称
-  name:        "flyingbird"
+  name:        "ql_tools_v2"
   # 数据库用户名
   username:    "root"
   # 数据库密码
@@ -33,16 +33,3 @@ db:
   log-zap: false
   # 日志级别【info、warn、error、silent】
   log-level: "info"
-
-# 仅支持Redis
-cache:
-  # 缓存连接地址
-  host:     "127.0.0.1"
-  # 缓存连接端口
-  port:        6379
-  # 缓存密码
-  password:    "<PASSWORD>"
-  # 缓存数据库
-  database:    0
-  # 缓存连接池大小
-  pool-size:   10
