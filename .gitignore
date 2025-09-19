@@ -22,3 +22,14 @@ logs/*
 .idea
 .idea/*
 app.db
+*.log
+temp/*
+backend/temp/*
+.DS_Store
+celerybeat-schedule.db
+backend/log/*
+.windsurf
+.cursor
+.settings
+.vscode
+config.yaml

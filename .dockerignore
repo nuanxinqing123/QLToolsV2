@@ -1,5 +1,51 @@
-Dockerfile
-.dockerignore
-README.*
-.github
+# git
 .git
+.gitignore
+.gitattributes
+
+# docs file
+README.md
+*.md
+docs/
+
+# dev 文件
+.env
+.env.local
+.env.example
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# log file
+*.log
+logs/
+backend/log/
+
+# temporary files
+temp/
+backend/temp/
+*.tmp
+*.temp
+
+# DB file
+*.db
+*.sqlite3
+
+# deployment files
+deploy/
+docker-compose*.yml
+Dockerfile.base
+
+# test
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
