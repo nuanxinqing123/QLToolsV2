@@ -47,16 +47,16 @@ func Routers() *gin.Engine {
 	HealthyCon := controller.NewHealthyController()
 	HealthyCon.HealthyRouter(HealthyGroup)
 
-	// 管理员准入
+	// 认证校验
 	AuthGroup := api.Group("/auth")
 	AuthCon := controller.NewAuthController()
 	AuthCon.AuthRouter(AuthGroup)
 
-	// 认证
+	// 认证接口
 	authAPI := api.Group("")
 	authAPI.Use(middleware.JWTAuth()) // 校验请求认证
 	{
-		// 认证通过
+		// 认证
 		AuthRequiredGroup := authAPI.Group("/auth")
 		AuthRequiredCon := controller.NewAuthRequiredController()
 		AuthRequiredCon.AuthRequiredRouter(AuthRequiredGroup)
