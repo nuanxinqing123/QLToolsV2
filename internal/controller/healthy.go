@@ -26,7 +26,7 @@ func (c *HealthyController) HealthyRouter(r *gin.RouterGroup) {
 // Healthy 健康检查
 func (c *HealthyController) Healthy(ctx *gin.Context) {
 	// 业务处理
-	resCode, msg := c.service.CheckHealth(ctx)
+	resCode, msg := c.service.CheckHealth()
 	if resCode == res.CodeSuccess {
 		res.ResSuccess(ctx, msg) // 成功
 	} else {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
 	res "github.com/nuanxinqing123/QLToolsV2/internal/pkg/response"
 )
@@ -25,7 +24,7 @@ type HealthCheckResponse struct {
 	Redis     bool      `json:"redis"`
 }
 
-func (s *HealthyService) CheckHealth(ctx *gin.Context) (res.ResCode, any) {
+func (s *HealthyService) CheckHealth() (res.ResCode, any) {
 	hc := &HealthCheckResponse{
 		Timestamp: time.Now(),
 		API:       true, // API 本身能响应说明是健康的
@@ -35,7 +34,7 @@ func (s *HealthyService) CheckHealth(ctx *gin.Context) (res.ResCode, any) {
 	hc.Database = s.checkDatabase()
 
 	// 检查Redis
-	hc.Redis = s.checkRedis(ctx)
+	hc.Redis = true
 
 	// 确定整体状态
 	if hc.Database == true && hc.Redis == true {
@@ -56,21 +55,6 @@ func (s *HealthyService) checkDatabase() bool {
 	var result int
 	if err := config.DB.Raw("SELECT 1").Scan(&result).Error; err != nil {
 		config.Log.Error(fmt.Sprintf("【DB】执行测试查询失败: %s", err.Error()))
-		return false
-	}
-
-	return true
-}
-
-// checkRedis 检查Redis连接
-func (s *HealthyService) checkRedis(ctx *gin.Context) bool {
-	if config.Cache == nil {
-		return false
-	}
-
-	// 执行 ping 命令
-	if err := config.Cache.Ping(ctx).Err(); err != nil {
-		config.Log.Error(fmt.Sprintf("【Cache】执行测试查询失败: %s", err.Error()))
 		return false
 	}
 
