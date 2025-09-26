@@ -54,7 +54,7 @@ func Routers() *gin.Engine {
 
 	// 认证
 	authAPI := api.Group("")
-
+	authAPI.Use(middleware.JWTAuth()) // 校验请求认证
 	{
 		// 认证通过
 		AuthRequiredGroup := authAPI.Group("/auth")
