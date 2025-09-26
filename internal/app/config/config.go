@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/bluele/gcache"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config/autoload"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -19,5 +20,6 @@ var (
 	Log    *zap.Logger
 	DB     *gorm.DB
 	Cache  gcache.Cache
+	JSON   jsoniter.API
 	VP     *viper.Viper
 )

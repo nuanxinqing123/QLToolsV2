@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/initializer"
 	"github.com/nuanxinqing123/QLToolsV2/internal/repository"
@@ -59,6 +60,9 @@ func Start() {
 	} else {
 		config.Log.Info("Redis连接成功")
 	}
+
+	// 初始化JSON编解码器
+	config.JSON = jsoniter.ConfigCompatibleWithStandardLibrary
 
 	router := initializer.Routers()
 
