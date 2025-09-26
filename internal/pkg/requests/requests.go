@@ -33,6 +33,11 @@ func New() *Request {
 	}
 }
 
+// SetHeader 设置请求头
+func (r *Request) SetHeader(header, value string) {
+	r.client.SetHeader(header, value)
+}
+
 // Get 发送GET请求
 // url: 请求地址
 // params: URL查询参数
