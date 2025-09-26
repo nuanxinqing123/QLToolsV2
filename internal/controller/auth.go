@@ -38,15 +38,15 @@ func NewAuthRequiredController() *AuthRequiredController {
 // AuthRouter 认证相关路由注册
 func (ctrl *AuthController) AuthRouter(router *gin.RouterGroup) {
 	// 无需认证的接口
-	router.GET("/captcha", ctrl.GetCaptcha) // 算术验证码
-	router.POST("/login", ctrl.Login)       // 用户登录
-	router.POST("/register", ctrl.Register) // 用户注册
+	router.GET("/captcha", ctrl.GetCaptcha)    // 算术验证码
+	router.POST("/login", ctrl.Login)          // 用户登录
+	router.POST("/register", ctrl.Register)    // 用户注册
+	router.POST("/refresh", ctrl.RefreshToken) // 刷新Token
 }
 
 // AuthRequiredRouter 认证相关路由注册（携带token）
 func (ctrl *AuthRequiredController) AuthRequiredRouter(router *gin.RouterGroup) {
-	router.GET("/logout", ctrl.Logout)
-	router.POST("/refresh", ctrl.RefreshToken) // 刷新Token
+	router.GET("/logout", ctrl.Logout) // 用户登出
 }
 
 // GetCaptcha 生成算术验证码并返回ID与Base64图片
@@ -205,7 +205,7 @@ func (ctrl *AuthRequiredController) Logout(c *gin.Context) {
 // @Failure 400 {object} response.Data "请求参数错误"
 // @Failure 401 {object} response.Data "刷新令牌无效"
 // @Router /api/auth/refresh [post]
-func (ctrl *AuthRequiredController) RefreshToken(c *gin.Context) {
+func (ctrl *AuthController) RefreshToken(c *gin.Context) {
 	// 解析请求参数
 	var req schema.RefreshTokenRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
