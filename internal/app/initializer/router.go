@@ -52,5 +52,15 @@ func Routers() *gin.Engine {
 	AuthCon := controller.NewAuthController()
 	AuthCon.AuthRouter(AuthGroup)
 
+	// 认证
+	authAPI := api.Group("")
+
+	{
+		// 认证通过
+		AuthRequiredGroup := authAPI.Group("/auth")
+		AuthRequiredCon := controller.NewAuthRequiredController()
+		AuthRequiredCon.AuthRequiredRouter(AuthRequiredGroup)
+	}
+
 	return Router
 }
