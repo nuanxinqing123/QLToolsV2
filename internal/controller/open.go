@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nuanxinqing123/QLToolsV2/internal/middleware"
 	"github.com/nuanxinqing123/QLToolsV2/internal/pkg/response"
 	"github.com/nuanxinqing123/QLToolsV2/internal/schema"
 	"github.com/nuanxinqing123/QLToolsV2/internal/service"
@@ -25,7 +26,11 @@ func (c *OpenController) OpenRouter(r *gin.RouterGroup) {
 	r.POST("/check-cdk", c.CheckCDK)                   // 卡密检查
 	r.GET("/services", c.GetOnlineServices)            // 获取在线服务
 	r.GET("/slots/:env_id", c.CalculateAvailableSlots) // 计算剩余位置
-	r.POST("/submit", c.SubmitVariable)                // 提交变量
+
+	// 提交变量接口使用更严格的限速
+	submitGroup := r.Group("")
+	submitGroup.Use(middleware.SubmitAPIRateLimit()) // 更严格的限速：每秒2个请求，桶容量5
+	submitGroup.POST("/submit", c.SubmitVariable)    // 提交变量
 }
 
 // CheckCDK 检查卡密

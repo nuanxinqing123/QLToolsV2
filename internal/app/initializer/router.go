@@ -48,8 +48,9 @@ func Routers() *gin.Engine {
 	HealthyCon := controller.NewHealthyController()
 	HealthyCon.HealthyRouter(HealthyGroup)
 
-	// 公开服务
+	// 公开服务（应用令牌桶限速）
 	OpenGroup := api.Group("/open")
+	OpenGroup.Use(middleware.OpenAPIRateLimit()) // 应用令牌桶限速中间件
 	OpenCon := controller.NewOpenController()
 	OpenCon.OpenRouter(OpenGroup)
 

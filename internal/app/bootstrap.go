@@ -64,16 +64,20 @@ func Start() {
 	// 初始化JSON编解码器
 	config.JSON = jsoniter.ConfigCompatibleWithStandardLibrary
 
+	// 启动限速器清理任务
+	initializer.StartRateLimitCleanup()
+
 	router := initializer.Routers()
 
 	fmt.Println(" ")
-	if config.Config.App.Mode == gin.DebugMode {
+	switch config.Config.App.Mode {
+	case gin.DebugMode:
 		fmt.Println("运行模式: Debug模式")
 		gin.SetMode(gin.DebugMode)
-	} else if config.Config.App.Mode == gin.TestMode {
+	case gin.TestMode:
 		fmt.Println("运行模式: Test模式")
 		gin.SetMode(gin.TestMode)
-	} else {
+	default:
 		fmt.Println("运行模式: Release模式")
 		gin.SetMode(gin.ReleaseMode)
 	}

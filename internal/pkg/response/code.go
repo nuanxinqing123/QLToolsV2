@@ -12,6 +12,7 @@ const (
 	CodeInvalidToken
 	CodeNeedLogin
 	CodeGenericError
+	CodeTooManyRequests
 )
 
 var codeMsgMap = map[ResCode]string{
@@ -21,9 +22,10 @@ var codeMsgMap = map[ResCode]string{
 	CodeServerBusy:             "系统繁忙，请稍候再试",
 	CodeInvalidRouterRequested: "请求无效路由",
 
-	CodeInvalidToken: "无效的Token",
-	CodeNeedLogin:    "未登录",
-	CodeGenericError: "Error",
+	CodeInvalidToken:    "无效的Token",
+	CodeNeedLogin:       "未登录",
+	CodeGenericError:    "Error",
+	CodeTooManyRequests: "请求过于频繁，请稍后再试",
 }
 
 func (c ResCode) Msg() string {
