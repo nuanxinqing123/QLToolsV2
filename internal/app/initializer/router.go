@@ -65,6 +65,11 @@ func Routers() *gin.Engine {
 		PanelGroup := authAPI.Group("/panel")
 		PanelCon := controller.NewPanelController()
 		PanelCon.PanelRouter(PanelGroup)
+
+		// 变量管理
+		EnvGroup := authAPI.Group("/env")
+		EnvCon := controller.NewEnvController()
+		EnvCon.EnvRouter(EnvGroup)
 	}
 
 	return Router
