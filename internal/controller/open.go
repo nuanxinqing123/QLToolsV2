@@ -38,7 +38,7 @@ func (c *OpenController) OpenRouter(r *gin.RouterGroup) {
 // @Success 200 {object} response.Data{data=schema.CheckCDKResponse} "检查成功"
 // @Failure 400 {object} response.Data "请求参数错误"
 // @Failure 500 {object} response.Data "检查失败"
-// @Router /open/check-cdk [post]
+// @Router /api/open/check-cdk [post]
 func (c *OpenController) CheckCDK(ctx *gin.Context) {
 	// 解析请求参数
 	var req schema.CheckCDKRequest
@@ -65,7 +65,7 @@ func (c *OpenController) CheckCDK(ctx *gin.Context) {
 // @Produce json
 // @Success 200 {object} response.Data{data=schema.GetOnlineServicesResponse} "获取成功"
 // @Failure 500 {object} response.Data "获取失败"
-// @Router /open/services [get]
+// @Router /api/open/services [get]
 func (c *OpenController) GetOnlineServices(ctx *gin.Context) {
 	// 直接调用服务层获取在线服务，不需要解析参数
 	resp, err := c.service.GetOnlineServices()
@@ -88,7 +88,7 @@ func (c *OpenController) GetOnlineServices(ctx *gin.Context) {
 // @Failure 400 {object} response.Data "请求参数错误"
 // @Failure 404 {object} response.Data "环境变量不存在"
 // @Failure 500 {object} response.Data "计算失败"
-// @Router /open/slots/{env_id} [get]
+// @Router /api/open/slots/{env_id} [get]
 func (c *OpenController) CalculateAvailableSlots(ctx *gin.Context) {
 	// 解析路径参数
 	envIDStr := ctx.Param("env_id")
@@ -118,7 +118,7 @@ func (c *OpenController) CalculateAvailableSlots(ctx *gin.Context) {
 // @Success 200 {object} response.Data{data=schema.SubmitVariableResponse} "提交成功"
 // @Failure 400 {object} response.Data "请求参数错误"
 // @Failure 500 {object} response.Data "提交失败"
-// @Router /open/submit [post]
+// @Router /api/open/submit [post]
 func (c *OpenController) SubmitVariable(ctx *gin.Context) {
 	// 解析请求参数
 	var req schema.SubmitVariableRequest

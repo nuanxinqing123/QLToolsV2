@@ -1816,6 +1816,138 @@ paths:
       summary: 更新环境变量
       tags:
       - 环境变量管理
+  /api/open/check-cdk:
+    post:
+      consumes:
+      - application/json
+      description: 检查卡密是否存在、是否禁用、使用次数是否足够
+      parameters:
+      - description: 检查卡密请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.CheckCDKRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 检查成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.CheckCDKResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 检查失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 检查卡密
+      tags:
+      - 公开接口
+  /api/open/services:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有启用的环境变量数据，再查询变量下面所有绑定并启用的面板数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.GetOnlineServicesResponse'
+              type: object
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 获取在线服务
+      tags:
+      - 公开接口
+  /api/open/slots/{env_id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据变量配置的位置数，从绑定的面板中计算剩余可用位置数。如果位置数小于0，则固定返回0
+      parameters:
+      - description: 环境变量ID
+        in: path
+        name: env_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 计算成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.CalculateAvailableSlotsResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 环境变量不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 计算失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 计算剩余位置
+      tags:
+      - 公开接口
+  /api/open/submit:
+    post:
+      consumes:
+      - application/json
+      description: 提交环境变量，包含完整的验证流程：空内容检查、变量存在性检查、KEY验证、正则校验、位置计算、插件处理、数据提交
+      parameters:
+      - description: 提交变量请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.SubmitVariableRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 提交成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.SubmitVariableResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 提交失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 提交变量
+      tags:
+      - 公开接口
   /api/panel/{id}:
     delete:
       consumes:
@@ -2600,138 +2732,6 @@ paths:
       summary: 更新插件
       tags:
       - 插件管理
-  /open/check-cdk:
-    post:
-      consumes:
-      - application/json
-      description: 检查卡密是否存在、是否禁用、使用次数是否足够
-      parameters:
-      - description: 检查卡密请求参数
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/schema.CheckCDKRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 检查成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Data'
-            - properties:
-                data:
-                  $ref: '#/definitions/schema.CheckCDKResponse'
-              type: object
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/response.Data'
-        "500":
-          description: 检查失败
-          schema:
-            $ref: '#/definitions/response.Data'
-      summary: 检查卡密
-      tags:
-      - 公开接口
-  /open/services:
-    get:
-      consumes:
-      - application/json
-      description: 获取所有启用的环境变量数据，再查询变量下面所有绑定并启用的面板数据
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 获取成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Data'
-            - properties:
-                data:
-                  $ref: '#/definitions/schema.GetOnlineServicesResponse'
-              type: object
-        "500":
-          description: 获取失败
-          schema:
-            $ref: '#/definitions/response.Data'
-      summary: 获取在线服务
-      tags:
-      - 公开接口
-  /open/slots/{env_id}:
-    get:
-      consumes:
-      - application/json
-      description: 根据变量配置的位置数，从绑定的面板中计算剩余可用位置数。如果位置数小于0，则固定返回0
-      parameters:
-      - description: 环境变量ID
-        in: path
-        name: env_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 计算成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Data'
-            - properties:
-                data:
-                  $ref: '#/definitions/schema.CalculateAvailableSlotsResponse'
-              type: object
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/response.Data'
-        "404":
-          description: 环境变量不存在
-          schema:
-            $ref: '#/definitions/response.Data'
-        "500":
-          description: 计算失败
-          schema:
-            $ref: '#/definitions/response.Data'
-      summary: 计算剩余位置
-      tags:
-      - 公开接口
-  /open/submit:
-    post:
-      consumes:
-      - application/json
-      description: 提交环境变量，包含完整的验证流程：空内容检查、变量存在性检查、KEY验证、正则校验、位置计算、插件处理、数据提交
-      parameters:
-      - description: 提交变量请求参数
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/schema.SubmitVariableRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 提交成功
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Data'
-            - properties:
-                data:
-                  $ref: '#/definitions/schema.SubmitVariableResponse'
-              type: object
-        "400":
-          description: 请求参数错误
-          schema:
-            $ref: '#/definitions/response.Data'
-        "500":
-          description: 提交失败
-          schema:
-            $ref: '#/definitions/response.Data'
-      summary: 提交变量
-      tags:
-      - 公开接口
 securityDefinitions:
   ApiKeyAuth:
     description: Bearer token for API authentication
