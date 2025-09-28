@@ -2,7 +2,6 @@ package plugin
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -16,20 +15,20 @@ import (
 
 // ExecutionContext 插件执行上下文
 type ExecutionContext struct {
-	PluginID  int64           `json:"plugin_id"` // 插件ID
-	EnvID     int64           `json:"env_id"`    // 环境变量ID
-	EnvValue  string          `json:"env_value"` // 环境变量值
-	Config    json.RawMessage `json:"config"`    // 插件配置
-	Timestamp int64           `json:"timestamp"` // 时间戳
+	PluginID  int64  `json:"plugin_id"` // 插件ID
+	EnvID     int64  `json:"env_id"`    // 环境变量ID
+	EnvValue  string `json:"env_value"` // 环境变量值
+	Config    []byte `json:"config"`    // 插件配置
+	Timestamp int64  `json:"timestamp"` // 时间戳
 }
 
 // ExecutionResult 插件执行结果
 type ExecutionResult struct {
-	Success       bool            `json:"success"`        // 执行是否成功
-	OutputData    json.RawMessage `json:"output_data"`    // 输出数据
-	ErrorMessage  string          `json:"error_message"`  // 错误信息
-	ExecutionTime int             `json:"execution_time"` // 执行耗时(毫秒)
-	StackTrace    string          `json:"stack_trace"`    // 错误堆栈
+	Success       bool   `json:"success"`        // 执行是否成功
+	OutputData    []byte `json:"output_data"`    // 输出数据
+	ErrorMessage  string `json:"error_message"`  // 错误信息
+	ExecutionTime int    `json:"execution_time"` // 执行耗时(毫秒)
+	StackTrace    string `json:"stack_trace"`    // 错误堆栈
 }
 
 // Engine 插件执行引擎
@@ -128,7 +127,7 @@ func (e *Engine) executeScript(script string, execCtx *ExecutionContext, result 
 	// 处理返回值
 	if resultValue != nil && !goja.IsUndefined(resultValue) {
 		exported := resultValue.Export()
-		if outputBytes, err := json.Marshal(exported); err == nil {
+		if outputBytes, err := config.JSON.Marshal(exported); err == nil {
 			result.OutputData = outputBytes
 		} else {
 			result.ErrorMessage = fmt.Sprintf("无法序列化输出数据: %v", err)
@@ -153,7 +152,7 @@ func (e *Engine) setupGlobalObjects(vm *goja.Runtime, execCtx *ExecutionContext)
 	// 设置配置数据
 	if len(execCtx.Config) > 0 {
 		var configData interface{}
-		if err := json.Unmarshal(execCtx.Config, &configData); err == nil {
+		if err := config.JSON.Unmarshal(execCtx.Config, &configData); err == nil {
 			if errSet := vm.Set("config", configData); errSet != nil {
 				config.Log.Warn(errSet.Error()) // 仅做错误记录
 			}
@@ -190,13 +189,13 @@ func (e *Engine) setupGlobalObjects(vm *goja.Runtime, execCtx *ExecutionContext)
 	if errSet := vm.Set("JSON", map[string]interface{}{
 		"parse": func(str string) interface{} {
 			var result interface{}
-			if err := json.Unmarshal([]byte(str), &result); err != nil {
+			if err := config.JSON.Unmarshal([]byte(str), &result); err != nil {
 				panic(vm.ToValue(err.Error()))
 			}
 			return result
 		},
 		"stringify": func(obj interface{}) string {
-			bytes, err := json.Marshal(obj)
+			bytes, err := config.JSON.Marshal(obj)
 			if err != nil {
 				panic(vm.ToValue(err.Error()))
 			}
@@ -248,7 +247,7 @@ func (e *Engine) TestScript(script string, envValue string) *ExecutionResult {
 		PluginID:  0,
 		EnvID:     0,
 		EnvValue:  envValue,
-		Config:    json.RawMessage(`{}`),
+		Config:    []byte(`{}`),
 		Timestamp: time.Now().Unix(),
 	}
 
@@ -299,7 +298,7 @@ func (e *Engine) makeHTTPRequest(options map[string]interface{}) interface{} {
 			body = strings.NewReader(dataStr)
 		} else {
 			// 尝试JSON序列化
-			if jsonData, err := json.Marshal(data); err == nil {
+			if jsonData, err := config.JSON.Marshal(data); err == nil {
 				body = strings.NewReader(string(jsonData))
 			}
 		}
@@ -350,7 +349,7 @@ func (e *Engine) makeHTTPRequest(options map[string]interface{}) interface{} {
 
 	// 尝试解析JSON响应
 	var jsonResp interface{}
-	if err := json.Unmarshal(respBody, &jsonResp); err == nil {
+	if err := config.JSON.Unmarshal(respBody, &jsonResp); err == nil {
 		return jsonResp
 	}
 

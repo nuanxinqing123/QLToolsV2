@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -332,10 +331,16 @@ func (s *PluginService) TestPlugin(req schema.TestPluginRequest) (*schema.TestPl
 	// 执行测试
 	result := s.engine.TestScript(req.ScriptContent, req.TestEnvValue)
 
+	// 将输出数据转换为string类型
+	var outputDataStr string
+	if len(result.OutputData) > 0 {
+		outputDataStr = string(result.OutputData)
+	}
+
 	return &schema.TestPluginResponse{
 		Success:       result.Success,
 		ExecutionTime: result.ExecutionTime,
-		OutputData:    result.OutputData,
+		OutputData:    outputDataStr,
 		ErrorMessage:  result.ErrorMessage,
 	}, nil
 }
@@ -365,9 +370,15 @@ func (s *PluginService) ExecutePluginsForEnv(envID int64, envValue string) (*plu
 
 	// 如果没有插件，返回原始值
 	if len(results) == 0 {
+		// 构建返回数据
+		resultData := map[string]interface{}{
+			"bool": true,
+			"env":  envValue,
+		}
+		outputBytes, _ := config.JSON.Marshal(resultData)
 		return &plugin.ExecutionResult{
 			Success:    true,
-			OutputData: json.RawMessage(fmt.Sprintf(`{"bool": true, "env": "%s"}`, envValue)),
+			OutputData: outputBytes,
 		}, nil
 	}
 
@@ -375,11 +386,11 @@ func (s *PluginService) ExecutePluginsForEnv(envID int64, envValue string) (*plu
 	var lastResult *plugin.ExecutionResult
 	for _, item := range results {
 		// 构建执行上下文
-		var configData json.RawMessage
+		var configData []byte
 		if item.Config != nil {
-			configData = json.RawMessage(*item.Config)
+			configData = []byte(*item.Config)
 		} else {
-			configData = json.RawMessage("{}")
+			configData = []byte("{}")
 		}
 
 		execCtx := &plugin.ExecutionContext{
@@ -407,7 +418,7 @@ func (s *PluginService) ExecutePluginsForEnv(envID int64, envValue string) (*plu
 		// 如果插件返回了新的环境变量值，更新envValue用于下一个插件
 		if len(result.OutputData) > 0 {
 			var output map[string]interface{}
-			if err := json.Unmarshal(result.OutputData, &output); err == nil {
+			if err := config.JSON.Unmarshal(result.OutputData, &output); err == nil {
 				if newEnv, ok := output["env"].(string); ok {
 					envValue = newEnv
 				}
@@ -499,9 +510,8 @@ func (s *PluginService) BindPluginToEnv(req schema.BindPluginToEnvRequest) (*sch
 
 	// 准备配置数据
 	var configStr *string
-	if len(req.Config) > 0 {
-		configStrVal := string(req.Config)
-		configStr = &configStrVal
+	if req.Config != "" {
+		configStr = &req.Config
 	}
 
 	if existingBinding != nil {
@@ -601,9 +611,9 @@ func (s *PluginService) GetPluginEnvs(req schema.GetPluginEnvsRequest) (*schema.
 	// 转换为响应格式
 	envs := make([]schema.PluginEnvRelationInfo, 0, len(results))
 	for _, result := range results {
-		var configData json.RawMessage
+		var configData string
 		if result.Config != nil {
-			configData = json.RawMessage(*result.Config)
+			configData = *result.Config
 		}
 
 		envs = append(envs, schema.PluginEnvRelationInfo{
@@ -682,12 +692,12 @@ func (s *PluginService) GetPluginExecutionLogs(req schema.GetPluginExecutionLogs
 	list := make([]schema.PluginExecutionLogInfo, 0, len(logs))
 	for _, log := range logs {
 		// 处理可选字段
-		var inputData, outputData json.RawMessage
+		var inputData, outputData string
 		if log.InputData != nil {
-			inputData = json.RawMessage(*log.InputData)
+			inputData = *log.InputData
 		}
 		if log.OutputData != nil {
-			outputData = json.RawMessage(*log.OutputData)
+			outputData = *log.OutputData
 		}
 
 		var errorMessage string
