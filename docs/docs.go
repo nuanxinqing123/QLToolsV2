@@ -290,6 +290,488 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/panel/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "添加新的面板配置，需要提供面板名称、连接地址、Client_ID和Client_Secret",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "面板管理"
+                ],
+                "summary": "添加面板",
+                "parameters": [
+                    {
+                        "description": "添加面板请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.AddPanelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "添加成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.AddPanelResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "添加失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/panel/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "分页获取面板列表，支持按名称搜索和状态筛选",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "面板管理"
+                ],
+                "summary": "获取面板列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "面板名称（模糊搜索）",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否启用",
+                        "name": "is_enable",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetPanelListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/panel/refresh-token": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "重新获取面板的访问Token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "面板管理"
+                ],
+                "summary": "刷新面板Token",
+                "parameters": [
+                    {
+                        "description": "刷新Token请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.RefreshPanelTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "刷新成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.RefreshPanelTokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "面板不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "刷新失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/panel/toggle-status": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "启用或禁用面板",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "面板管理"
+                ],
+                "summary": "切换面板状态",
+                "parameters": [
+                    {
+                        "description": "切换状态请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.TogglePanelStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "切换成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.TogglePanelStatusResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "面板不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "切换失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/panel/update": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新面板配置信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "面板管理"
+                ],
+                "summary": "更新面板",
+                "parameters": [
+                    {
+                        "description": "更新面板请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.UpdatePanelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.UpdatePanelResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "面板不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "更新失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/panel/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据面板ID获取面板详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "面板管理"
+                ],
+                "summary": "获取面板信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "面板ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetPanelResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "面板不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据面板ID删除面板（软删除）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "面板管理"
+                ],
+                "summary": "删除面板",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "面板ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.DeletePanelResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "面板不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "删除失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -313,6 +795,55 @@ const docTemplate = `{
                 "CodeSuccess"
             ]
         },
+        "schema.AddPanelRequest": {
+            "type": "object",
+            "required": [
+                "client_id",
+                "client_secret",
+                "name",
+                "url"
+            ],
+            "properties": {
+                "client_id": {
+                    "description": "Client_ID",
+                    "type": "string"
+                },
+                "client_secret": {
+                    "description": "Client_Secret",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "面板名称",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "连接地址",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.AddPanelResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "面板ID",
+                    "type": "integer"
+                },
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.DeletePanelResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
         "schema.GetCaptchaResponse": {
             "type": "object",
             "properties": {
@@ -322,6 +853,67 @@ const docTemplate = `{
                 },
                 "captcha_id": {
                     "description": "验证码ID",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.GetPanelListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "面板列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.GetPanelResponse"
+                    }
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.GetPanelResponse": {
+            "type": "object",
+            "properties": {
+                "client_id": {
+                    "description": "Client_ID",
+                    "type": "string"
+                },
+                "client_secret": {
+                    "description": "Client_Secret（敏感信息，可考虑脱敏）",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "面板ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "面板名称",
+                    "type": "string"
+                },
+                "params": {
+                    "description": "Params",
+                    "type": "integer"
+                },
+                "token": {
+                    "description": "Token",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "连接地址",
                     "type": "string"
                 }
             }
@@ -379,6 +971,31 @@ const docTemplate = `{
                 }
             }
         },
+        "schema.RefreshPanelTokenRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "description": "面板ID",
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.RefreshPanelTokenResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                },
+                "token": {
+                    "description": "新Token",
+                    "type": "string"
+                }
+            }
+        },
         "schema.RefreshTokenRequest": {
             "type": "object",
             "required": [
@@ -432,6 +1049,77 @@ const docTemplate = `{
             }
         },
         "schema.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.TogglePanelStatusRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "is_enable"
+            ],
+            "properties": {
+                "id": {
+                    "description": "面板ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                }
+            }
+        },
+        "schema.TogglePanelStatusResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.UpdatePanelRequest": {
+            "type": "object",
+            "required": [
+                "client_id",
+                "client_secret",
+                "id",
+                "name",
+                "url"
+            ],
+            "properties": {
+                "client_id": {
+                    "description": "Client_ID",
+                    "type": "string"
+                },
+                "client_secret": {
+                    "description": "Client_Secret",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "面板ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用（可选）",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "面板名称",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "连接地址",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.UpdatePanelResponse": {
             "type": "object",
             "properties": {
                 "message": {
