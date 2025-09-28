@@ -62,7 +62,9 @@ func Routers() *gin.Engine {
 		AuthRequiredCon.AuthRequiredRouter(AuthRequiredGroup)
 
 		// 面板管理
-
+		PanelGroup := authAPI.Group("/panel")
+		PanelCon := controller.NewPanelController()
+		PanelCon.PanelRouter(PanelGroup)
 	}
 
 	return Router
