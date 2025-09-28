@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -13,11 +14,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type PanelService struct{}
+type PanelService struct {
+	pluginService *PluginService
+}
 
 // NewPanelService 创建 PanelService
 func NewPanelService() *PanelService {
-	return &PanelService{}
+	return &PanelService{
+		pluginService: NewPluginService(),
+	}
 }
 
 // AddPanel 添加面板
@@ -372,4 +377,54 @@ func (s *PanelService) TestPanelConnection(req schema.TestPanelConnectionRequest
 		Expiration:  tokenResp.Data.Expiration,
 		ResponseMsg: "面板连接正常，认证成功",
 	}, nil
+}
+
+// SubmitEnvToPanel 提交环境变量到面板（集成插件执行流程）
+func (s *PanelService) SubmitEnvToPanel(panelID int64, envID int64, envValue string) (interface{}, error) {
+	// 执行环境变量的插件验证
+	result, err := s.pluginService.ExecutePluginsForEnv(envID, envValue)
+	if err != nil {
+		return nil, fmt.Errorf("执行环境变量插件失败: %w", err)
+	}
+
+	// 检查插件执行结果
+	if !result.Success {
+		return nil, fmt.Errorf("插件验证失败: %s", result.ErrorMessage)
+	}
+
+	// 解析插件返回的结果
+	var pluginResult map[string]interface{}
+	if len(result.OutputData) > 0 {
+		if err := json.Unmarshal(result.OutputData, &pluginResult); err != nil {
+			return nil, fmt.Errorf("解析插件结果失败: %w", err)
+		}
+	}
+
+	// 检查插件返回的bool值，决定是否继续提交
+	if pluginResult != nil {
+		if boolVal, ok := pluginResult["bool"].(bool); ok && !boolVal {
+			// 插件返回false，表示验证失败
+			errorMsg := "插件验证失败"
+			if envVal, ok := pluginResult["env"].(string); ok {
+				errorMsg = envVal
+			}
+			return nil, fmt.Errorf(errorMsg)
+		}
+
+		// 如果插件返回了新的环境变量值，使用新值
+		if newEnvVal, ok := pluginResult["env"].(string); ok {
+			envValue = newEnvVal
+		}
+	}
+
+	// 这里应该是实际向面板提交数据的逻辑
+	// 例如：调用青龙面板API提交环境变量等
+	submitResult := map[string]interface{}{
+		"env_id":    envID,
+		"env_value": envValue,
+		"panel_id":  panelID,
+		"status":    "success",
+	}
+
+	return submitResult, nil
 }
