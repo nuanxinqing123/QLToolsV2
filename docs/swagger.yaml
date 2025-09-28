@@ -14,6 +14,99 @@ definitions:
     type: integer
     x-enum-varnames:
     - CodeSuccess
+  schema.AddCDKBatchRequest:
+    properties:
+      count:
+        description: 生成数量
+        type: integer
+      use_count:
+        description: 每个CDK的可用次数
+        type: integer
+    required:
+    - count
+    - use_count
+    type: object
+  schema.AddCDKBatchResponse:
+    properties:
+      count:
+        description: 成功生成数量
+        type: integer
+      keys:
+        description: 生成的CDK列表
+        items:
+          type: string
+        type: array
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.AddCDKRequest:
+    properties:
+      count:
+        description: 可用次数
+        type: integer
+      key:
+        description: CDK密钥
+        type: string
+    required:
+    - count
+    - key
+    type: object
+  schema.AddCDKResponse:
+    properties:
+      id:
+        description: CDK ID
+        type: integer
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.AddEnvRequest:
+    properties:
+      enable_key:
+        description: 是否启用KEY
+        type: boolean
+      is_prompt:
+        description: 是否提示
+        type: boolean
+      mode:
+        description: 模式
+        type: integer
+      name:
+        description: 变量名称
+        type: string
+      prompt_content:
+        description: 提示内容
+        type: string
+      prompt_level:
+        description: 提示等级
+        type: string
+      quantity:
+        description: 负载数量
+        type: integer
+      regex:
+        description: 匹配正则
+        type: string
+      regex_update:
+        description: 匹配正则[更新]
+        type: string
+      remarks:
+        description: 备注
+        type: string
+    required:
+    - mode
+    - name
+    - quantity
+    type: object
+  schema.AddEnvResponse:
+    properties:
+      id:
+        description: 环境变量ID
+        type: integer
+      message:
+        description: 消息
+        type: string
+    type: object
   schema.AddPanelRequest:
     properties:
       client_id:
@@ -43,10 +136,128 @@ definitions:
         description: 消息
         type: string
     type: object
+  schema.BindPluginToEnvRequest:
+    properties:
+      config:
+        description: 插件配置参数
+        type: string
+      env_id:
+        description: 环境变量ID
+        type: integer
+      execution_order:
+        description: 执行顺序
+        type: integer
+      plugin_id:
+        description: 插件ID
+        type: integer
+    required:
+    - env_id
+    - plugin_id
+    type: object
+  schema.BindPluginToEnvResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.CreatePluginRequest:
+    properties:
+      author:
+        description: 插件作者
+        type: string
+      description:
+        description: 插件描述
+        type: string
+      execution_timeout:
+        description: 执行超时时间(毫秒)
+        maximum: 30000
+        minimum: 100
+        type: integer
+      name:
+        description: 插件名称
+        type: string
+      priority:
+        description: 执行优先级
+        maximum: 1000
+        minimum: 1
+        type: integer
+      script_content:
+        description: JavaScript脚本内容
+        type: string
+      trigger_event:
+        description: 触发事件
+        type: string
+      version:
+        description: 插件版本
+        type: string
+    required:
+    - name
+    - script_content
+    - trigger_event
+    - version
+    type: object
+  schema.CreatePluginResponse:
+    properties:
+      id:
+        description: 插件ID
+        type: integer
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.DeleteCDKResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.DeleteEnvResponse:
+    properties:
+      code:
+        type: integer
+    type: object
   schema.DeletePanelResponse:
     properties:
       message:
         description: 消息
+        type: string
+    type: object
+  schema.DeletePluginResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.GetCDKListResponse:
+    properties:
+      list:
+        description: CDK列表
+        items:
+          $ref: '#/definitions/schema.GetCDKResponse'
+        type: array
+      total:
+        description: 总数
+        type: integer
+    type: object
+  schema.GetCDKResponse:
+    properties:
+      count:
+        description: 可用次数
+        type: integer
+      created_at:
+        description: 创建时间
+        type: string
+      id:
+        description: CDK ID
+        type: integer
+      is_enable:
+        description: 是否启用
+        type: boolean
+      key:
+        description: CDK密钥
+        type: string
+      updated_at:
+        description: 更新时间
         type: string
     type: object
   schema.GetCaptchaResponse:
@@ -56,6 +267,73 @@ definitions:
         type: string
       captcha_id:
         description: 验证码ID
+        type: string
+    type: object
+  schema.GetEnvListResponse:
+    properties:
+      list:
+        description: 环境变量列表
+        items:
+          $ref: '#/definitions/schema.GetEnvResponse'
+        type: array
+      total:
+        description: 总数
+        type: integer
+    type: object
+  schema.GetEnvPanelsResponse:
+    properties:
+      env_id:
+        description: 环境变量ID
+        type: integer
+      panel_ids:
+        description: 关联的面板ID列表
+        items:
+          type: integer
+        type: array
+    type: object
+  schema.GetEnvResponse:
+    properties:
+      created_at:
+        description: 创建时间
+        type: string
+      enable_key:
+        description: 是否启用KEY
+        type: boolean
+      id:
+        description: 环境变量ID
+        type: integer
+      is_enable:
+        description: 是否启用
+        type: boolean
+      is_prompt:
+        description: 是否提示
+        type: boolean
+      mode:
+        description: 模式
+        type: integer
+      name:
+        description: 变量名称
+        type: string
+      prompt_content:
+        description: 提示内容
+        type: string
+      prompt_level:
+        description: 提示等级
+        type: string
+      quantity:
+        description: 负载数量
+        type: integer
+      regex:
+        description: 匹配正则
+        type: string
+      regex_update:
+        description: 匹配正则[更新]
+        type: string
+      remarks:
+        description: 备注
+        type: string
+      updated_at:
+        description: 更新时间
         type: string
     type: object
   schema.GetPanelListResponse:
@@ -102,6 +380,78 @@ definitions:
         description: 连接地址
         type: string
     type: object
+  schema.GetPluginEnvsResponse:
+    properties:
+      envs:
+        description: 关联环境变量列表
+        items:
+          $ref: '#/definitions/schema.PluginEnvRelationInfo'
+        type: array
+      plugin_id:
+        description: 插件ID
+        type: integer
+    type: object
+  schema.GetPluginExecutionLogsResponse:
+    properties:
+      list:
+        description: 日志列表
+        items:
+          $ref: '#/definitions/schema.PluginExecutionLogInfo'
+        type: array
+      total:
+        description: 总数
+        type: integer
+    type: object
+  schema.GetPluginListResponse:
+    properties:
+      list:
+        description: 插件列表
+        items:
+          $ref: '#/definitions/schema.GetPluginResponse'
+        type: array
+      total:
+        description: 总数
+        type: integer
+    type: object
+  schema.GetPluginResponse:
+    properties:
+      author:
+        description: 插件作者
+        type: string
+      created_at:
+        description: 创建时间
+        type: string
+      description:
+        description: 插件描述
+        type: string
+      execution_timeout:
+        description: 执行超时时间(毫秒)
+        type: integer
+      id:
+        description: 插件ID
+        type: integer
+      is_enable:
+        description: 是否启用
+        type: boolean
+      name:
+        description: 插件名称
+        type: string
+      priority:
+        description: 执行优先级
+        type: integer
+      script_content:
+        description: JavaScript脚本内容
+        type: string
+      trigger_event:
+        description: 触发事件
+        type: string
+      updated_at:
+        description: 更新时间
+        type: string
+      version:
+        description: 插件版本
+        type: string
+    type: object
   schema.LoginRequest:
     properties:
       captcha_code:
@@ -138,6 +488,63 @@ definitions:
     properties:
       message:
         description: 消息
+        type: string
+    type: object
+  schema.PluginEnvRelationInfo:
+    properties:
+      config:
+        description: 插件配置参数
+        type: string
+      created_at:
+        description: 创建时间
+        type: string
+      env_id:
+        description: 环境变量ID
+        type: integer
+      env_name:
+        description: 环境变量名称
+        type: string
+      execution_order:
+        description: 执行顺序
+        type: integer
+      is_enable:
+        description: 是否启用
+        type: boolean
+    type: object
+  schema.PluginExecutionLogInfo:
+    properties:
+      created_at:
+        description: 创建时间
+        type: string
+      env_id:
+        description: 环境变量ID
+        type: integer
+      env_name:
+        description: 环境变量名称
+        type: string
+      error_message:
+        description: 错误信息
+        type: string
+      execution_status:
+        description: 执行状态
+        type: string
+      execution_time:
+        description: 执行耗时(毫秒)
+        type: integer
+      id:
+        description: 日志ID
+        type: integer
+      input_data:
+        description: 输入数据
+        type: string
+      output_data:
+        description: 输出数据
+        type: string
+      plugin_id:
+        description: 插件ID
+        type: integer
+      plugin_name:
+        description: 插件名称
         type: string
     type: object
   schema.RefreshPanelTokenRequest:
@@ -200,6 +607,102 @@ definitions:
         description: 消息
         type: string
     type: object
+  schema.TestPanelConnectionRequest:
+    properties:
+      client_id:
+        description: Client_ID
+        type: string
+      client_secret:
+        description: Client_Secret
+        type: string
+      url:
+        description: 连接地址
+        type: string
+    required:
+    - client_id
+    - client_secret
+    - url
+    type: object
+  schema.TestPanelConnectionResponse:
+    properties:
+      expiration:
+        description: Token过期时间（连接成功时返回）
+        type: integer
+      message:
+        description: 消息
+        type: string
+      response_msg:
+        description: API响应消息（连接失败时的详细信息）
+        type: string
+      success:
+        description: 连接是否成功
+        type: boolean
+      token:
+        description: Token（连接成功时返回）
+        type: string
+    type: object
+  schema.TestPluginRequest:
+    properties:
+      script_content:
+        description: JavaScript脚本内容
+        type: string
+      test_env_value:
+        description: 测试环境变量值
+        type: string
+    required:
+    - script_content
+    type: object
+  schema.TestPluginResponse:
+    properties:
+      error_message:
+        description: 错误信息
+        type: string
+      execution_time:
+        description: 执行耗时(毫秒)
+        type: integer
+      output_data:
+        description: 输出数据
+        type: string
+      success:
+        description: 执行是否成功
+        type: boolean
+    type: object
+  schema.ToggleCDKStatusRequest:
+    properties:
+      id:
+        description: CDK ID
+        type: integer
+      is_enable:
+        description: 是否启用
+        type: boolean
+    required:
+    - id
+    - is_enable
+    type: object
+  schema.ToggleCDKStatusResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.ToggleEnvStatusRequest:
+    properties:
+      id:
+        description: 环境变量ID
+        type: integer
+      is_enable:
+        description: 是否启用
+        type: boolean
+    required:
+    - id
+    - is_enable
+    type: object
+  schema.ToggleEnvStatusResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
   schema.TogglePanelStatusRequest:
     properties:
       id:
@@ -213,6 +716,137 @@ definitions:
     - is_enable
     type: object
   schema.TogglePanelStatusResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.TogglePluginStatusRequest:
+    properties:
+      id:
+        description: 插件ID
+        type: integer
+      is_enable:
+        description: 是否启用
+        type: boolean
+    required:
+    - id
+    - is_enable
+    type: object
+  schema.TogglePluginStatusResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.UnbindPluginFromEnvRequest:
+    properties:
+      env_id:
+        description: 环境变量ID
+        type: integer
+      plugin_id:
+        description: 插件ID
+        type: integer
+    required:
+    - env_id
+    - plugin_id
+    type: object
+  schema.UnbindPluginFromEnvResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.UpdateCDKRequest:
+    properties:
+      count:
+        description: 可用次数
+        type: integer
+      id:
+        description: CDK ID
+        type: integer
+      is_enable:
+        description: 是否启用（可选）
+        type: boolean
+      key:
+        description: CDK密钥
+        type: string
+    required:
+    - count
+    - id
+    - key
+    type: object
+  schema.UpdateCDKResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.UpdateEnvPanelsRequest:
+    properties:
+      env_id:
+        description: 环境变量ID
+        type: integer
+      panel_ids:
+        description: 面板ID列表（空数组表示解绑所有面板）
+        items:
+          type: integer
+        type: array
+    required:
+    - env_id
+    - panel_ids
+    type: object
+  schema.UpdateEnvPanelsResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.UpdateEnvRequest:
+    properties:
+      enable_key:
+        description: 是否启用KEY
+        type: boolean
+      id:
+        description: 环境变量ID
+        type: integer
+      is_enable:
+        description: 是否启用（可选）
+        type: boolean
+      is_prompt:
+        description: 是否提示
+        type: boolean
+      mode:
+        description: 模式
+        type: integer
+      name:
+        description: 变量名称
+        type: string
+      prompt_content:
+        description: 提示内容
+        type: string
+      prompt_level:
+        description: 提示等级
+        type: string
+      quantity:
+        description: 负载数量
+        type: integer
+      regex:
+        description: 匹配正则
+        type: string
+      regex_update:
+        description: 匹配正则[更新]
+        type: string
+      remarks:
+        description: 备注
+        type: string
+    required:
+    - id
+    - mode
+    - name
+    - quantity
+    type: object
+  schema.UpdateEnvResponse:
     properties:
       message:
         description: 消息
@@ -246,6 +880,55 @@ definitions:
     - url
     type: object
   schema.UpdatePanelResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+    type: object
+  schema.UpdatePluginRequest:
+    properties:
+      author:
+        description: 插件作者
+        type: string
+      description:
+        description: 插件描述
+        type: string
+      execution_timeout:
+        description: 执行超时时间(毫秒)
+        maximum: 30000
+        minimum: 100
+        type: integer
+      id:
+        description: 插件ID
+        type: integer
+      is_enable:
+        description: 是否启用（可选）
+        type: boolean
+      name:
+        description: 插件名称
+        type: string
+      priority:
+        description: 执行优先级
+        maximum: 1000
+        minimum: 1
+        type: integer
+      script_content:
+        description: JavaScript脚本内容
+        type: string
+      trigger_event:
+        description: 触发事件
+        type: string
+      version:
+        description: 插件版本
+        type: string
+    required:
+    - id
+    - name
+    - script_content
+    - trigger_event
+    - version
+    type: object
+  schema.UpdatePluginResponse:
     properties:
       message:
         description: 消息
@@ -424,6 +1107,583 @@ paths:
       summary: 用户注册
       tags:
       - 认证管理
+  /api/cdk/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据CDK ID删除CDK（软删除）
+      parameters:
+      - description: CDK ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.DeleteCDKResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: CDK不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 删除失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除CDK
+      tags:
+      - CDK管理
+  /api/cdk/create:
+    post:
+      consumes:
+      - application/json
+      description: 添加新的CDK卡密，需要提供密钥和可用次数
+      parameters:
+      - description: 添加CDK请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.AddCDKRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 添加成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.AddCDKResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 添加失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 添加CDK
+      tags:
+      - CDK管理
+  /api/cdk/create/batch:
+    post:
+      consumes:
+      - application/json
+      description: 批量生成CDK卡密
+      parameters:
+      - description: 批量添加CDK请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.AddCDKBatchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 添加成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.AddCDKBatchResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 添加失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 批量添加CDK
+      tags:
+      - CDK管理
+  /api/cdk/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页获取CDK列表，支持按密钥搜索和状态筛选
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: CDK密钥（模糊搜索）
+        in: query
+        name: key
+        type: string
+      - description: 是否启用
+        in: query
+        name: is_enable
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.GetCDKListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取CDK列表
+      tags:
+      - CDK管理
+  /api/cdk/toggle-status:
+    post:
+      consumes:
+      - application/json
+      description: 启用或禁用CDK
+      parameters:
+      - description: 切换状态请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.ToggleCDKStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 切换成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.ToggleCDKStatusResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: CDK不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 切换失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 切换CDK状态
+      tags:
+      - CDK管理
+  /api/cdk/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新CDK卡密信息
+      parameters:
+      - description: 更新CDK请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.UpdateCDKRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.UpdateCDKResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: CDK不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 更新失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新CDK
+      tags:
+      - CDK管理
+  /api/env/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据环境变量ID删除环境变量（软删除）
+      parameters:
+      - description: 环境变量ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.DeleteEnvResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 环境变量不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 删除失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除环境变量
+      tags:
+      - 环境变量管理
+    get:
+      consumes:
+      - application/json
+      description: 根据环境变量ID获取详细信息
+      parameters:
+      - description: 环境变量ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.GetEnvResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 环境变量不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取环境变量信息
+      tags:
+      - 环境变量管理
+  /api/env/create:
+    post:
+      consumes:
+      - application/json
+      description: 添加新的环境变量配置
+      parameters:
+      - description: 添加环境变量请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.AddEnvRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 添加成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.AddEnvResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 添加失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 添加环境变量
+      tags:
+      - 环境变量管理
+  /api/env/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页获取环境变量列表，支持按名称搜索和状态筛选
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 变量名称（模糊搜索）
+        in: query
+        name: name
+        type: string
+      - description: 是否启用
+        in: query
+        name: is_enable
+        type: boolean
+      - description: 模式筛选
+        in: query
+        name: mode
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.GetEnvListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取环境变量列表
+      tags:
+      - 环境变量管理
+  /api/env/panels:
+    post:
+      consumes:
+      - application/json
+      description: 更新环境变量与面板的绑定关系，传入面板ID列表，系统会自动处理绑定和解绑
+      parameters:
+      - description: 更新绑定关系请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.UpdateEnvPanelsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.UpdateEnvPanelsResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 环境变量或面板不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 更新失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新环境变量面板绑定关系
+      tags:
+      - 环境变量管理
+  /api/env/panels/{env_id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定环境变量关联的所有面板ID
+      parameters:
+      - description: 环境变量ID
+        in: path
+        name: env_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.GetEnvPanelsResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 环境变量不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取环境变量关联的面板
+      tags:
+      - 环境变量管理
+  /api/env/toggle-status:
+    post:
+      consumes:
+      - application/json
+      description: 启用或禁用环境变量
+      parameters:
+      - description: 切换状态请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.ToggleEnvStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 切换成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.ToggleEnvStatusResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 环境变量不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 切换失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 切换环境变量状态
+      tags:
+      - 环境变量管理
+  /api/env/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新环境变量配置信息
+      parameters:
+      - description: 更新环境变量请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.UpdateEnvRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.UpdateEnvResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 环境变量不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 更新失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新环境变量
+      tags:
+      - 环境变量管理
   /api/panel/{id}:
     delete:
       consumes:
@@ -630,6 +1890,43 @@ paths:
       summary: 刷新面板Token
       tags:
       - 面板管理
+  /api/panel/test-connection:
+    post:
+      consumes:
+      - application/json
+      description: 测试面板连接是否正常，验证连接地址、Client_ID和Client_Secret是否有效
+      parameters:
+      - description: 测试连接请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.TestPanelConnectionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 测试完成
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.TestPanelConnectionResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 测试失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 测试面板连接
+      tags:
+      - 面板管理
   /api/panel/toggle-status:
     post:
       consumes:
@@ -712,6 +2009,465 @@ paths:
       summary: 更新面板
       tags:
       - 面板管理
+  /api/plugin/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据插件ID删除插件（软删除）
+      parameters:
+      - description: 插件ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 删除成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.DeletePluginResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 插件不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 删除失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 删除插件
+      tags:
+      - 插件管理
+    get:
+      consumes:
+      - application/json
+      description: 根据插件ID获取插件详细信息
+      parameters:
+      - description: 插件ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.GetPluginResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 插件不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取插件信息
+      tags:
+      - 插件管理
+  /api/plugin/bind-env:
+    post:
+      consumes:
+      - application/json
+      description: 将插件绑定到指定环境变量，可以配置插件参数和执行顺序
+      parameters:
+      - description: 绑定插件请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.BindPluginToEnvRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 绑定成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.BindPluginToEnvResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 绑定失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 绑定插件到环境变量
+      tags:
+      - 插件管理
+  /api/plugin/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建新的插件，需要提供插件名称、脚本内容等信息
+      parameters:
+      - description: 创建插件请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.CreatePluginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.CreatePluginResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 创建失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 创建插件
+      tags:
+      - 插件管理
+  /api/plugin/envs/{plugin_id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定插件关联的所有环境变量信息
+      parameters:
+      - description: 插件ID
+        in: path
+        name: plugin_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.GetPluginEnvsResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取插件关联环境变量
+      tags:
+      - 插件管理
+  /api/plugin/execution-logs:
+    get:
+      consumes:
+      - application/json
+      description: 分页获取插件执行日志，支持多条件筛选
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 插件ID
+        in: query
+        name: plugin_id
+        type: integer
+      - description: 环境变量ID
+        in: query
+        name: env_id
+        type: integer
+      - description: 执行状态
+        in: query
+        name: execution_status
+        type: string
+      - description: 开始时间
+        in: query
+        name: start_time
+        type: string
+      - description: 结束时间
+        in: query
+        name: end_time
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.GetPluginExecutionLogsResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取插件执行日志
+      tags:
+      - 插件管理
+  /api/plugin/list:
+    get:
+      consumes:
+      - application/json
+      description: 分页获取插件列表，支持按名称搜索、触发事件和状态筛选
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 插件名称（模糊搜索）
+        in: query
+        name: name
+        type: string
+      - description: 触发事件
+        in: query
+        name: trigger_event
+        type: string
+      - description: 是否启用
+        in: query
+        name: is_enable
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.GetPluginListResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取插件列表
+      tags:
+      - 插件管理
+  /api/plugin/test:
+    post:
+      consumes:
+      - application/json
+      description: 测试插件脚本执行，验证脚本语法和逻辑
+      parameters:
+      - description: 测试插件请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.TestPluginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 测试完成
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.TestPluginResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 测试失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 测试插件
+      tags:
+      - 插件管理
+  /api/plugin/toggle-status:
+    post:
+      consumes:
+      - application/json
+      description: 启用或禁用插件
+      parameters:
+      - description: 切换状态请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.TogglePluginStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 切换成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.TogglePluginStatusResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 插件不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 切换失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 切换插件状态
+      tags:
+      - 插件管理
+  /api/plugin/unbind-env:
+    post:
+      consumes:
+      - application/json
+      description: 解除插件与环境变量的绑定关系
+      parameters:
+      - description: 解绑插件请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.UnbindPluginFromEnvRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 解绑成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.UnbindPluginFromEnvResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 解绑失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 解绑插件与环境变量
+      tags:
+      - 插件管理
+  /api/plugin/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新插件配置信息
+      parameters:
+      - description: 更新插件请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.UpdatePluginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.UpdatePluginResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 插件不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 更新失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 更新插件
+      tags:
+      - 插件管理
 securityDefinitions:
   ApiKeyAuth:
     description: Bearer token for API authentication

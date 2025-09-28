@@ -291,6 +291,972 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/cdk/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "添加新的CDK卡密，需要提供密钥和可用次数",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CDK管理"
+                ],
+                "summary": "添加CDK",
+                "parameters": [
+                    {
+                        "description": "添加CDK请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.AddCDKRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "添加成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.AddCDKResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "添加失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cdk/create/batch": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "批量生成CDK卡密",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CDK管理"
+                ],
+                "summary": "批量添加CDK",
+                "parameters": [
+                    {
+                        "description": "批量添加CDK请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.AddCDKBatchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "添加成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.AddCDKBatchResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "添加失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cdk/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "分页获取CDK列表，支持按密钥搜索和状态筛选",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CDK管理"
+                ],
+                "summary": "获取CDK列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "CDK密钥（模糊搜索）",
+                        "name": "key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否启用",
+                        "name": "is_enable",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetCDKListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cdk/toggle-status": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "启用或禁用CDK",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CDK管理"
+                ],
+                "summary": "切换CDK状态",
+                "parameters": [
+                    {
+                        "description": "切换状态请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.ToggleCDKStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "切换成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.ToggleCDKStatusResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "CDK不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "切换失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cdk/update": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新CDK卡密信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CDK管理"
+                ],
+                "summary": "更新CDK",
+                "parameters": [
+                    {
+                        "description": "更新CDK请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.UpdateCDKRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.UpdateCDKResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "CDK不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "更新失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/cdk/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据CDK ID删除CDK（软删除）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CDK管理"
+                ],
+                "summary": "删除CDK",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "CDK ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.DeleteCDKResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "CDK不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "删除失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/env/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "添加新的环境变量配置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "环境变量管理"
+                ],
+                "summary": "添加环境变量",
+                "parameters": [
+                    {
+                        "description": "添加环境变量请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.AddEnvRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "添加成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.AddEnvResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "添加失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/env/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "分页获取环境变量列表，支持按名称搜索和状态筛选",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "环境变量管理"
+                ],
+                "summary": "获取环境变量列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "变量名称（模糊搜索）",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否启用",
+                        "name": "is_enable",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "模式筛选",
+                        "name": "mode",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetEnvListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/env/panels": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新环境变量与面板的绑定关系，传入面板ID列表，系统会自动处理绑定和解绑",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "环境变量管理"
+                ],
+                "summary": "更新环境变量面板绑定关系",
+                "parameters": [
+                    {
+                        "description": "更新绑定关系请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.UpdateEnvPanelsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.UpdateEnvPanelsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "环境变量或面板不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "更新失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/env/panels/{env_id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "获取指定环境变量关联的所有面板ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "环境变量管理"
+                ],
+                "summary": "获取环境变量关联的面板",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "环境变量ID",
+                        "name": "env_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetEnvPanelsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "环境变量不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/env/toggle-status": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "启用或禁用环境变量",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "环境变量管理"
+                ],
+                "summary": "切换环境变量状态",
+                "parameters": [
+                    {
+                        "description": "切换状态请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.ToggleEnvStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "切换成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.ToggleEnvStatusResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "环境变量不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "切换失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/env/update": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新环境变量配置信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "环境变量管理"
+                ],
+                "summary": "更新环境变量",
+                "parameters": [
+                    {
+                        "description": "更新环境变量请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.UpdateEnvRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.UpdateEnvResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "环境变量不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "更新失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/env/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据环境变量ID获取详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "环境变量管理"
+                ],
+                "summary": "获取环境变量信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "环境变量ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetEnvResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "环境变量不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据环境变量ID删除环境变量（软删除）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "环境变量管理"
+                ],
+                "summary": "删除环境变量",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "环境变量ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.DeleteEnvResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "环境变量不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "删除失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
         "/api/panel/create": {
             "post": {
                 "security": [
@@ -496,6 +1462,69 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "刷新失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/panel/test-connection": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "测试面板连接是否正常，验证连接地址、Client_ID和Client_Secret是否有效",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "面板管理"
+                ],
+                "summary": "测试面板连接",
+                "parameters": [
+                    {
+                        "description": "测试连接请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.TestPanelConnectionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "测试完成",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.TestPanelConnectionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "测试失败",
                         "schema": {
                             "$ref": "#/definitions/response.Data"
                         }
@@ -772,6 +1801,773 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/plugin/bind-env": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "将插件绑定到指定环境变量，可以配置插件参数和执行顺序",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "插件管理"
+                ],
+                "summary": "绑定插件到环境变量",
+                "parameters": [
+                    {
+                        "description": "绑定插件请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.BindPluginToEnvRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "绑定成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.BindPluginToEnvResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "绑定失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/plugin/create": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "创建新的插件，需要提供插件名称、脚本内容等信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "插件管理"
+                ],
+                "summary": "创建插件",
+                "parameters": [
+                    {
+                        "description": "创建插件请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.CreatePluginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "创建成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.CreatePluginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "创建失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/plugin/envs/{plugin_id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "获取指定插件关联的所有环境变量信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "插件管理"
+                ],
+                "summary": "获取插件关联环境变量",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "插件ID",
+                        "name": "plugin_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetPluginEnvsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/plugin/execution-logs": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "分页获取插件执行日志，支持多条件筛选",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "插件管理"
+                ],
+                "summary": "获取插件执行日志",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "插件ID",
+                        "name": "plugin_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "环境变量ID",
+                        "name": "env_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "执行状态",
+                        "name": "execution_status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "开始时间",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束时间",
+                        "name": "end_time",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetPluginExecutionLogsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/plugin/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "分页获取插件列表，支持按名称搜索、触发事件和状态筛选",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "插件管理"
+                ],
+                "summary": "获取插件列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "插件名称（模糊搜索）",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "触发事件",
+                        "name": "trigger_event",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "是否启用",
+                        "name": "is_enable",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetPluginListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/plugin/test": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "测试插件脚本执行，验证脚本语法和逻辑",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "插件管理"
+                ],
+                "summary": "测试插件",
+                "parameters": [
+                    {
+                        "description": "测试插件请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.TestPluginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "测试完成",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.TestPluginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "测试失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/plugin/toggle-status": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "启用或禁用插件",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "插件管理"
+                ],
+                "summary": "切换插件状态",
+                "parameters": [
+                    {
+                        "description": "切换状态请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.TogglePluginStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "切换成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.TogglePluginStatusResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "插件不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "切换失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/plugin/unbind-env": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "解除插件与环境变量的绑定关系",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "插件管理"
+                ],
+                "summary": "解绑插件与环境变量",
+                "parameters": [
+                    {
+                        "description": "解绑插件请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.UnbindPluginFromEnvRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "解绑成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.UnbindPluginFromEnvResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "解绑失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/plugin/update": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新插件配置信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "插件管理"
+                ],
+                "summary": "更新插件",
+                "parameters": [
+                    {
+                        "description": "更新插件请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.UpdatePluginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.UpdatePluginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "插件不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "更新失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/plugin/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据插件ID获取插件详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "插件管理"
+                ],
+                "summary": "获取插件信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "插件ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetPluginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "插件不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "根据插件ID删除插件（软删除）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "插件管理"
+                ],
+                "summary": "删除插件",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "插件ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "删除成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.DeletePluginResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "插件不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "删除失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -794,6 +2590,136 @@ const docTemplate = `{
             "x-enum-varnames": [
                 "CodeSuccess"
             ]
+        },
+        "schema.AddCDKBatchRequest": {
+            "type": "object",
+            "required": [
+                "count",
+                "use_count"
+            ],
+            "properties": {
+                "count": {
+                    "description": "生成数量",
+                    "type": "integer"
+                },
+                "use_count": {
+                    "description": "每个CDK的可用次数",
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.AddCDKBatchResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "成功生成数量",
+                    "type": "integer"
+                },
+                "keys": {
+                    "description": "生成的CDK列表",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.AddCDKRequest": {
+            "type": "object",
+            "required": [
+                "count",
+                "key"
+            ],
+            "properties": {
+                "count": {
+                    "description": "可用次数",
+                    "type": "integer"
+                },
+                "key": {
+                    "description": "CDK密钥",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.AddCDKResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "CDK ID",
+                    "type": "integer"
+                },
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.AddEnvRequest": {
+            "type": "object",
+            "required": [
+                "mode",
+                "name",
+                "quantity"
+            ],
+            "properties": {
+                "enable_key": {
+                    "description": "是否启用KEY",
+                    "type": "boolean"
+                },
+                "is_prompt": {
+                    "description": "是否提示",
+                    "type": "boolean"
+                },
+                "mode": {
+                    "description": "模式",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "变量名称",
+                    "type": "string"
+                },
+                "prompt_content": {
+                    "description": "提示内容",
+                    "type": "string"
+                },
+                "prompt_level": {
+                    "description": "提示等级",
+                    "type": "string"
+                },
+                "quantity": {
+                    "description": "负载数量",
+                    "type": "integer"
+                },
+                "regex": {
+                    "description": "匹配正则",
+                    "type": "string"
+                },
+                "regex_update": {
+                    "description": "匹配正则[更新]",
+                    "type": "string"
+                },
+                "remarks": {
+                    "description": "备注",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.AddEnvResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
         },
         "schema.AddPanelRequest": {
             "type": "object",
@@ -835,11 +2761,176 @@ const docTemplate = `{
                 }
             }
         },
+        "schema.BindPluginToEnvRequest": {
+            "type": "object",
+            "required": [
+                "env_id",
+                "plugin_id"
+            ],
+            "properties": {
+                "config": {
+                    "description": "插件配置参数",
+                    "type": "string"
+                },
+                "env_id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "execution_order": {
+                    "description": "执行顺序",
+                    "type": "integer"
+                },
+                "plugin_id": {
+                    "description": "插件ID",
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.BindPluginToEnvResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.CreatePluginRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "script_content",
+                "trigger_event",
+                "version"
+            ],
+            "properties": {
+                "author": {
+                    "description": "插件作者",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "插件描述",
+                    "type": "string"
+                },
+                "execution_timeout": {
+                    "description": "执行超时时间(毫秒)",
+                    "type": "integer",
+                    "maximum": 30000,
+                    "minimum": 100
+                },
+                "name": {
+                    "description": "插件名称",
+                    "type": "string"
+                },
+                "priority": {
+                    "description": "执行优先级",
+                    "type": "integer",
+                    "maximum": 1000,
+                    "minimum": 1
+                },
+                "script_content": {
+                    "description": "JavaScript脚本内容",
+                    "type": "string"
+                },
+                "trigger_event": {
+                    "description": "触发事件",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "插件版本",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.CreatePluginResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "插件ID",
+                    "type": "integer"
+                },
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.DeleteCDKResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.DeleteEnvResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                }
+            }
+        },
         "schema.DeletePanelResponse": {
             "type": "object",
             "properties": {
                 "message": {
                     "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.DeletePluginResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.GetCDKListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "CDK列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.GetCDKResponse"
+                    }
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.GetCDKResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "可用次数",
+                    "type": "integer"
+                },
+                "created_at": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "CDK ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                },
+                "key": {
+                    "description": "CDK密钥",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "更新时间",
                     "type": "string"
                 }
             }
@@ -853,6 +2944,99 @@ const docTemplate = `{
                 },
                 "captcha_id": {
                     "description": "验证码ID",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.GetEnvListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "环境变量列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.GetEnvResponse"
+                    }
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.GetEnvPanelsResponse": {
+            "type": "object",
+            "properties": {
+                "env_id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "panel_ids": {
+                    "description": "关联的面板ID列表",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "schema.GetEnvResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "enable_key": {
+                    "description": "是否启用KEY",
+                    "type": "boolean"
+                },
+                "id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                },
+                "is_prompt": {
+                    "description": "是否提示",
+                    "type": "boolean"
+                },
+                "mode": {
+                    "description": "模式",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "变量名称",
+                    "type": "string"
+                },
+                "prompt_content": {
+                    "description": "提示内容",
+                    "type": "string"
+                },
+                "prompt_level": {
+                    "description": "提示等级",
+                    "type": "string"
+                },
+                "quantity": {
+                    "description": "负载数量",
+                    "type": "integer"
+                },
+                "regex": {
+                    "description": "匹配正则",
+                    "type": "string"
+                },
+                "regex_update": {
+                    "description": "匹配正则[更新]",
+                    "type": "string"
+                },
+                "remarks": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "更新时间",
                     "type": "string"
                 }
             }
@@ -918,6 +3102,107 @@ const docTemplate = `{
                 }
             }
         },
+        "schema.GetPluginEnvsResponse": {
+            "type": "object",
+            "properties": {
+                "envs": {
+                    "description": "关联环境变量列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.PluginEnvRelationInfo"
+                    }
+                },
+                "plugin_id": {
+                    "description": "插件ID",
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.GetPluginExecutionLogsResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "日志列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.PluginExecutionLogInfo"
+                    }
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.GetPluginListResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "插件列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.GetPluginResponse"
+                    }
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.GetPluginResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "description": "插件作者",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "插件描述",
+                    "type": "string"
+                },
+                "execution_timeout": {
+                    "description": "执行超时时间(毫秒)",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "插件ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "插件名称",
+                    "type": "string"
+                },
+                "priority": {
+                    "description": "执行优先级",
+                    "type": "integer"
+                },
+                "script_content": {
+                    "description": "JavaScript脚本内容",
+                    "type": "string"
+                },
+                "trigger_event": {
+                    "description": "触发事件",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "插件版本",
+                    "type": "string"
+                }
+            }
+        },
         "schema.LoginRequest": {
             "type": "object",
             "required": [
@@ -967,6 +3252,84 @@ const docTemplate = `{
             "properties": {
                 "message": {
                     "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.PluginEnvRelationInfo": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "description": "插件配置参数",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "env_id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "env_name": {
+                    "description": "环境变量名称",
+                    "type": "string"
+                },
+                "execution_order": {
+                    "description": "执行顺序",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                }
+            }
+        },
+        "schema.PluginExecutionLogInfo": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "env_id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "env_name": {
+                    "description": "环境变量名称",
+                    "type": "string"
+                },
+                "error_message": {
+                    "description": "错误信息",
+                    "type": "string"
+                },
+                "execution_status": {
+                    "description": "执行状态",
+                    "type": "string"
+                },
+                "execution_time": {
+                    "description": "执行耗时(毫秒)",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "日志ID",
+                    "type": "integer"
+                },
+                "input_data": {
+                    "description": "输入数据",
+                    "type": "string"
+                },
+                "output_data": {
+                    "description": "输出数据",
+                    "type": "string"
+                },
+                "plugin_id": {
+                    "description": "插件ID",
+                    "type": "integer"
+                },
+                "plugin_name": {
+                    "description": "插件名称",
                     "type": "string"
                 }
             }
@@ -1057,6 +3420,142 @@ const docTemplate = `{
                 }
             }
         },
+        "schema.TestPanelConnectionRequest": {
+            "type": "object",
+            "required": [
+                "client_id",
+                "client_secret",
+                "url"
+            ],
+            "properties": {
+                "client_id": {
+                    "description": "Client_ID",
+                    "type": "string"
+                },
+                "client_secret": {
+                    "description": "Client_Secret",
+                    "type": "string"
+                },
+                "url": {
+                    "description": "连接地址",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.TestPanelConnectionResponse": {
+            "type": "object",
+            "properties": {
+                "expiration": {
+                    "description": "Token过期时间（连接成功时返回）",
+                    "type": "integer"
+                },
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                },
+                "response_msg": {
+                    "description": "API响应消息（连接失败时的详细信息）",
+                    "type": "string"
+                },
+                "success": {
+                    "description": "连接是否成功",
+                    "type": "boolean"
+                },
+                "token": {
+                    "description": "Token（连接成功时返回）",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.TestPluginRequest": {
+            "type": "object",
+            "required": [
+                "script_content"
+            ],
+            "properties": {
+                "script_content": {
+                    "description": "JavaScript脚本内容",
+                    "type": "string"
+                },
+                "test_env_value": {
+                    "description": "测试环境变量值",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.TestPluginResponse": {
+            "type": "object",
+            "properties": {
+                "error_message": {
+                    "description": "错误信息",
+                    "type": "string"
+                },
+                "execution_time": {
+                    "description": "执行耗时(毫秒)",
+                    "type": "integer"
+                },
+                "output_data": {
+                    "description": "输出数据",
+                    "type": "string"
+                },
+                "success": {
+                    "description": "执行是否成功",
+                    "type": "boolean"
+                }
+            }
+        },
+        "schema.ToggleCDKStatusRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "is_enable"
+            ],
+            "properties": {
+                "id": {
+                    "description": "CDK ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                }
+            }
+        },
+        "schema.ToggleCDKStatusResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.ToggleEnvStatusRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "is_enable"
+            ],
+            "properties": {
+                "id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                }
+            }
+        },
+        "schema.ToggleEnvStatusResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
         "schema.TogglePanelStatusRequest": {
             "type": "object",
             "required": [
@@ -1075,6 +3574,190 @@ const docTemplate = `{
             }
         },
         "schema.TogglePanelStatusResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.TogglePluginStatusRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "is_enable"
+            ],
+            "properties": {
+                "id": {
+                    "description": "插件ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用",
+                    "type": "boolean"
+                }
+            }
+        },
+        "schema.TogglePluginStatusResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.UnbindPluginFromEnvRequest": {
+            "type": "object",
+            "required": [
+                "env_id",
+                "plugin_id"
+            ],
+            "properties": {
+                "env_id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "plugin_id": {
+                    "description": "插件ID",
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.UnbindPluginFromEnvResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.UpdateCDKRequest": {
+            "type": "object",
+            "required": [
+                "count",
+                "id",
+                "key"
+            ],
+            "properties": {
+                "count": {
+                    "description": "可用次数",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "CDK ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用（可选）",
+                    "type": "boolean"
+                },
+                "key": {
+                    "description": "CDK密钥",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.UpdateCDKResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.UpdateEnvPanelsRequest": {
+            "type": "object",
+            "required": [
+                "env_id",
+                "panel_ids"
+            ],
+            "properties": {
+                "env_id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "panel_ids": {
+                    "description": "面板ID列表（空数组表示解绑所有面板）",
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "schema.UpdateEnvPanelsResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.UpdateEnvRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "mode",
+                "name",
+                "quantity"
+            ],
+            "properties": {
+                "enable_key": {
+                    "description": "是否启用KEY",
+                    "type": "boolean"
+                },
+                "id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用（可选）",
+                    "type": "boolean"
+                },
+                "is_prompt": {
+                    "description": "是否提示",
+                    "type": "boolean"
+                },
+                "mode": {
+                    "description": "模式",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "变量名称",
+                    "type": "string"
+                },
+                "prompt_content": {
+                    "description": "提示内容",
+                    "type": "string"
+                },
+                "prompt_level": {
+                    "description": "提示等级",
+                    "type": "string"
+                },
+                "quantity": {
+                    "description": "负载数量",
+                    "type": "integer"
+                },
+                "regex": {
+                    "description": "匹配正则",
+                    "type": "string"
+                },
+                "regex_update": {
+                    "description": "匹配正则[更新]",
+                    "type": "string"
+                },
+                "remarks": {
+                    "description": "备注",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.UpdateEnvResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -1120,6 +3803,71 @@ const docTemplate = `{
             }
         },
         "schema.UpdatePanelResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.UpdatePluginRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "script_content",
+                "trigger_event",
+                "version"
+            ],
+            "properties": {
+                "author": {
+                    "description": "插件作者",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "插件描述",
+                    "type": "string"
+                },
+                "execution_timeout": {
+                    "description": "执行超时时间(毫秒)",
+                    "type": "integer",
+                    "maximum": 30000,
+                    "minimum": 100
+                },
+                "id": {
+                    "description": "插件ID",
+                    "type": "integer"
+                },
+                "is_enable": {
+                    "description": "是否启用（可选）",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "插件名称",
+                    "type": "string"
+                },
+                "priority": {
+                    "description": "执行优先级",
+                    "type": "integer",
+                    "maximum": 1000,
+                    "minimum": 1
+                },
+                "script_content": {
+                    "description": "JavaScript脚本内容",
+                    "type": "string"
+                },
+                "trigger_event": {
+                    "description": "触发事件",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "插件版本",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.UpdatePluginResponse": {
             "type": "object",
             "properties": {
                 "message": {
