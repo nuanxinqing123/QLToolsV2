@@ -38,7 +38,9 @@ func newEnvs(db *gorm.DB, opts ...gen.DOOption) envs {
 	_envs.Regex = field.NewString(tableName, "regex")
 	_envs.Mode = field.NewInt32(tableName, "mode")
 	_envs.RegexUpdate = field.NewString(tableName, "regex_update")
+	_envs.IsAutoEnvEnable = field.NewBool(tableName, "is_auto_env_enable")
 	_envs.EnableKey = field.NewBool(tableName, "enable_key")
+	_envs.CdkLimit = field.NewInt32(tableName, "cdk_limit")
 	_envs.IsPrompt = field.NewBool(tableName, "is_prompt")
 	_envs.PromptLevel = field.NewString(tableName, "prompt_level")
 	_envs.PromptContent = field.NewString(tableName, "prompt_content")
@@ -53,22 +55,24 @@ func newEnvs(db *gorm.DB, opts ...gen.DOOption) envs {
 type envs struct {
 	envsDo
 
-	ALL           field.Asterisk
-	ID            field.Int64  // 主键ID
-	CreatedAt     field.Time   // 创建时间
-	UpdatedAt     field.Time   // 更新时间
-	DeletedAt     field.Field  // 删除时间
-	Name          field.String // 名称
-	Remarks       field.String // 备注
-	Quantity      field.Int32  // 负载数量
-	Regex         field.String // 匹配正则
-	Mode          field.Int32  // 模式
-	RegexUpdate   field.String // 匹配正则[更新]
-	EnableKey     field.Bool   // 是否启用KEY
-	IsPrompt      field.Bool   // 是否提示
-	PromptLevel   field.String // 提示等级
-	PromptContent field.String // 提示内容
-	IsEnable      field.Bool   // 是否启用
+	ALL             field.Asterisk
+	ID              field.Int64  // 主键ID
+	CreatedAt       field.Time   // 创建时间
+	UpdatedAt       field.Time   // 更新时间
+	DeletedAt       field.Field  // 删除时间
+	Name            field.String // 名称
+	Remarks         field.String // 备注
+	Quantity        field.Int32  // 负载数量
+	Regex           field.String // 匹配正则
+	Mode            field.Int32  // 模式
+	RegexUpdate     field.String // 匹配正则[更新]
+	IsAutoEnvEnable field.Bool   // 是否自动启用提交的变量
+	EnableKey       field.Bool   // 是否启用KEY
+	CdkLimit        field.Int32  // 单次消耗卡密额度
+	IsPrompt        field.Bool   // 是否提示
+	PromptLevel     field.String // 提示等级
+	PromptContent   field.String // 提示内容
+	IsEnable        field.Bool   // 是否启用
 
 	fieldMap map[string]field.Expr
 }
@@ -95,7 +99,9 @@ func (e *envs) updateTableName(table string) *envs {
 	e.Regex = field.NewString(table, "regex")
 	e.Mode = field.NewInt32(table, "mode")
 	e.RegexUpdate = field.NewString(table, "regex_update")
+	e.IsAutoEnvEnable = field.NewBool(table, "is_auto_env_enable")
 	e.EnableKey = field.NewBool(table, "enable_key")
+	e.CdkLimit = field.NewInt32(table, "cdk_limit")
 	e.IsPrompt = field.NewBool(table, "is_prompt")
 	e.PromptLevel = field.NewString(table, "prompt_level")
 	e.PromptContent = field.NewString(table, "prompt_content")
@@ -116,7 +122,7 @@ func (e *envs) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (e *envs) fillFieldMap() {
-	e.fieldMap = make(map[string]field.Expr, 15)
+	e.fieldMap = make(map[string]field.Expr, 17)
 	e.fieldMap["id"] = e.ID
 	e.fieldMap["created_at"] = e.CreatedAt
 	e.fieldMap["updated_at"] = e.UpdatedAt
@@ -127,7 +133,9 @@ func (e *envs) fillFieldMap() {
 	e.fieldMap["regex"] = e.Regex
 	e.fieldMap["mode"] = e.Mode
 	e.fieldMap["regex_update"] = e.RegexUpdate
+	e.fieldMap["is_auto_env_enable"] = e.IsAutoEnvEnable
 	e.fieldMap["enable_key"] = e.EnableKey
+	e.fieldMap["cdk_limit"] = e.CdkLimit
 	e.fieldMap["is_prompt"] = e.IsPrompt
 	e.fieldMap["prompt_level"] = e.PromptLevel
 	e.fieldMap["prompt_content"] = e.PromptContent

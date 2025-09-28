@@ -34,19 +34,21 @@ func (s *EnvService) AddEnv(req schema.AddEnvRequest) (*schema.AddEnvResponse, e
 
 	now := time.Now()
 	env := &model.Envs{
-		CreatedAt:     now,
-		UpdatedAt:     now,
-		Name:          req.Name,
-		Remarks:       req.Remarks,
-		Quantity:      req.Quantity,
-		Regex:         req.Regex,
-		Mode:          req.Mode,
-		RegexUpdate:   req.RegexUpdate,
-		EnableKey:     req.EnableKey,
-		IsPrompt:      req.IsPrompt,
-		PromptLevel:   req.PromptLevel,
-		PromptContent: req.PromptContent,
-		IsEnable:      true, // 默认启用
+		CreatedAt:       now,
+		UpdatedAt:       now,
+		Name:            req.Name,
+		Remarks:         req.Remarks,
+		Quantity:        req.Quantity,
+		Regex:           req.Regex,
+		Mode:            req.Mode,
+		RegexUpdate:     req.RegexUpdate,
+		IsAutoEnvEnable: req.IsAutoEnvEnable, // 是否自动启用提交的变量
+		EnableKey:       req.EnableKey,
+		CdkLimit:        req.CdkLimit, // 单次消耗卡密额度
+		IsPrompt:        req.IsPrompt,
+		PromptLevel:     req.PromptLevel,
+		PromptContent:   req.PromptContent,
+		IsEnable:        true, // 默认启用
 	}
 
 	// 创建环境变量记录
@@ -89,17 +91,19 @@ func (s *EnvService) UpdateEnv(req schema.UpdateEnvRequest) (*schema.UpdateEnvRe
 
 	// 构建更新数据
 	updates := map[string]interface{}{
-		"name":           req.Name,
-		"remarks":        req.Remarks,
-		"quantity":       req.Quantity,
-		"regex":          req.Regex,
-		"mode":           req.Mode,
-		"regex_update":   req.RegexUpdate,
-		"enable_key":     req.EnableKey,
-		"is_prompt":      req.IsPrompt,
-		"prompt_level":   req.PromptLevel,
-		"prompt_content": req.PromptContent,
-		"updated_at":     time.Now(),
+		"name":               req.Name,
+		"remarks":            req.Remarks,
+		"quantity":           req.Quantity,
+		"regex":              req.Regex,
+		"mode":               req.Mode,
+		"regex_update":       req.RegexUpdate,
+		"is_auto_env_enable": req.IsAutoEnvEnable, // 是否自动启用提交的变量
+		"enable_key":         req.EnableKey,
+		"cdk_limit":          req.CdkLimit, // 单次消耗卡密额度
+		"is_prompt":          req.IsPrompt,
+		"prompt_level":       req.PromptLevel,
+		"prompt_content":     req.PromptContent,
+		"updated_at":         time.Now(),
 	}
 
 	// 如果提供了启用状态，则更新
@@ -133,20 +137,22 @@ func (s *EnvService) GetEnv(id int64) (*schema.GetEnvResponse, error) {
 	}
 
 	return &schema.GetEnvResponse{
-		ID:            env.ID,
-		Name:          env.Name,
-		Remarks:       env.Remarks,
-		Quantity:      env.Quantity,
-		Regex:         env.Regex,
-		Mode:          env.Mode,
-		RegexUpdate:   env.RegexUpdate,
-		EnableKey:     env.EnableKey,
-		IsPrompt:      env.IsPrompt,
-		PromptLevel:   env.PromptLevel,
-		PromptContent: env.PromptContent,
-		IsEnable:      env.IsEnable,
-		CreatedAt:     env.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt:     env.UpdatedAt.Format("2006-01-02 15:04:05"),
+		ID:              env.ID,
+		Name:            env.Name,
+		Remarks:         env.Remarks,
+		Quantity:        env.Quantity,
+		Regex:           env.Regex,
+		Mode:            env.Mode,
+		RegexUpdate:     env.RegexUpdate,
+		IsAutoEnvEnable: env.IsAutoEnvEnable, // 是否自动启用提交的变量
+		EnableKey:       env.EnableKey,
+		CdkLimit:        env.CdkLimit, // 单次消耗卡密额度
+		IsPrompt:        env.IsPrompt,
+		PromptLevel:     env.PromptLevel,
+		PromptContent:   env.PromptContent,
+		IsEnable:        env.IsEnable,
+		CreatedAt:       env.CreatedAt.Format("2006-01-02 15:04:05"),
+		UpdatedAt:       env.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}, nil
 }
 
@@ -195,20 +201,22 @@ func (s *EnvService) GetEnvList(req schema.GetEnvListRequest) (*schema.GetEnvLis
 	list := make([]schema.GetEnvResponse, 0, len(envs))
 	for _, env := range envs {
 		list = append(list, schema.GetEnvResponse{
-			ID:            env.ID,
-			Name:          env.Name,
-			Remarks:       env.Remarks,
-			Quantity:      env.Quantity,
-			Regex:         env.Regex,
-			Mode:          env.Mode,
-			RegexUpdate:   env.RegexUpdate,
-			EnableKey:     env.EnableKey,
-			IsPrompt:      env.IsPrompt,
-			PromptLevel:   env.PromptLevel,
-			PromptContent: env.PromptContent,
-			IsEnable:      env.IsEnable,
-			CreatedAt:     env.CreatedAt.Format("2006-01-02 15:04:05"),
-			UpdatedAt:     env.UpdatedAt.Format("2006-01-02 15:04:05"),
+			ID:              env.ID,
+			Name:            env.Name,
+			Remarks:         env.Remarks,
+			Quantity:        env.Quantity,
+			Regex:           env.Regex,
+			Mode:            env.Mode,
+			RegexUpdate:     env.RegexUpdate,
+			IsAutoEnvEnable: env.IsAutoEnvEnable, // 是否自动启用提交的变量
+			EnableKey:       env.EnableKey,
+			CdkLimit:        env.CdkLimit, // 单次消耗卡密额度
+			IsPrompt:        env.IsPrompt,
+			PromptLevel:     env.PromptLevel,
+			PromptContent:   env.PromptContent,
+			IsEnable:        env.IsEnable,
+			CreatedAt:       env.CreatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt:       env.UpdatedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
 
