@@ -70,6 +70,11 @@ func Routers() *gin.Engine {
 		EnvGroup := authAPI.Group("/env")
 		EnvCon := controller.NewEnvController()
 		EnvCon.EnvRouter(EnvGroup)
+
+		// CDK管理
+		CDKGroup := authAPI.Group("/cdk")
+		CDKCon := controller.NewCDKController()
+		CDKCon.CDKRouter(CDKGroup)
 	}
 
 	return Router
