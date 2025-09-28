@@ -48,6 +48,11 @@ func Routers() *gin.Engine {
 	HealthyCon := controller.NewHealthyController()
 	HealthyCon.HealthyRouter(HealthyGroup)
 
+	// 公开服务
+	OpenGroup := api.Group("/open")
+	OpenCon := controller.NewOpenController()
+	OpenCon.OpenRouter(OpenGroup)
+
 	// 认证校验
 	AuthGroup := api.Group("/auth")
 	AuthCon := controller.NewAuthController()

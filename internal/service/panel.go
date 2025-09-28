@@ -428,3 +428,54 @@ func (s *PanelService) SubmitEnvToPanel(panelID int64, envID int64, envValue str
 
 	return submitResult, nil
 }
+
+// CreateTokenRefreshCallback 创建token刷新回调函数
+func (s *PanelService) CreateTokenRefreshCallback() qinglong.TokenRefreshCallback {
+	return func(panelID int64) (newToken string, err error) {
+		// 查询面板信息
+		panel, err := repository.Panels.Where(repository.Panels.ID.Eq(panelID)).Take()
+		if err != nil {
+			return "", fmt.Errorf("查询面板失败: %w", err)
+		}
+
+		// 使用ClientID和ClientSecret重新获取token
+		qlConfig := qinglong.NewConfig(panel.URL, panel.ClientID, panel.ClientSecret)
+		tokenResp, err := qlConfig.GetConfig()
+		if err != nil {
+			return "", fmt.Errorf("获取新token失败: %w", err)
+		}
+
+		if tokenResp.Code != 200 {
+			return "", fmt.Errorf("获取token失败，响应码: %d, 消息: %s", tokenResp.Code, tokenResp.Message)
+		}
+
+		newToken = tokenResp.Data.Token
+
+		// 更新数据库中的token
+		_, err = repository.Panels.Where(repository.Panels.ID.Eq(panelID)).
+			UpdateSimple(repository.Panels.Token.Value(newToken))
+		if err != nil {
+			return "", fmt.Errorf("更新数据库token失败: %w", err)
+		}
+
+		return newToken, nil
+	}
+}
+
+// CreateQlAPIWithAutoRefresh 创建带自动刷新功能的API实例
+func (s *PanelService) CreateQlAPIWithAutoRefresh(panelID int64) (*qinglong.QlAPI, error) {
+	// 查询面板信息
+	panel, err := repository.Panels.Where(
+		repository.Panels.ID.Eq(panelID),
+		repository.Panels.IsEnable.Is(true),
+	).Take()
+	if err != nil {
+		return nil, fmt.Errorf("查询面板失败: %w", err)
+	}
+
+	// 创建带面板信息和回调函数的API实例
+	callback := s.CreateTokenRefreshCallback()
+	api := qinglong.NewAPIWithPanel(panel.URL, panel.Token, int(panel.Params), panelID, callback)
+
+	return api, nil
+}
