@@ -16,59 +16,74 @@ import (
 )
 
 var (
-	Q              = new(Query)
-	CdKeys         *cdKeys
-	EnvPanels      *envPanels
-	Envs           *envs
-	LoginHistories *loginHistories
-	Panels         *panels
-	Users          *users
+	Q                   = new(Query)
+	CdKeys              *cdKeys
+	EnvPanels           *envPanels
+	EnvPlugins          *envPlugins
+	Envs                *envs
+	LoginHistories      *loginHistories
+	Panels              *panels
+	PluginExecutionLogs *pluginExecutionLogs
+	Plugins             *plugins
+	Users               *users
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	CdKeys = &Q.CdKeys
 	EnvPanels = &Q.EnvPanels
+	EnvPlugins = &Q.EnvPlugins
 	Envs = &Q.Envs
 	LoginHistories = &Q.LoginHistories
 	Panels = &Q.Panels
+	PluginExecutionLogs = &Q.PluginExecutionLogs
+	Plugins = &Q.Plugins
 	Users = &Q.Users
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:             db,
-		CdKeys:         newCdKeys(db, opts...),
-		EnvPanels:      newEnvPanels(db, opts...),
-		Envs:           newEnvs(db, opts...),
-		LoginHistories: newLoginHistories(db, opts...),
-		Panels:         newPanels(db, opts...),
-		Users:          newUsers(db, opts...),
+		db:                  db,
+		CdKeys:              newCdKeys(db, opts...),
+		EnvPanels:           newEnvPanels(db, opts...),
+		EnvPlugins:          newEnvPlugins(db, opts...),
+		Envs:                newEnvs(db, opts...),
+		LoginHistories:      newLoginHistories(db, opts...),
+		Panels:              newPanels(db, opts...),
+		PluginExecutionLogs: newPluginExecutionLogs(db, opts...),
+		Plugins:             newPlugins(db, opts...),
+		Users:               newUsers(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	CdKeys         cdKeys
-	EnvPanels      envPanels
-	Envs           envs
-	LoginHistories loginHistories
-	Panels         panels
-	Users          users
+	CdKeys              cdKeys
+	EnvPanels           envPanels
+	EnvPlugins          envPlugins
+	Envs                envs
+	LoginHistories      loginHistories
+	Panels              panels
+	PluginExecutionLogs pluginExecutionLogs
+	Plugins             plugins
+	Users               users
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:             db,
-		CdKeys:         q.CdKeys.clone(db),
-		EnvPanels:      q.EnvPanels.clone(db),
-		Envs:           q.Envs.clone(db),
-		LoginHistories: q.LoginHistories.clone(db),
-		Panels:         q.Panels.clone(db),
-		Users:          q.Users.clone(db),
+		db:                  db,
+		CdKeys:              q.CdKeys.clone(db),
+		EnvPanels:           q.EnvPanels.clone(db),
+		EnvPlugins:          q.EnvPlugins.clone(db),
+		Envs:                q.Envs.clone(db),
+		LoginHistories:      q.LoginHistories.clone(db),
+		Panels:              q.Panels.clone(db),
+		PluginExecutionLogs: q.PluginExecutionLogs.clone(db),
+		Plugins:             q.Plugins.clone(db),
+		Users:               q.Users.clone(db),
 	}
 }
 
@@ -82,33 +97,42 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:             db,
-		CdKeys:         q.CdKeys.replaceDB(db),
-		EnvPanels:      q.EnvPanels.replaceDB(db),
-		Envs:           q.Envs.replaceDB(db),
-		LoginHistories: q.LoginHistories.replaceDB(db),
-		Panels:         q.Panels.replaceDB(db),
-		Users:          q.Users.replaceDB(db),
+		db:                  db,
+		CdKeys:              q.CdKeys.replaceDB(db),
+		EnvPanels:           q.EnvPanels.replaceDB(db),
+		EnvPlugins:          q.EnvPlugins.replaceDB(db),
+		Envs:                q.Envs.replaceDB(db),
+		LoginHistories:      q.LoginHistories.replaceDB(db),
+		Panels:              q.Panels.replaceDB(db),
+		PluginExecutionLogs: q.PluginExecutionLogs.replaceDB(db),
+		Plugins:             q.Plugins.replaceDB(db),
+		Users:               q.Users.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	CdKeys         ICdKeysDo
-	EnvPanels      IEnvPanelsDo
-	Envs           IEnvsDo
-	LoginHistories ILoginHistoriesDo
-	Panels         IPanelsDo
-	Users          IUsersDo
+	CdKeys              ICdKeysDo
+	EnvPanels           IEnvPanelsDo
+	EnvPlugins          IEnvPluginsDo
+	Envs                IEnvsDo
+	LoginHistories      ILoginHistoriesDo
+	Panels              IPanelsDo
+	PluginExecutionLogs IPluginExecutionLogsDo
+	Plugins             IPluginsDo
+	Users               IUsersDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		CdKeys:         q.CdKeys.WithContext(ctx),
-		EnvPanels:      q.EnvPanels.WithContext(ctx),
-		Envs:           q.Envs.WithContext(ctx),
-		LoginHistories: q.LoginHistories.WithContext(ctx),
-		Panels:         q.Panels.WithContext(ctx),
-		Users:          q.Users.WithContext(ctx),
+		CdKeys:              q.CdKeys.WithContext(ctx),
+		EnvPanels:           q.EnvPanels.WithContext(ctx),
+		EnvPlugins:          q.EnvPlugins.WithContext(ctx),
+		Envs:                q.Envs.WithContext(ctx),
+		LoginHistories:      q.LoginHistories.WithContext(ctx),
+		Panels:              q.Panels.WithContext(ctx),
+		PluginExecutionLogs: q.PluginExecutionLogs.WithContext(ctx),
+		Plugins:             q.Plugins.WithContext(ctx),
+		Users:               q.Users.WithContext(ctx),
 	}
 }
 
