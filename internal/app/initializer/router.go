@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	_ "github.com/nuanxinqing123/QLToolsV2/docs"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
 	"github.com/nuanxinqing123/QLToolsV2/internal/controller"
 	"github.com/nuanxinqing123/QLToolsV2/internal/middleware"
