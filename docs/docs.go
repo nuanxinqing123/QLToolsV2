@@ -2568,6 +2568,225 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/open/check-cdk": {
+            "post": {
+                "description": "检查卡密是否存在、是否禁用、使用次数是否足够",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "公开接口"
+                ],
+                "summary": "检查卡密",
+                "parameters": [
+                    {
+                        "description": "检查卡密请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.CheckCDKRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "检查成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.CheckCDKResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "检查失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/open/services": {
+            "get": {
+                "description": "获取所有启用的环境变量数据，再查询变量下面所有绑定并启用的面板数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "公开接口"
+                ],
+                "summary": "获取在线服务",
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.GetOnlineServicesResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/open/slots/{env_id}": {
+            "get": {
+                "description": "根据变量配置的位置数，从绑定的面板中计算剩余可用位置数。如果位置数小于0，则固定返回0",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "公开接口"
+                ],
+                "summary": "计算剩余位置",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "环境变量ID",
+                        "name": "env_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "计算成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.CalculateAvailableSlotsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "404": {
+                        "description": "环境变量不存在",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "计算失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/open/submit": {
+            "post": {
+                "description": "提交环境变量，包含完整的验证流程：空内容检查、变量存在性检查、KEY验证、正则校验、位置计算、插件处理、数据提交",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "公开接口"
+                ],
+                "summary": "提交变量",
+                "parameters": [
+                    {
+                        "description": "提交变量请求参数",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schema.SubmitVariableRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "提交成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.SubmitVariableResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    },
+                    "500": {
+                        "description": "提交失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -2661,13 +2880,22 @@ const docTemplate = `{
         "schema.AddEnvRequest": {
             "type": "object",
             "required": [
+                "cdk_limit",
                 "mode",
                 "name",
                 "quantity"
             ],
             "properties": {
+                "cdk_limit": {
+                    "description": "单次消耗卡密额度",
+                    "type": "integer"
+                },
                 "enable_key": {
                     "description": "是否启用KEY",
+                    "type": "boolean"
+                },
+                "is_auto_env_enable": {
+                    "description": "是否自动启用提交的变量",
                     "type": "boolean"
                 },
                 "is_prompt": {
@@ -2792,6 +3020,56 @@ const docTemplate = `{
                 "message": {
                     "description": "消息",
                     "type": "string"
+                }
+            }
+        },
+        "schema.CalculateAvailableSlotsResponse": {
+            "type": "object",
+            "properties": {
+                "available_slots": {
+                    "description": "可用位置数",
+                    "type": "integer"
+                },
+                "env_id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "total_slots": {
+                    "description": "总位置数",
+                    "type": "integer"
+                },
+                "used_slots": {
+                    "description": "已使用位置数",
+                    "type": "integer"
+                }
+            }
+        },
+        "schema.CheckCDKRequest": {
+            "type": "object",
+            "required": [
+                "key"
+            ],
+            "properties": {
+                "key": {
+                    "description": "CDK密钥",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.CheckCDKResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                },
+                "remaining_uses": {
+                    "description": "剩余使用次数",
+                    "type": "integer"
+                },
+                "valid": {
+                    "description": "是否有效",
+                    "type": "boolean"
                 }
             }
         },
@@ -2983,6 +3261,10 @@ const docTemplate = `{
         "schema.GetEnvResponse": {
             "type": "object",
             "properties": {
+                "cdk_limit": {
+                    "description": "单次消耗卡密额度",
+                    "type": "integer"
+                },
                 "created_at": {
                     "description": "创建时间",
                     "type": "string"
@@ -2994,6 +3276,10 @@ const docTemplate = `{
                 "id": {
                     "description": "环境变量ID",
                     "type": "integer"
+                },
+                "is_auto_env_enable": {
+                    "description": "是否自动启用提交的变量",
+                    "type": "boolean"
                 },
                 "is_enable": {
                     "description": "是否启用",
@@ -3038,6 +3324,22 @@ const docTemplate = `{
                 "updated_at": {
                     "description": "更新时间",
                     "type": "string"
+                }
+            }
+        },
+        "schema.GetOnlineServicesResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "在线服务列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.OnlineServiceInfo"
+                    }
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
                 }
             }
         },
@@ -3256,6 +3558,51 @@ const docTemplate = `{
                 }
             }
         },
+        "schema.OnlineServiceInfo": {
+            "type": "object",
+            "properties": {
+                "available_slots": {
+                    "description": "可用位置数",
+                    "type": "integer"
+                },
+                "cdk_limit": {
+                    "description": "单次消耗卡密额度",
+                    "type": "integer"
+                },
+                "enable_key": {
+                    "description": "是否启用KEY",
+                    "type": "boolean"
+                },
+                "id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "is_prompt": {
+                    "description": "是否提示",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "变量名称",
+                    "type": "string"
+                },
+                "prompt_content": {
+                    "description": "提示内容",
+                    "type": "string"
+                },
+                "prompt_level": {
+                    "description": "提示等级",
+                    "type": "string"
+                },
+                "quantity": {
+                    "description": "负载数量",
+                    "type": "integer"
+                },
+                "remarks": {
+                    "description": "备注",
+                    "type": "string"
+                }
+            }
+        },
         "schema.PluginEnvRelationInfo": {
             "type": "object",
             "properties": {
@@ -3417,6 +3764,52 @@ const docTemplate = `{
                 "message": {
                     "description": "消息",
                     "type": "string"
+                }
+            }
+        },
+        "schema.SubmitVariableRequest": {
+            "type": "object",
+            "required": [
+                "env_id",
+                "value"
+            ],
+            "properties": {
+                "env_id": {
+                    "description": "环境变量ID",
+                    "type": "integer"
+                },
+                "key": {
+                    "description": "CDK密钥（如果启用KEY验证）",
+                    "type": "string"
+                },
+                "remarks": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "变量值",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.SubmitVariableResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "description": "消息",
+                    "type": "string"
+                },
+                "remaining_cdk": {
+                    "description": "剩余CDK次数（如果使用了CDK）",
+                    "type": "integer"
+                },
+                "submitted_to": {
+                    "description": "提交到的面板数量",
+                    "type": "integer"
+                },
+                "success": {
+                    "description": "是否成功",
+                    "type": "boolean"
                 }
             }
         },
@@ -3701,12 +4094,17 @@ const docTemplate = `{
         "schema.UpdateEnvRequest": {
             "type": "object",
             "required": [
+                "cdk_limit",
                 "id",
                 "mode",
                 "name",
                 "quantity"
             ],
             "properties": {
+                "cdk_limit": {
+                    "description": "单次消耗卡密额度",
+                    "type": "integer"
+                },
                 "enable_key": {
                     "description": "是否启用KEY",
                     "type": "boolean"
@@ -3714,6 +4112,10 @@ const docTemplate = `{
                 "id": {
                     "description": "环境变量ID",
                     "type": "integer"
+                },
+                "is_auto_env_enable": {
+                    "description": "是否自动启用提交的变量",
+                    "type": "boolean"
                 },
                 "is_enable": {
                     "description": "是否启用（可选）",

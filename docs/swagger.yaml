@@ -63,8 +63,14 @@ definitions:
     type: object
   schema.AddEnvRequest:
     properties:
+      cdk_limit:
+        description: 单次消耗卡密额度
+        type: integer
       enable_key:
         description: 是否启用KEY
+        type: boolean
+      is_auto_env_enable:
+        description: 是否自动启用提交的变量
         type: boolean
       is_prompt:
         description: 是否提示
@@ -94,6 +100,7 @@ definitions:
         description: 备注
         type: string
     required:
+    - cdk_limit
     - mode
     - name
     - quantity
@@ -159,6 +166,41 @@ definitions:
       message:
         description: 消息
         type: string
+    type: object
+  schema.CalculateAvailableSlotsResponse:
+    properties:
+      available_slots:
+        description: 可用位置数
+        type: integer
+      env_id:
+        description: 环境变量ID
+        type: integer
+      total_slots:
+        description: 总位置数
+        type: integer
+      used_slots:
+        description: 已使用位置数
+        type: integer
+    type: object
+  schema.CheckCDKRequest:
+    properties:
+      key:
+        description: CDK密钥
+        type: string
+    required:
+    - key
+    type: object
+  schema.CheckCDKResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+      remaining_uses:
+        description: 剩余使用次数
+        type: integer
+      valid:
+        description: 是否有效
+        type: boolean
     type: object
   schema.CreatePluginRequest:
     properties:
@@ -293,6 +335,9 @@ definitions:
     type: object
   schema.GetEnvResponse:
     properties:
+      cdk_limit:
+        description: 单次消耗卡密额度
+        type: integer
       created_at:
         description: 创建时间
         type: string
@@ -302,6 +347,9 @@ definitions:
       id:
         description: 环境变量ID
         type: integer
+      is_auto_env_enable:
+        description: 是否自动启用提交的变量
+        type: boolean
       is_enable:
         description: 是否启用
         type: boolean
@@ -335,6 +383,17 @@ definitions:
       updated_at:
         description: 更新时间
         type: string
+    type: object
+  schema.GetOnlineServicesResponse:
+    properties:
+      list:
+        description: 在线服务列表
+        items:
+          $ref: '#/definitions/schema.OnlineServiceInfo'
+        type: array
+      total:
+        description: 总数
+        type: integer
     type: object
   schema.GetPanelListResponse:
     properties:
@@ -490,6 +549,39 @@ definitions:
         description: 消息
         type: string
     type: object
+  schema.OnlineServiceInfo:
+    properties:
+      available_slots:
+        description: 可用位置数
+        type: integer
+      cdk_limit:
+        description: 单次消耗卡密额度
+        type: integer
+      enable_key:
+        description: 是否启用KEY
+        type: boolean
+      id:
+        description: 环境变量ID
+        type: integer
+      is_prompt:
+        description: 是否提示
+        type: boolean
+      name:
+        description: 变量名称
+        type: string
+      prompt_content:
+        description: 提示内容
+        type: string
+      prompt_level:
+        description: 提示等级
+        type: string
+      quantity:
+        description: 负载数量
+        type: integer
+      remarks:
+        description: 备注
+        type: string
+    type: object
   schema.PluginEnvRelationInfo:
     properties:
       config:
@@ -606,6 +698,39 @@ definitions:
       message:
         description: 消息
         type: string
+    type: object
+  schema.SubmitVariableRequest:
+    properties:
+      env_id:
+        description: 环境变量ID
+        type: integer
+      key:
+        description: CDK密钥（如果启用KEY验证）
+        type: string
+      remarks:
+        description: 备注
+        type: string
+      value:
+        description: 变量值
+        type: string
+    required:
+    - env_id
+    - value
+    type: object
+  schema.SubmitVariableResponse:
+    properties:
+      message:
+        description: 消息
+        type: string
+      remaining_cdk:
+        description: 剩余CDK次数（如果使用了CDK）
+        type: integer
+      submitted_to:
+        description: 提交到的面板数量
+        type: integer
+      success:
+        description: 是否成功
+        type: boolean
     type: object
   schema.TestPanelConnectionRequest:
     properties:
@@ -804,12 +929,18 @@ definitions:
     type: object
   schema.UpdateEnvRequest:
     properties:
+      cdk_limit:
+        description: 单次消耗卡密额度
+        type: integer
       enable_key:
         description: 是否启用KEY
         type: boolean
       id:
         description: 环境变量ID
         type: integer
+      is_auto_env_enable:
+        description: 是否自动启用提交的变量
+        type: boolean
       is_enable:
         description: 是否启用（可选）
         type: boolean
@@ -841,6 +972,7 @@ definitions:
         description: 备注
         type: string
     required:
+    - cdk_limit
     - id
     - mode
     - name
@@ -2468,6 +2600,138 @@ paths:
       summary: 更新插件
       tags:
       - 插件管理
+  /open/check-cdk:
+    post:
+      consumes:
+      - application/json
+      description: 检查卡密是否存在、是否禁用、使用次数是否足够
+      parameters:
+      - description: 检查卡密请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.CheckCDKRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 检查成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.CheckCDKResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 检查失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 检查卡密
+      tags:
+      - 公开接口
+  /open/services:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有启用的环境变量数据，再查询变量下面所有绑定并启用的面板数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.GetOnlineServicesResponse'
+              type: object
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 获取在线服务
+      tags:
+      - 公开接口
+  /open/slots/{env_id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据变量配置的位置数，从绑定的面板中计算剩余可用位置数。如果位置数小于0，则固定返回0
+      parameters:
+      - description: 环境变量ID
+        in: path
+        name: env_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 计算成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.CalculateAvailableSlotsResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "404":
+          description: 环境变量不存在
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 计算失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 计算剩余位置
+      tags:
+      - 公开接口
+  /open/submit:
+    post:
+      consumes:
+      - application/json
+      description: 提交环境变量，包含完整的验证流程：空内容检查、变量存在性检查、KEY验证、正则校验、位置计算、插件处理、数据提交
+      parameters:
+      - description: 提交变量请求参数
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.SubmitVariableRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 提交成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.SubmitVariableResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/response.Data'
+        "500":
+          description: 提交失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      summary: 提交变量
+      tags:
+      - 公开接口
 securityDefinitions:
   ApiKeyAuth:
     description: Bearer token for API authentication
