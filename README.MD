@@ -43,6 +43,7 @@ docker run -d -p 1500:1500 qltools_v2:latest
 ## 🎯开发计划
 
 - 开发文档: [ApiFox ->](https://apifox.com/apidoc/shared-85e6a037-263e-4a8f-8e96-3c56a924c242)
+- 开发文档 [2.0]: [ApiFox ->](https://s.apifox.cn/44061c8e-28cc-4d58-a044-666f0bdc048d/api-356480357)
 
 【联系方式】
 
