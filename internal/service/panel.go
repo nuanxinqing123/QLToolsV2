@@ -333,3 +333,43 @@ func (s *PanelService) RefreshPanelToken(req schema.RefreshPanelTokenRequest) (*
 		Token:   newToken,
 	}, nil
 }
+
+// TestPanelConnection 测试面板连接
+func (s *PanelService) TestPanelConnection(req schema.TestPanelConnectionRequest) (*schema.TestPanelConnectionResponse, error) {
+	// 创建青龙配置实例
+	qlConfig := qinglong.NewConfig(req.URL, req.ClientID, req.ClientSecret)
+
+	// 尝试获取Token来测试连接
+	tokenResp, err := qlConfig.GetConfig()
+	if err != nil {
+		// 连接失败，返回失败响应
+		return &schema.TestPanelConnectionResponse{
+			Success:     false,
+			Message:     "连接失败",
+			Token:       "",
+			Expiration:  0,
+			ResponseMsg: fmt.Sprintf("网络连接错误: %s", err.Error()),
+		}, nil
+	}
+
+	// 检查API响应状态
+	if tokenResp.Code != 200 {
+		// API返回错误状态，连接失败
+		return &schema.TestPanelConnectionResponse{
+			Success:     false,
+			Message:     "认证失败",
+			Token:       "",
+			Expiration:  0,
+			ResponseMsg: fmt.Sprintf("API响应错误 (Code: %d): %s", tokenResp.Code, tokenResp.Message),
+		}, nil
+	}
+
+	// 连接成功，返回成功响应
+	return &schema.TestPanelConnectionResponse{
+		Success:     true,
+		Message:     "连接成功",
+		Token:       tokenResp.Data.Token,
+		Expiration:  tokenResp.Data.Expiration,
+		ResponseMsg: "面板连接正常，认证成功",
+	}, nil
+}

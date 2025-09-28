@@ -22,13 +22,14 @@ func NewPanelController() *PanelController {
 
 // PanelRouter 面板相关路由注册
 func (ctrl *PanelController) PanelRouter(router *gin.RouterGroup) {
-	router.GET("/list", ctrl.GetPanelList)                // 获取面板列表
-	router.GET("/:id", ctrl.GetPanel)                     // 获取单个面板信息
-	router.POST("/create", ctrl.AddPanel)                 // 创建面板
-	router.PUT("/update", ctrl.UpdatePanel)               // 更新面板
-	router.DELETE("/:id", ctrl.DeletePanel)               // 删除面板
-	router.POST("/toggle-status", ctrl.TogglePanelStatus) // 切换面板状态
-	router.POST("/refresh-token", ctrl.RefreshPanelToken) // 刷新面板Token
+	router.GET("/list", ctrl.GetPanelList)                    // 获取面板列表
+	router.GET("/:id", ctrl.GetPanel)                         // 获取单个面板信息
+	router.POST("/create", ctrl.AddPanel)                     // 创建面板
+	router.PUT("/update", ctrl.UpdatePanel)                   // 更新面板
+	router.DELETE("/:id", ctrl.DeletePanel)                   // 删除面板
+	router.POST("/toggle-status", ctrl.TogglePanelStatus)     // 切换面板状态
+	router.POST("/refresh-token", ctrl.RefreshPanelToken)     // 刷新面板Token
+	router.POST("/test-connection", ctrl.TestPanelConnection) // 测试面板连接
 }
 
 // AddPanel 添加面板
@@ -243,6 +244,36 @@ func (ctrl *PanelController) RefreshPanelToken(c *gin.Context) {
 
 	// 调用服务层刷新面板Token
 	resp, err := ctrl.panelService.RefreshPanelToken(req)
+	if err != nil {
+		response.ResErrorWithMsg(c, response.CodeGenericError, err.Error())
+		return
+	}
+
+	response.ResSuccess(c, resp)
+}
+
+// TestPanelConnection 测试面板连接
+// @Summary 测试面板连接
+// @Description 测试面板连接是否正常，验证连接地址、Client_ID和Client_Secret是否有效
+// @Tags 面板管理
+// @Accept json
+// @Produce json
+// @Param request body schema.TestPanelConnectionRequest true "测试连接请求参数"
+// @Success 200 {object} response.Data{data=schema.TestPanelConnectionResponse} "测试完成"
+// @Failure 400 {object} response.Data "请求参数错误"
+// @Failure 500 {object} response.Data "测试失败"
+// @Router /api/panel/test-connection [post]
+// @Security ApiKeyAuth
+func (ctrl *PanelController) TestPanelConnection(c *gin.Context) {
+	// 解析请求参数
+	var req schema.TestPanelConnectionRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.ResErrorWithMsg(c, response.CodeInvalidParam, "请求参数错误: "+err.Error())
+		return
+	}
+
+	// 调用服务层测试面板连接
+	resp, err := ctrl.panelService.TestPanelConnection(req)
 	if err != nil {
 		response.ResErrorWithMsg(c, response.CodeGenericError, err.Error())
 		return

@@ -88,3 +88,19 @@ type RefreshPanelTokenResponse struct {
 	Message string `json:"message"` // 消息
 	Token   string `json:"token"`   // 新Token
 }
+
+// TestPanelConnectionRequest 测试面板连接请求结构
+type TestPanelConnectionRequest struct {
+	URL          string `json:"url" binding:"required"`           // 连接地址
+	ClientID     string `json:"client_id" binding:"required"`     // Client_ID
+	ClientSecret string `json:"client_secret" binding:"required"` // Client_Secret
+}
+
+// TestPanelConnectionResponse 测试面板连接响应结构
+type TestPanelConnectionResponse struct {
+	Success     bool   `json:"success"`      // 连接是否成功
+	Message     string `json:"message"`      // 消息
+	Token       string `json:"token"`        // Token（连接成功时返回）
+	Expiration  int    `json:"expiration"`   // Token过期时间（连接成功时返回）
+	ResponseMsg string `json:"response_msg"` // API响应消息（连接失败时的详细信息）
+}
