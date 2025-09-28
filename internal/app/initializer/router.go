@@ -75,6 +75,11 @@ func Routers() *gin.Engine {
 		CDKGroup := authAPI.Group("/cdk")
 		CDKCon := controller.NewCDKController()
 		CDKCon.CDKRouter(CDKGroup)
+
+		// 插件管理
+		PluginGroup := authAPI.Group("/plugin")
+		PluginCon := controller.NewPluginController()
+		PluginCon.PluginRouter(PluginGroup)
 	}
 
 	return Router
