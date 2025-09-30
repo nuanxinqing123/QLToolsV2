@@ -65,8 +65,8 @@ func (ctrl *AuthController) GetCaptcha(ctx *gin.Context) {
 
 	// NumOfDigits 表示算式的位数，例如 2 表示 a+b 结果在两位数内；可按需调整难度
 	captchaConfig := base64Captcha.DriverMath{
-		Height:          60,
-		Width:           200,
+		Height:          36,
+		Width:           120,
 		NoiseCount:      0,
 		ShowLineOptions: 2 | 4,
 		BgColor: &color.RGBA{
