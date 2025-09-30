@@ -95,26 +95,65 @@ func (s *OpenService) GetOnlineServices() (*schema.GetOnlineServicesResponse, er
 		return nil, fmt.Errorf("查询环境变量列表失败: %w", err)
 	}
 
-	// 转换为响应格式并计算绑定面板数量
+	// 转换为响应格式并计算可用位置数
 	var list []schema.OnlineServiceInfo
 	for _, env := range envs {
-		// 查询该环境变量绑定的启用面板数量
-		panelCount, err := repository.EnvPanels.WithContext(context.Background()).
+		// 查询该环境变量绑定的启用面板ID
+		var panelIDs []int64
+		err := repository.EnvPanels.WithContext(context.Background()).
+			Select(repository.Panels.ID).
 			Join(repository.Panels, repository.EnvPanels.PanelID.EqCol(repository.Panels.ID)).
 			Where(
 				repository.EnvPanels.EnvID.Eq(env.ID),
 				repository.Panels.IsEnable.Is(true),
-			).Count()
+			).Scan(&panelIDs)
 		if err != nil {
-			return nil, fmt.Errorf("查询面板数量失败: %w", err)
+			return nil, fmt.Errorf("查询绑定面板失败: %w", err)
 		}
 
-		// 计算可用位置数：总位置数 - 已使用位置数
-		// 这里先设置为面板数量 * 负载数量，实际计算在单独的接口中进行
-		availableSlots := int32(panelCount) * env.Quantity
+		// 计算可用位置数：配置变量总数 - 所有面板中该变量的实际数量
+		// 注意：Quantity是所有面板共享的总配额，不是每个面板的配额
+		totalSlots := env.Quantity
+		usedSlots := int32(0)
+
+		// 遍历所有绑定的面板，统计该变量在每个面板中的数量
+		for _, panelID := range panelIDs {
+			// 创建青龙API实例
+			qlAPI, err := s.panelService.CreateQlAPIWithAutoRefresh(panelID)
+			if err != nil {
+				config.Log.Warn(fmt.Sprintf("创建面板%d的API实例失败: %v", panelID, err))
+				continue
+			}
+
+			// 获取面板中的所有环境变量
+			envResponse, err := qlAPI.GetEnvs()
+			if err != nil {
+				config.Log.Warn(fmt.Sprintf("获取面板%d环境变量失败: %v", panelID, err))
+				continue
+			}
+
+			if envResponse.Code != 200 {
+				config.Log.Warn(fmt.Sprintf("获取面板%d环境变量失败，响应码: %d", panelID, envResponse.Code))
+				continue
+			}
+
+			// 统计该面板中匹配的变量数量
+			for _, panelEnv := range envResponse.Data {
+				if panelEnv.Name == env.Name {
+					usedSlots++
+				}
+			}
+		}
+
+		// 计算可用位置数
+		availableSlots := totalSlots - usedSlots
 		if availableSlots < 0 {
 			availableSlots = 0
 		}
+
+		// 调试日志：输出计算过程
+		config.Log.Debug(fmt.Sprintf("环境变量[%s] ID=%d: 绑定面板数=%d, 总配额=%d, 已使用=%d, 可用=%d",
+			env.Name, env.ID, len(panelIDs), totalSlots, usedSlots, availableSlots))
 
 		list = append(list, schema.OnlineServiceInfo{
 			ID:             env.ID,
@@ -150,40 +189,51 @@ func (s *OpenService) CalculateAvailableSlots(req schema.CalculateAvailableSlots
 		return nil, fmt.Errorf("查询环境变量失败: %w", err)
 	}
 
-	// 查询该环境变量绑定的启用面板
-	type PanelInfo struct {
-		ID     int64
-		Params int32
-	}
-
-	var panels []PanelInfo
+	// 查询该环境变量绑定的启用面板ID
+	var panelIDs []int64
 	err = repository.EnvPanels.WithContext(context.Background()).
-		Select(repository.Panels.ID, repository.Panels.Params).
+		Select(repository.Panels.ID).
 		Join(repository.Panels, repository.EnvPanels.PanelID.EqCol(repository.Panels.ID)).
 		Where(
 			repository.EnvPanels.EnvID.Eq(req.EnvID),
 			repository.Panels.IsEnable.Is(true),
-		).Scan(&panels)
+		).Scan(&panelIDs)
 	if err != nil {
 		return nil, fmt.Errorf("查询绑定面板失败: %w", err)
 	}
 
 	// 计算总位置数和已使用位置数
-	totalSlots := int32(0)
+	// 注意：Quantity是所有面板共享的总配额，不是每个面板的配额
+	totalSlots := env.Quantity
 	usedSlots := int32(0)
 
-	for _, panel := range panels {
-		// 每个面板的总位置数 = 环境变量的负载数量
-		panelTotalSlots := env.Quantity
-		totalSlots += panelTotalSlots
-
-		// 已使用位置数 = 面板的Params字段（这里假设Params表示已使用的位置数）
-		// 如果Params > 负载数量，说明用户手动添加了变量，已使用位置数按负载数量计算
-		panelUsedSlots := panel.Params
-		if panelUsedSlots > panelTotalSlots {
-			panelUsedSlots = panelTotalSlots
+	// 遍历所有绑定的面板，统计该变量在每个面板中的数量
+	for _, panelID := range panelIDs {
+		// 创建青龙API实例
+		qlAPI, err := s.panelService.CreateQlAPIWithAutoRefresh(panelID)
+		if err != nil {
+			config.Log.Warn(fmt.Sprintf("创建面板%d的API实例失败: %v", panelID, err))
+			continue
 		}
-		usedSlots += panelUsedSlots
+
+		// 获取面板中的所有环境变量
+		envResponse, err := qlAPI.GetEnvs()
+		if err != nil {
+			config.Log.Warn(fmt.Sprintf("获取面板%d环境变量失败: %v", panelID, err))
+			continue
+		}
+
+		if envResponse.Code != 200 {
+			config.Log.Warn(fmt.Sprintf("获取面板%d环境变量失败，响应码: %d", panelID, envResponse.Code))
+			continue
+		}
+
+		// 统计该面板中匹配的变量数量
+		for _, panelEnv := range envResponse.Data {
+			if panelEnv.Name == env.Name {
+				usedSlots++
+			}
+		}
 	}
 
 	// 计算可用位置数
@@ -406,13 +456,12 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 
 // PanelLoadInfo 面板负载信息
 type PanelLoadInfo struct {
-	PanelID        int64
-	TotalSlots     int32
-	UsedSlots      int32
-	AvailableSlots int32
+	PanelID   int64
+	UsedSlots int32
 }
 
 // selectBestPanelForSubmit 选择最佳面板进行提交（负载均衡）
+// 策略：选择该环境变量数量最少的面板，即负载最轻的面板
 func (s *OpenService) selectBestPanelForSubmit(envID int64, panelIDs []int64) (int64, error) {
 	// 获取环境变量信息
 	env, err := repository.Envs.Where(repository.Envs.ID.Eq(envID)).Take()
@@ -422,34 +471,38 @@ func (s *OpenService) selectBestPanelForSubmit(envID int64, panelIDs []int64) (i
 
 	var panelLoads []PanelLoadInfo
 
-	// 计算每个面板的负载情况
+	// 获取每个面板的负载情况
 	for _, panelID := range panelIDs {
-		// 获取面板信息
-		panel, err := repository.Panels.Where(
-			repository.Panels.ID.Eq(panelID),
-			repository.Panels.IsEnable.Is(true),
-		).Take()
+		// 创建青龙API实例
+		qlAPI, err := s.panelService.CreateQlAPIWithAutoRefresh(panelID)
 		if err != nil {
-			config.Log.Warn(fmt.Sprintf("查询面板%d失败: %v", panelID, err))
+			config.Log.Warn(fmt.Sprintf("创建面板%d的API实例失败: %v", panelID, err))
 			continue
 		}
 
-		// 计算面板负载
-		totalSlots := env.Quantity
-		usedSlots := panel.Params
-		if usedSlots > totalSlots {
-			usedSlots = totalSlots
+		// 获取面板中的所有环境变量
+		envResponse, err := qlAPI.GetEnvs()
+		if err != nil {
+			config.Log.Warn(fmt.Sprintf("获取面板%d环境变量失败: %v", panelID, err))
+			continue
 		}
-		availableSlots := totalSlots - usedSlots
-		if availableSlots < 0 {
-			availableSlots = 0
+
+		if envResponse.Code != 200 {
+			config.Log.Warn(fmt.Sprintf("获取面板%d环境变量失败，响应码: %d", panelID, envResponse.Code))
+			continue
+		}
+
+		// 统计该面板中匹配的变量数量
+		envCount := int32(0)
+		for _, panelEnv := range envResponse.Data {
+			if panelEnv.Name == env.Name {
+				envCount++
+			}
 		}
 
 		panelLoads = append(panelLoads, PanelLoadInfo{
-			PanelID:        panelID,
-			TotalSlots:     totalSlots,
-			UsedSlots:      usedSlots,
-			AvailableSlots: availableSlots,
+			PanelID:   panelID,
+			UsedSlots: envCount,
 		})
 	}
 
@@ -457,18 +510,14 @@ func (s *OpenService) selectBestPanelForSubmit(envID int64, panelIDs []int64) (i
 		return 0, errors.New("没有可用的面板")
 	}
 
-	// 按可用位置数降序排序，选择可用位置最多的面板
+	// 按已使用位置数升序排序，选择负载最轻的面板
 	sort.Slice(panelLoads, func(i, j int) bool {
-		return panelLoads[i].AvailableSlots > panelLoads[j].AvailableSlots
+		return panelLoads[i].UsedSlots < panelLoads[j].UsedSlots
 	})
 
 	bestPanel := panelLoads[0]
-	if bestPanel.AvailableSlots <= 0 {
-		return 0, errors.New("所有面板都已满载")
-	}
-
-	config.Log.Info(fmt.Sprintf("选择面板%d进行提交，可用位置: %d/%d",
-		bestPanel.PanelID, bestPanel.AvailableSlots, bestPanel.TotalSlots))
+	config.Log.Info(fmt.Sprintf("选择面板%d进行提交，当前该变量数量: %d",
+		bestPanel.PanelID, bestPanel.UsedSlots))
 
 	return bestPanel.PanelID, nil
 }
@@ -504,14 +553,6 @@ func (s *OpenService) submitToPanel(panelID int64, name, value, remarks string) 
 	if len(response.Data) > 0 {
 		createdEnvID := response.Data[0].Id
 		config.Log.Info(fmt.Sprintf("成功提交变量到面板%d，变量ID: %d", panelID, createdEnvID))
-
-		// 更新面板的已使用位置数
-		_, err = repository.Panels.Where(repository.Panels.ID.Eq(panelID)).
-			UpdateSimple(repository.Panels.Params.Add(1))
-		if err != nil {
-			config.Log.Warn(fmt.Sprintf("更新面板%d使用计数失败: %v", panelID, err))
-		}
-
 		return createdEnvID, nil
 	}
 
