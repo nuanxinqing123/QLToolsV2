@@ -31,7 +31,6 @@ func newEnvs(db *gorm.DB, opts ...gen.DOOption) envs {
 	_envs.ID = field.NewInt64(tableName, "id")
 	_envs.CreatedAt = field.NewTime(tableName, "created_at")
 	_envs.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_envs.DeletedAt = field.NewField(tableName, "deleted_at")
 	_envs.Name = field.NewString(tableName, "name")
 	_envs.Remarks = field.NewString(tableName, "remarks")
 	_envs.Quantity = field.NewInt32(tableName, "quantity")
@@ -59,7 +58,6 @@ type envs struct {
 	ID              field.Int64  // 主键ID
 	CreatedAt       field.Time   // 创建时间
 	UpdatedAt       field.Time   // 更新时间
-	DeletedAt       field.Field  // 删除时间
 	Name            field.String // 名称
 	Remarks         field.String // 备注
 	Quantity        field.Int32  // 负载数量
@@ -92,7 +90,6 @@ func (e *envs) updateTableName(table string) *envs {
 	e.ID = field.NewInt64(table, "id")
 	e.CreatedAt = field.NewTime(table, "created_at")
 	e.UpdatedAt = field.NewTime(table, "updated_at")
-	e.DeletedAt = field.NewField(table, "deleted_at")
 	e.Name = field.NewString(table, "name")
 	e.Remarks = field.NewString(table, "remarks")
 	e.Quantity = field.NewInt32(table, "quantity")
@@ -122,11 +119,10 @@ func (e *envs) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (e *envs) fillFieldMap() {
-	e.fieldMap = make(map[string]field.Expr, 17)
+	e.fieldMap = make(map[string]field.Expr, 16)
 	e.fieldMap["id"] = e.ID
 	e.fieldMap["created_at"] = e.CreatedAt
 	e.fieldMap["updated_at"] = e.UpdatedAt
-	e.fieldMap["deleted_at"] = e.DeletedAt
 	e.fieldMap["name"] = e.Name
 	e.fieldMap["remarks"] = e.Remarks
 	e.fieldMap["quantity"] = e.Quantity

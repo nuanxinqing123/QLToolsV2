@@ -31,7 +31,6 @@ func newPlugins(db *gorm.DB, opts ...gen.DOOption) plugins {
 	_plugins.ID = field.NewInt64(tableName, "id")
 	_plugins.CreatedAt = field.NewTime(tableName, "created_at")
 	_plugins.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_plugins.DeletedAt = field.NewField(tableName, "deleted_at")
 	_plugins.Name = field.NewString(tableName, "name")
 	_plugins.Description = field.NewString(tableName, "description")
 	_plugins.Version = field.NewString(tableName, "version")
@@ -54,7 +53,6 @@ type plugins struct {
 	ID               field.Int64  // 主键ID
 	CreatedAt        field.Time   // 创建时间
 	UpdatedAt        field.Time   // 更新时间
-	DeletedAt        field.Field  // 删除时间
 	Name             field.String // 插件名称
 	Description      field.String // 插件描述
 	Version          field.String // 插件版本
@@ -82,7 +80,6 @@ func (p *plugins) updateTableName(table string) *plugins {
 	p.ID = field.NewInt64(table, "id")
 	p.CreatedAt = field.NewTime(table, "created_at")
 	p.UpdatedAt = field.NewTime(table, "updated_at")
-	p.DeletedAt = field.NewField(table, "deleted_at")
 	p.Name = field.NewString(table, "name")
 	p.Description = field.NewString(table, "description")
 	p.Version = field.NewString(table, "version")
@@ -107,11 +104,10 @@ func (p *plugins) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (p *plugins) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 12)
+	p.fieldMap = make(map[string]field.Expr, 11)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["updated_at"] = p.UpdatedAt
-	p.fieldMap["deleted_at"] = p.DeletedAt
 	p.fieldMap["name"] = p.Name
 	p.fieldMap["description"] = p.Description
 	p.fieldMap["version"] = p.Version

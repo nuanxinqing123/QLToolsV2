@@ -6,25 +6,22 @@ package model
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 const TableNamePanels = "panels"
 
 // Panels Panel 面板数据
 type Panels struct {
-	ID           int64          `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement:true;comment:主键ID" json:"id"`                     // 主键ID
-	CreatedAt    time.Time      `gorm:"column:created_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:创建时间" json:"created_at"` // 创建时间
-	UpdatedAt    time.Time      `gorm:"column:updated_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:更新时间" json:"updated_at"` // 更新时间
-	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at;type:datetime(3);index:idx_deleted_at,priority:1;comment:删除时间" json:"deleted_at"`       // 删除时间
-	Name         string         `gorm:"column:name;type:varchar(255);not null;comment:名称" json:"name"`                                           // 名称
-	URL          string         `gorm:"column:url;type:varchar(255);not null;comment:连接地址" json:"url"`                                           // 连接地址
-	ClientID     string         `gorm:"column:client_id;type:varchar(255);not null;comment:Client_ID" json:"client_id"`                          // Client_ID
-	ClientSecret string         `gorm:"column:client_secret;type:varchar(255);not null;comment:Client_Secret" json:"client_secret"`              // Client_Secret
-	IsEnable     bool           `gorm:"column:is_enable;type:tinyint(1);not null;comment:是否启用" json:"is_enable"`                                 // 是否启用
-	Token        string         `gorm:"column:token;type:varchar(255);not null;comment:Token" json:"token"`                                      // Token
-	Params       int32          `gorm:"column:params;type:int;not null;comment:Params" json:"params"`                                            // Params
+	ID           int64     `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement:true;comment:主键ID" json:"id"`                     // 主键ID
+	CreatedAt    time.Time `gorm:"column:created_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:创建时间" json:"created_at"` // 创建时间
+	UpdatedAt    time.Time `gorm:"column:updated_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:更新时间" json:"updated_at"` // 更新时间
+	Name         string    `gorm:"column:name;type:varchar(255);not null;comment:名称" json:"name"`                                           // 名称
+	URL          string    `gorm:"column:url;type:varchar(255);not null;comment:连接地址" json:"url"`                                           // 连接地址
+	ClientID     string    `gorm:"column:client_id;type:varchar(255);not null;comment:Client_ID" json:"client_id"`                          // Client_ID
+	ClientSecret string    `gorm:"column:client_secret;type:varchar(255);not null;comment:Client_Secret" json:"client_secret"`              // Client_Secret
+	IsEnable     bool      `gorm:"column:is_enable;type:tinyint(1);not null;comment:是否启用" json:"is_enable"`                                 // 是否启用
+	Token        string    `gorm:"column:token;type:varchar(255);not null;comment:Token" json:"token"`                                      // Token
+	Params       int32     `gorm:"column:params;type:int;not null;comment:Params" json:"params"`                                            // Params
 }
 
 // TableName Panels's table name

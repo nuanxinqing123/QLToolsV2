@@ -31,7 +31,6 @@ func newEnvPlugins(db *gorm.DB, opts ...gen.DOOption) envPlugins {
 	_envPlugins.ID = field.NewInt64(tableName, "id")
 	_envPlugins.CreatedAt = field.NewTime(tableName, "created_at")
 	_envPlugins.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_envPlugins.DeletedAt = field.NewField(tableName, "deleted_at")
 	_envPlugins.EnvID = field.NewInt64(tableName, "env_id")
 	_envPlugins.PluginID = field.NewInt64(tableName, "plugin_id")
 	_envPlugins.IsEnable = field.NewBool(tableName, "is_enable")
@@ -51,7 +50,6 @@ type envPlugins struct {
 	ID             field.Int64  // 主键ID
 	CreatedAt      field.Time   // 创建时间
 	UpdatedAt      field.Time   // 更新时间
-	DeletedAt      field.Field  // 删除时间
 	EnvID          field.Int64  // 环境变量ID
 	PluginID       field.Int64  // 插件ID
 	IsEnable       field.Bool   // 是否启用
@@ -76,7 +74,6 @@ func (e *envPlugins) updateTableName(table string) *envPlugins {
 	e.ID = field.NewInt64(table, "id")
 	e.CreatedAt = field.NewTime(table, "created_at")
 	e.UpdatedAt = field.NewTime(table, "updated_at")
-	e.DeletedAt = field.NewField(table, "deleted_at")
 	e.EnvID = field.NewInt64(table, "env_id")
 	e.PluginID = field.NewInt64(table, "plugin_id")
 	e.IsEnable = field.NewBool(table, "is_enable")
@@ -98,11 +95,10 @@ func (e *envPlugins) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (e *envPlugins) fillFieldMap() {
-	e.fieldMap = make(map[string]field.Expr, 9)
+	e.fieldMap = make(map[string]field.Expr, 8)
 	e.fieldMap["id"] = e.ID
 	e.fieldMap["created_at"] = e.CreatedAt
 	e.fieldMap["updated_at"] = e.UpdatedAt
-	e.fieldMap["deleted_at"] = e.DeletedAt
 	e.fieldMap["env_id"] = e.EnvID
 	e.fieldMap["plugin_id"] = e.PluginID
 	e.fieldMap["is_enable"] = e.IsEnable

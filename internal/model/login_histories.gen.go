@@ -6,21 +6,18 @@ package model
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 const TableNameLoginHistories = "login_histories"
 
 // LoginHistories LoginHistory 登录历史
 type LoginHistories struct {
-	ID        int64          `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement:true;comment:主键ID" json:"id"`                     // 主键ID
-	CreatedAt time.Time      `gorm:"column:created_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:创建时间" json:"created_at"` // 创建时间
-	UpdatedAt time.Time      `gorm:"column:updated_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:更新时间" json:"updated_at"` // 更新时间
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;type:datetime(3);index:idx_deleted_at,priority:1;comment:删除时间" json:"deleted_at"`       // 删除时间
-	IP        string         `gorm:"column:ip;type:varchar(255);not null;comment:IP地址" json:"ip"`                                             // IP地址
-	Address   *string        `gorm:"column:address;type:varchar(255);comment:物理地址" json:"address"`                                            // 物理地址
-	State     bool           `gorm:"column:state;type:tinyint(1);not null;comment:状态 0:失败 1:成功" json:"state"`                                 // 状态 0:失败 1:成功
+	ID        int64     `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement:true;comment:主键ID" json:"id"`                     // 主键ID
+	CreatedAt time.Time `gorm:"column:created_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:创建时间" json:"created_at"` // 创建时间
+	UpdatedAt time.Time `gorm:"column:updated_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:更新时间" json:"updated_at"` // 更新时间
+	IP        string    `gorm:"column:ip;type:varchar(255);not null;comment:IP地址" json:"ip"`                                             // IP地址
+	Address   *string   `gorm:"column:address;type:varchar(255);comment:物理地址" json:"address"`                                            // 物理地址
+	State     bool      `gorm:"column:state;type:tinyint(1);not null;comment:状态 0:失败 1:成功" json:"state"`                                 // 状态 0:失败 1:成功
 }
 
 // TableName LoginHistories's table name

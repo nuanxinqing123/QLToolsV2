@@ -31,7 +31,6 @@ func newLoginHistories(db *gorm.DB, opts ...gen.DOOption) loginHistories {
 	_loginHistories.ID = field.NewInt64(tableName, "id")
 	_loginHistories.CreatedAt = field.NewTime(tableName, "created_at")
 	_loginHistories.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_loginHistories.DeletedAt = field.NewField(tableName, "deleted_at")
 	_loginHistories.IP = field.NewString(tableName, "ip")
 	_loginHistories.Address = field.NewString(tableName, "address")
 	_loginHistories.State = field.NewBool(tableName, "state")
@@ -49,7 +48,6 @@ type loginHistories struct {
 	ID        field.Int64  // 主键ID
 	CreatedAt field.Time   // 创建时间
 	UpdatedAt field.Time   // 更新时间
-	DeletedAt field.Field  // 删除时间
 	IP        field.String // IP地址
 	Address   field.String // 物理地址
 	State     field.Bool   // 状态 0:失败 1:成功
@@ -72,7 +70,6 @@ func (l *loginHistories) updateTableName(table string) *loginHistories {
 	l.ID = field.NewInt64(table, "id")
 	l.CreatedAt = field.NewTime(table, "created_at")
 	l.UpdatedAt = field.NewTime(table, "updated_at")
-	l.DeletedAt = field.NewField(table, "deleted_at")
 	l.IP = field.NewString(table, "ip")
 	l.Address = field.NewString(table, "address")
 	l.State = field.NewBool(table, "state")
@@ -92,11 +89,10 @@ func (l *loginHistories) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (l *loginHistories) fillFieldMap() {
-	l.fieldMap = make(map[string]field.Expr, 7)
+	l.fieldMap = make(map[string]field.Expr, 6)
 	l.fieldMap["id"] = l.ID
 	l.fieldMap["created_at"] = l.CreatedAt
 	l.fieldMap["updated_at"] = l.UpdatedAt
-	l.fieldMap["deleted_at"] = l.DeletedAt
 	l.fieldMap["ip"] = l.IP
 	l.fieldMap["address"] = l.Address
 	l.fieldMap["state"] = l.State

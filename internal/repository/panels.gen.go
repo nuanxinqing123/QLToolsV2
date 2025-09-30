@@ -31,7 +31,6 @@ func newPanels(db *gorm.DB, opts ...gen.DOOption) panels {
 	_panels.ID = field.NewInt64(tableName, "id")
 	_panels.CreatedAt = field.NewTime(tableName, "created_at")
 	_panels.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_panels.DeletedAt = field.NewField(tableName, "deleted_at")
 	_panels.Name = field.NewString(tableName, "name")
 	_panels.URL = field.NewString(tableName, "url")
 	_panels.ClientID = field.NewString(tableName, "client_id")
@@ -53,7 +52,6 @@ type panels struct {
 	ID           field.Int64  // 主键ID
 	CreatedAt    field.Time   // 创建时间
 	UpdatedAt    field.Time   // 更新时间
-	DeletedAt    field.Field  // 删除时间
 	Name         field.String // 名称
 	URL          field.String // 连接地址
 	ClientID     field.String // Client_ID
@@ -80,7 +78,6 @@ func (p *panels) updateTableName(table string) *panels {
 	p.ID = field.NewInt64(table, "id")
 	p.CreatedAt = field.NewTime(table, "created_at")
 	p.UpdatedAt = field.NewTime(table, "updated_at")
-	p.DeletedAt = field.NewField(table, "deleted_at")
 	p.Name = field.NewString(table, "name")
 	p.URL = field.NewString(table, "url")
 	p.ClientID = field.NewString(table, "client_id")
@@ -104,11 +101,10 @@ func (p *panels) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (p *panels) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 11)
+	p.fieldMap = make(map[string]field.Expr, 10)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["updated_at"] = p.UpdatedAt
-	p.fieldMap["deleted_at"] = p.DeletedAt
 	p.fieldMap["name"] = p.Name
 	p.fieldMap["url"] = p.URL
 	p.fieldMap["client_id"] = p.ClientID

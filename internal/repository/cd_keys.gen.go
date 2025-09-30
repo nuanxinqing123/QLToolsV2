@@ -31,7 +31,6 @@ func newCdKeys(db *gorm.DB, opts ...gen.DOOption) cdKeys {
 	_cdKeys.ID = field.NewInt64(tableName, "id")
 	_cdKeys.CreatedAt = field.NewTime(tableName, "created_at")
 	_cdKeys.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_cdKeys.DeletedAt = field.NewField(tableName, "deleted_at")
 	_cdKeys.Key = field.NewString(tableName, "key")
 	_cdKeys.Count_ = field.NewInt32(tableName, "count")
 	_cdKeys.IsEnable = field.NewBool(tableName, "is_enable")
@@ -49,7 +48,6 @@ type cdKeys struct {
 	ID        field.Int64  // 主键ID
 	CreatedAt field.Time   // 创建时间
 	UpdatedAt field.Time   // 更新时间
-	DeletedAt field.Field  // 删除时间
 	Key       field.String // KEY值
 	Count_    field.Int32  // 可用次数
 	IsEnable  field.Bool   // 是否启用
@@ -72,7 +70,6 @@ func (c *cdKeys) updateTableName(table string) *cdKeys {
 	c.ID = field.NewInt64(table, "id")
 	c.CreatedAt = field.NewTime(table, "created_at")
 	c.UpdatedAt = field.NewTime(table, "updated_at")
-	c.DeletedAt = field.NewField(table, "deleted_at")
 	c.Key = field.NewString(table, "key")
 	c.Count_ = field.NewInt32(table, "count")
 	c.IsEnable = field.NewBool(table, "is_enable")
@@ -92,11 +89,10 @@ func (c *cdKeys) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (c *cdKeys) fillFieldMap() {
-	c.fieldMap = make(map[string]field.Expr, 7)
+	c.fieldMap = make(map[string]field.Expr, 6)
 	c.fieldMap["id"] = c.ID
 	c.fieldMap["created_at"] = c.CreatedAt
 	c.fieldMap["updated_at"] = c.UpdatedAt
-	c.fieldMap["deleted_at"] = c.DeletedAt
 	c.fieldMap["key"] = c.Key
 	c.fieldMap["count"] = c.Count_
 	c.fieldMap["is_enable"] = c.IsEnable

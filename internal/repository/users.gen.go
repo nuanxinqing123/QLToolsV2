@@ -31,7 +31,6 @@ func newUsers(db *gorm.DB, opts ...gen.DOOption) users {
 	_users.ID = field.NewInt64(tableName, "id")
 	_users.CreatedAt = field.NewTime(tableName, "created_at")
 	_users.UpdatedAt = field.NewTime(tableName, "updated_at")
-	_users.DeletedAt = field.NewField(tableName, "deleted_at")
 	_users.Username = field.NewString(tableName, "username")
 	_users.Password = field.NewString(tableName, "password")
 
@@ -48,7 +47,6 @@ type users struct {
 	ID        field.Int64  // 主键ID
 	CreatedAt field.Time   // 创建时间
 	UpdatedAt field.Time   // 更新时间
-	DeletedAt field.Field  // 删除时间
 	Username  field.String // 用户名
 	Password  field.String // 密码
 
@@ -70,7 +68,6 @@ func (u *users) updateTableName(table string) *users {
 	u.ID = field.NewInt64(table, "id")
 	u.CreatedAt = field.NewTime(table, "created_at")
 	u.UpdatedAt = field.NewTime(table, "updated_at")
-	u.DeletedAt = field.NewField(table, "deleted_at")
 	u.Username = field.NewString(table, "username")
 	u.Password = field.NewString(table, "password")
 
@@ -89,11 +86,10 @@ func (u *users) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (u *users) fillFieldMap() {
-	u.fieldMap = make(map[string]field.Expr, 6)
+	u.fieldMap = make(map[string]field.Expr, 5)
 	u.fieldMap["id"] = u.ID
 	u.fieldMap["created_at"] = u.CreatedAt
 	u.fieldMap["updated_at"] = u.UpdatedAt
-	u.fieldMap["deleted_at"] = u.DeletedAt
 	u.fieldMap["username"] = u.Username
 	u.fieldMap["password"] = u.Password
 }

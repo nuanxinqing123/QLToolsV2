@@ -6,21 +6,18 @@ package model
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 const TableNameCdKeys = "cd_keys"
 
 // CdKeys CdKey 卡密数据
 type CdKeys struct {
-	ID        int64          `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement:true;comment:主键ID" json:"id"`                     // 主键ID
-	CreatedAt time.Time      `gorm:"column:created_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:创建时间" json:"created_at"` // 创建时间
-	UpdatedAt time.Time      `gorm:"column:updated_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:更新时间" json:"updated_at"` // 更新时间
-	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;type:datetime(3);index:idx_deleted_at,priority:1;comment:删除时间" json:"deleted_at"`       // 删除时间
-	Key       string         `gorm:"column:key;type:varchar(255);not null;uniqueIndex:uniq_key,priority:1;comment:KEY值" json:"key"`           // KEY值
-	Count_    int32          `gorm:"column:count;type:int;not null;comment:可用次数" json:"count"`                                                // 可用次数
-	IsEnable  bool           `gorm:"column:is_enable;type:tinyint(1);not null;default:1;comment:是否启用" json:"is_enable"`                       // 是否启用
+	ID        int64     `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement:true;comment:主键ID" json:"id"`                     // 主键ID
+	CreatedAt time.Time `gorm:"column:created_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:创建时间" json:"created_at"` // 创建时间
+	UpdatedAt time.Time `gorm:"column:updated_at;type:datetime(3);not null;default:CURRENT_TIMESTAMP(3);comment:更新时间" json:"updated_at"` // 更新时间
+	Key       string    `gorm:"column:key;type:varchar(255);not null;uniqueIndex:uniq_key,priority:1;comment:KEY值" json:"key"`           // KEY值
+	Count_    int32     `gorm:"column:count;type:int;not null;comment:可用次数" json:"count"`                                                // 可用次数
+	IsEnable  bool      `gorm:"column:is_enable;type:tinyint(1);not null;default:1;comment:是否启用" json:"is_enable"`                       // 是否启用
 }
 
 // TableName CdKeys's table name
