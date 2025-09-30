@@ -58,7 +58,7 @@ func (s *PanelService) AddPanel(req schema.AddPanelRequest) (*schema.AddPanelRes
 		URL:          req.URL,
 		ClientID:     req.ClientID,
 		ClientSecret: req.ClientSecret,
-		IsEnable:     true, // 默认启用
+		IsEnable:     req.IsEnable,
 		Token:        tokenResp.Data.Token,
 		Params:       int32(tokenResp.Data.Expiration),
 	}
@@ -107,12 +107,8 @@ func (s *PanelService) UpdatePanel(req schema.UpdatePanelRequest) (*schema.Updat
 		"url":           req.URL,
 		"client_id":     req.ClientID,
 		"client_secret": req.ClientSecret,
+		"is_enable":     req.IsEnable,
 		"updated_at":    time.Now(),
-	}
-
-	// 如果提供了启用状态，则更新
-	if req.IsEnable != nil {
-		updates["is_enable"] = *req.IsEnable
 	}
 
 	// 如果连接信息发生变化，需要重新获取Token

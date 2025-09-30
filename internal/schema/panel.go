@@ -6,6 +6,7 @@ type AddPanelRequest struct {
 	URL          string `json:"url" binding:"required"`           // 连接地址
 	ClientID     string `json:"client_id" binding:"required"`     // Client_ID
 	ClientSecret string `json:"client_secret" binding:"required"` // Client_Secret
+	IsEnable     bool   `json:"is_enable"`                        // 是否启用（可选）
 }
 
 // AddPanelResponse 添加面板响应结构
@@ -21,7 +22,7 @@ type UpdatePanelRequest struct {
 	URL          string `json:"url" binding:"required"`           // 连接地址
 	ClientID     string `json:"client_id" binding:"required"`     // Client_ID
 	ClientSecret string `json:"client_secret" binding:"required"` // Client_Secret
-	IsEnable     *bool  `json:"is_enable"`                        // 是否启用（可选）
+	IsEnable     bool   `json:"is_enable"`                        // 是否启用（可选）
 }
 
 // UpdatePanelResponse 更新面板响应结构
