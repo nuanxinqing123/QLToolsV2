@@ -68,6 +68,11 @@ func Routers() *gin.Engine {
 		AuthRequiredCon := controller.NewAuthRequiredController()
 		AuthRequiredCon.AuthRequiredRouter(AuthRequiredGroup)
 
+		// 仪表盘
+		DashboardGroup := authAPI.Group("/dashboard")
+		DashboardCon := controller.NewDashboardController()
+		DashboardCon.DashboardRouter(DashboardGroup)
+
 		// 面板管理
 		PanelGroup := authAPI.Group("/panel")
 		PanelCon := controller.NewPanelController()
