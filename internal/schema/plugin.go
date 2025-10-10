@@ -80,8 +80,8 @@ type DeletePluginResponse struct {
 
 // TogglePluginStatusRequest 切换插件状态请求结构
 type TogglePluginStatusRequest struct {
-	ID       int64 `json:"id" binding:"required"`        // 插件ID
-	IsEnable bool  `json:"is_enable" binding:"required"` // 是否启用
+	ID       int64 `json:"id" binding:"required"` // 插件ID
+	IsEnable bool  `json:"is_enable"`             // 是否启用
 }
 
 // TogglePluginStatusResponse 切换插件状态响应结构

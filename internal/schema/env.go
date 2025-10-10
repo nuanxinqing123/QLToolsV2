@@ -92,8 +92,8 @@ type DeleteEnvConfigResponse struct {
 
 // ToggleEnvStatusRequest 切换环境变量状态请求结构
 type ToggleEnvStatusRequest struct {
-	ID       int64 `json:"id" binding:"required"`        // 环境变量ID
-	IsEnable bool  `json:"is_enable" binding:"required"` // 是否启用
+	ID       int64 `json:"id" binding:"required"` // 环境变量ID
+	IsEnable bool  `json:"is_enable"`             // 是否启用
 }
 
 // ToggleEnvStatusResponse 切换环境变量状态响应结构
