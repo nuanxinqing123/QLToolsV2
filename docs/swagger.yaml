@@ -14,6 +14,21 @@ definitions:
     type: integer
     x-enum-varnames:
     - CodeSuccess
+  schema.ActivityItem:
+    properties:
+      description:
+        description: 描述
+        type: string
+      status:
+        description: 状态：success/warning/error
+        type: string
+      time:
+        description: 时间
+        type: string
+      type:
+        description: 类型：submit/login/error
+        type: string
+    type: object
   schema.AddCDKBatchRequest:
     properties:
       count:
@@ -122,6 +137,9 @@ definitions:
       client_secret:
         description: Client_Secret
         type: string
+      is_enable:
+        description: 是否启用（可选）
+        type: boolean
       name:
         description: 面板名称
         type: string
@@ -582,6 +600,21 @@ definitions:
         description: 备注
         type: string
     type: object
+  schema.OverviewResponse:
+    properties:
+      active_cdk:
+        description: 活跃CDK数量
+        type: integer
+      online_services:
+        description: 在线服务数量（启用的变量数量）
+        type: integer
+      today_submit:
+        description: 今日提交数量
+        type: integer
+      total_panels:
+        description: 总面板数
+        type: integer
+    type: object
   schema.PluginEnvRelationInfo:
     properties:
       config:
@@ -638,6 +671,14 @@ definitions:
       plugin_name:
         description: 插件名称
         type: string
+    type: object
+  schema.RecentActivityResponse:
+    properties:
+      activities:
+        description: 活动列表
+        items:
+          $ref: '#/definitions/schema.ActivityItem'
+        type: array
     type: object
   schema.RefreshPanelTokenRequest:
     properties:
@@ -698,6 +739,50 @@ definitions:
       message:
         description: 消息
         type: string
+    type: object
+  schema.ResourceItem:
+    properties:
+      percentage:
+        description: 使用百分比
+        type: number
+      total:
+        description: 总量（格式化字符串）
+        type: string
+      used:
+        description: 已使用（格式化字符串）
+        type: string
+    type: object
+  schema.ResourceUsageResponse:
+    properties:
+      cpu:
+        allOf:
+        - $ref: '#/definitions/schema.ResourceItem'
+        description: CPU使用情况
+      disk:
+        allOf:
+        - $ref: '#/definitions/schema.ResourceItem'
+        description: 磁盘使用情况
+      memory:
+        allOf:
+        - $ref: '#/definitions/schema.ResourceItem'
+        description: 内存使用情况
+    type: object
+  schema.SubmitTrendItem:
+    properties:
+      count:
+        description: 提交数量
+        type: integer
+      date:
+        description: 日期
+        type: string
+    type: object
+  schema.SubmitTrendResponse:
+    properties:
+      trend:
+        description: 趋势数据
+        items:
+          $ref: '#/definitions/schema.SubmitTrendItem'
+        type: array
     type: object
   schema.SubmitVariableRequest:
     properties:
@@ -802,7 +887,6 @@ definitions:
         type: boolean
     required:
     - id
-    - is_enable
     type: object
   schema.ToggleCDKStatusResponse:
     properties:
@@ -820,7 +904,6 @@ definitions:
         type: boolean
     required:
     - id
-    - is_enable
     type: object
   schema.ToggleEnvStatusResponse:
     properties:
@@ -838,7 +921,6 @@ definitions:
         type: boolean
     required:
     - id
-    - is_enable
     type: object
   schema.TogglePanelStatusResponse:
     properties:
@@ -856,7 +938,6 @@ definitions:
         type: boolean
     required:
     - id
-    - is_enable
     type: object
   schema.TogglePluginStatusResponse:
     properties:
@@ -1484,6 +1565,110 @@ paths:
       summary: 更新CDK
       tags:
       - CDK管理
+  /api/dashboard/overview:
+    get:
+      consumes:
+      - application/json
+      description: 获取在线服务、总面板数、活跃CDK、今日提交等统计数据
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.OverviewResponse'
+              type: object
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取数据总览
+      tags:
+      - 仪表盘
+  /api/dashboard/recent-activity:
+    get:
+      consumes:
+      - application/json
+      description: 获取最近的系统活动记录（当前为模拟数据）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.RecentActivityResponse'
+              type: object
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取最近活动
+      tags:
+      - 仪表盘
+  /api/dashboard/resource-usage:
+    get:
+      consumes:
+      - application/json
+      description: 获取CPU、内存、磁盘的使用情况
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.ResourceUsageResponse'
+              type: object
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取资源使用情况
+      tags:
+      - 仪表盘
+  /api/dashboard/submit-trend:
+    get:
+      consumes:
+      - application/json
+      description: 获取最近7天的提交趋势数据（当前为模拟数据）
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Data'
+            - properties:
+                data:
+                  $ref: '#/definitions/schema.SubmitTrendResponse'
+              type: object
+        "500":
+          description: 获取失败
+          schema:
+            $ref: '#/definitions/response.Data'
+      security:
+      - ApiKeyAuth: []
+      summary: 获取提交趋势
+      tags:
+      - 仪表盘
   /api/env/{id}:
     delete:
       consumes:

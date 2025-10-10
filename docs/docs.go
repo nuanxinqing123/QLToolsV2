@@ -702,6 +702,190 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/dashboard/overview": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "获取在线服务、总面板数、活跃CDK、今日提交等统计数据",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "仪表盘"
+                ],
+                "summary": "获取数据总览",
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.OverviewResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboard/recent-activity": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "获取最近的系统活动记录（当前为模拟数据）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "仪表盘"
+                ],
+                "summary": "获取最近活动",
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.RecentActivityResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboard/resource-usage": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "获取CPU、内存、磁盘的使用情况",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "仪表盘"
+                ],
+                "summary": "获取资源使用情况",
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.ResourceUsageResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboard/submit-trend": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "获取最近7天的提交趋势数据（当前为模拟数据）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "仪表盘"
+                ],
+                "summary": "获取提交趋势",
+                "responses": {
+                    "200": {
+                        "description": "获取成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Data"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/schema.SubmitTrendResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "获取失败",
+                        "schema": {
+                            "$ref": "#/definitions/response.Data"
+                        }
+                    }
+                }
+            }
+        },
         "/api/env/create": {
             "post": {
                 "security": [
@@ -2810,6 +2994,27 @@ const docTemplate = `{
                 "CodeSuccess"
             ]
         },
+        "schema.ActivityItem": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "描述",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "状态：success/warning/error",
+                    "type": "string"
+                },
+                "time": {
+                    "description": "时间",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "类型：submit/login/error",
+                    "type": "string"
+                }
+            }
+        },
         "schema.AddCDKBatchRequest": {
             "type": "object",
             "required": [
@@ -2965,6 +3170,10 @@ const docTemplate = `{
                 "client_secret": {
                     "description": "Client_Secret",
                     "type": "string"
+                },
+                "is_enable": {
+                    "description": "是否启用（可选）",
+                    "type": "boolean"
                 },
                 "name": {
                     "description": "面板名称",
@@ -3603,6 +3812,27 @@ const docTemplate = `{
                 }
             }
         },
+        "schema.OverviewResponse": {
+            "type": "object",
+            "properties": {
+                "active_cdk": {
+                    "description": "活跃CDK数量",
+                    "type": "integer"
+                },
+                "online_services": {
+                    "description": "在线服务数量（启用的变量数量）",
+                    "type": "integer"
+                },
+                "today_submit": {
+                    "description": "今日提交数量",
+                    "type": "integer"
+                },
+                "total_panels": {
+                    "description": "总面板数",
+                    "type": "integer"
+                }
+            }
+        },
         "schema.PluginEnvRelationInfo": {
             "type": "object",
             "properties": {
@@ -3678,6 +3908,18 @@ const docTemplate = `{
                 "plugin_name": {
                     "description": "插件名称",
                     "type": "string"
+                }
+            }
+        },
+        "schema.RecentActivityResponse": {
+            "type": "object",
+            "properties": {
+                "activities": {
+                    "description": "活动列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.ActivityItem"
+                    }
                 }
             }
         },
@@ -3764,6 +4006,77 @@ const docTemplate = `{
                 "message": {
                     "description": "消息",
                     "type": "string"
+                }
+            }
+        },
+        "schema.ResourceItem": {
+            "type": "object",
+            "properties": {
+                "percentage": {
+                    "description": "使用百分比",
+                    "type": "number"
+                },
+                "total": {
+                    "description": "总量（格式化字符串）",
+                    "type": "string"
+                },
+                "used": {
+                    "description": "已使用（格式化字符串）",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.ResourceUsageResponse": {
+            "type": "object",
+            "properties": {
+                "cpu": {
+                    "description": "CPU使用情况",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/schema.ResourceItem"
+                        }
+                    ]
+                },
+                "disk": {
+                    "description": "磁盘使用情况",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/schema.ResourceItem"
+                        }
+                    ]
+                },
+                "memory": {
+                    "description": "内存使用情况",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/schema.ResourceItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "schema.SubmitTrendItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "提交数量",
+                    "type": "integer"
+                },
+                "date": {
+                    "description": "日期",
+                    "type": "string"
+                }
+            }
+        },
+        "schema.SubmitTrendResponse": {
+            "type": "object",
+            "properties": {
+                "trend": {
+                    "description": "趋势数据",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schema.SubmitTrendItem"
+                    }
                 }
             }
         },
@@ -3900,8 +4213,7 @@ const docTemplate = `{
         "schema.ToggleCDKStatusRequest": {
             "type": "object",
             "required": [
-                "id",
-                "is_enable"
+                "id"
             ],
             "properties": {
                 "id": {
@@ -3926,8 +4238,7 @@ const docTemplate = `{
         "schema.ToggleEnvStatusRequest": {
             "type": "object",
             "required": [
-                "id",
-                "is_enable"
+                "id"
             ],
             "properties": {
                 "id": {
@@ -3952,8 +4263,7 @@ const docTemplate = `{
         "schema.TogglePanelStatusRequest": {
             "type": "object",
             "required": [
-                "id",
-                "is_enable"
+                "id"
             ],
             "properties": {
                 "id": {
@@ -3978,8 +4288,7 @@ const docTemplate = `{
         "schema.TogglePluginStatusRequest": {
             "type": "object",
             "required": [
-                "id",
-                "is_enable"
+                "id"
             ],
             "properties": {
                 "id": {
