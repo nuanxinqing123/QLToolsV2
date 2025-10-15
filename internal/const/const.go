@@ -1,8 +1,6 @@
 package _const
 
 const (
-	DeBug = "debug"
-
 	// TimeFormatAll 标准时间格式
 	TimeFormatAll = "2006-01-02 15:04:05" // 时间格式
 
@@ -12,4 +10,8 @@ const (
 	Mysql    = "mysql"
 	Postgres = "postgres"
 	SQLite   = "sqlite"
+
+	// CreateMode 提交类型
+	CreateMode = 1 // 新建模式
+	UpdateMode = 2 // 更新模式
 )

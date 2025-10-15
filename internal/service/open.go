@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
+	_const "github.com/nuanxinqing123/QLToolsV2/internal/const"
 	"github.com/nuanxinqing123/QLToolsV2/internal/repository"
 	"github.com/nuanxinqing123/QLToolsV2/internal/schema"
 	"gorm.io/gorm"
@@ -370,7 +371,7 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 	// 根据模式选择提交策略
 	submittedTo := int32(0)
 
-	if env.Mode == 0 {
+	if env.Mode == _const.CreateMode {
 		// 新建模式：使用负载均衡，选择可用位置最多的面板
 		bestPanelID, err := s.selectBestPanelForSubmit(req.EnvID, panelIDs)
 		if err != nil {
@@ -393,7 +394,7 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 
 		submittedTo = 1
 
-	} else if env.Mode == 1 {
+	} else if env.Mode == _const.UpdateMode {
 		// 更新模式：遍历所有面板，根据正则表达式匹配并更新
 		if env.RegexUpdate == nil || *env.RegexUpdate == "" {
 			return nil, errors.New("更新模式下必须设置更新正则表达式")
