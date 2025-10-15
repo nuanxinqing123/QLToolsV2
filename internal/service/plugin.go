@@ -240,6 +240,7 @@ func (s *PluginService) GetPluginList(req schema.GetPluginListRequest) (*schema.
 			ScriptContent:    pluginModel.ScriptContent,
 			IsEnable:         pluginModel.IsEnable,
 			ExecutionTimeout: int(pluginModel.ExecutionTimeout),
+			TriggerEvent:     pluginModel.TriggerEvent,
 			CreatedAt:        pluginModel.CreatedAt.Format("2006-01-02 15:04:05"),
 			UpdatedAt:        pluginModel.UpdatedAt.Format("2006-01-02 15:04:05"),
 		})

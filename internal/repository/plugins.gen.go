@@ -38,6 +38,7 @@ func newPlugins(db *gorm.DB, opts ...gen.DOOption) plugins {
 	_plugins.ScriptContent = field.NewString(tableName, "script_content")
 	_plugins.IsEnable = field.NewBool(tableName, "is_enable")
 	_plugins.ExecutionTimeout = field.NewInt32(tableName, "execution_timeout")
+	_plugins.TriggerEvent = field.NewString(tableName, "trigger_event")
 	_plugins.Priority = field.NewInt32(tableName, "priority")
 
 	_plugins.fillFieldMap()
@@ -60,6 +61,7 @@ type plugins struct {
 	ScriptContent    field.String // JavaScript脚本内容
 	IsEnable         field.Bool   // 是否启用
 	ExecutionTimeout field.Int32  // 执行超时时间(毫秒)
+	TriggerEvent     field.String // 触发事件
 	Priority         field.Int32  // 执行优先级
 
 	fieldMap map[string]field.Expr
@@ -87,6 +89,7 @@ func (p *plugins) updateTableName(table string) *plugins {
 	p.ScriptContent = field.NewString(table, "script_content")
 	p.IsEnable = field.NewBool(table, "is_enable")
 	p.ExecutionTimeout = field.NewInt32(table, "execution_timeout")
+	p.TriggerEvent = field.NewString(table, "trigger_event")
 	p.Priority = field.NewInt32(table, "priority")
 
 	p.fillFieldMap()
@@ -104,7 +107,7 @@ func (p *plugins) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (p *plugins) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 11)
+	p.fieldMap = make(map[string]field.Expr, 12)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["updated_at"] = p.UpdatedAt
@@ -115,6 +118,7 @@ func (p *plugins) fillFieldMap() {
 	p.fieldMap["script_content"] = p.ScriptContent
 	p.fieldMap["is_enable"] = p.IsEnable
 	p.fieldMap["execution_timeout"] = p.ExecutionTimeout
+	p.fieldMap["trigger_event"] = p.TriggerEvent
 	p.fieldMap["priority"] = p.Priority
 }
 

@@ -22,6 +22,7 @@ type Plugins struct {
 	ScriptContent    string    `gorm:"column:script_content;type:longtext;not null;comment:JavaScript脚本内容" json:"script_content"`                        // JavaScript脚本内容
 	IsEnable         bool      `gorm:"column:is_enable;type:tinyint(1);not null;index:idx_is_enable,priority:1;default:1;comment:是否启用" json:"is_enable"` // 是否启用
 	ExecutionTimeout int32     `gorm:"column:execution_timeout;type:int;not null;default:10000;comment:执行超时时间(毫秒)" json:"execution_timeout"`             // 执行超时时间(毫秒)
+	TriggerEvent     string    `gorm:"column:trigger_event;type:varchar(255);not null;default:before_submit;comment:触发事件" json:"trigger_event"`          // 触发事件
 	Priority         int32     `gorm:"column:priority;type:int;not null;default:10;comment:执行优先级" json:"priority"`                                       // 执行优先级
 }
 
