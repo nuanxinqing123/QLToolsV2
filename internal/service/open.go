@@ -7,9 +7,11 @@ import (
 	"regexp"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
 	_const "github.com/nuanxinqing123/QLToolsV2/internal/const"
+	"github.com/nuanxinqing123/QLToolsV2/internal/pkg/plugin"
 	"github.com/nuanxinqing123/QLToolsV2/internal/repository"
 	"github.com/nuanxinqing123/QLToolsV2/internal/schema"
 	"gorm.io/gorm"
@@ -336,18 +338,19 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		req.Value = matched
 	}
 
-	// 判断是否启用插件，并且执行插件处理
+	// 执行插件处理
 	processedValue := req.Value
-
-	// todo 修复插件获取执行相关逻辑
-	//pluginResult, err := s.pluginService.ExecutePluginsForEnv(req.EnvID, req.Value)
-	//if err != nil {
-	//	return nil, fmt.Errorf("执行插件处理失败: %w", err)
-	//}
-	//if pluginResult != nil && pluginResult.Success && len(pluginResult.OutputData) > 0 {
-	//	// 如果插件处理成功且有输出数据，使用处理后的数据
-	//	processedValue = string(pluginResult.OutputData)
-	//}
+	allowSubmit, processErr := s.executeEnvPlugins(req.EnvID, req.Value, &processedValue)
+	if processErr != nil {
+		return nil, fmt.Errorf("执行插件处理失败: %w", processErr)
+	}
+	if !allowSubmit {
+		// 插件返回false,禁止提交
+		return &schema.SubmitVariableResponse{
+			Success: false,
+			Message: processedValue, // processedValue此时包含禁止原因
+		}, nil
+	}
 
 	// 执行实时计算，判断是否还有空余提交位置
 	slotsResp, err := s.CalculateAvailableSlots(schema.CalculateAvailableSlotsRequest{EnvID: req.EnvID})
@@ -378,7 +381,8 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 	// 根据模式选择提交策略
 	submittedTo := int32(0)
 
-	if env.Mode == _const.CreateMode {
+	switch env.Mode {
+	case _const.CreateMode:
 		// 新建模式：使用负载均衡，选择可用位置最多的面板
 		err = s.submitAndAutoEnable(req.EnvID, panelIDs, env.Name, processedValue, req.Remarks, env.IsAutoEnvEnable)
 		if err != nil {
@@ -386,7 +390,7 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		}
 		submittedTo = 1
 
-	} else if env.Mode == _const.UpdateMode {
+	case _const.UpdateMode:
 		// 更新模式：遍历所有面板，根据正则表达式匹配并更新
 		if env.RegexUpdate == nil || *env.RegexUpdate == "" {
 			return nil, errors.New("更新模式下必须设置更新正则表达式")
@@ -409,7 +413,7 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 			submittedTo = int32(updatedCount)
 		}
 
-	} else {
+	default:
 		return nil, fmt.Errorf("不支持的模式: %d", env.Mode)
 	}
 
@@ -674,4 +678,120 @@ func (s *OpenService) updateExistingVariables(panelIDs []int64, envName, regexPa
 	}
 
 	return updatedCount, updatedPanelIDs, nil
+}
+
+// executeEnvPlugins 执行环境变量绑定的插件
+// 返回值: (是否允许继续提交, 错误)
+// processedValue: 插件处理后的值或禁止原因
+func (s *OpenService) executeEnvPlugins(envID int64, envValue string, processedValue *string) (bool, error) {
+	// 查询该环境变量绑定的启用插件，按执行顺序排序
+	var results []struct {
+		EnvPluginID    int64   `gorm:"column:id"`
+		PluginID       int64   `gorm:"column:plugin_id"`
+		ExecutionOrder int32   `gorm:"column:execution_order"`
+		Config         *string `gorm:"column:config"`
+		PluginName     string  `gorm:"column:plugin_name"`
+		ScriptContent  string  `gorm:"column:script_content"`
+		Timeout        int32   `gorm:"column:execution_timeout"`
+		IsPluginEnable bool    `gorm:"column:plugin_is_enable"`
+	}
+
+	err := repository.EnvPlugins.WithContext(context.Background()).
+		Select(
+			repository.EnvPlugins.ID,
+			repository.EnvPlugins.PluginID,
+			repository.EnvPlugins.ExecutionOrder,
+			repository.EnvPlugins.Config,
+			repository.Plugins.Name.As("plugin_name"),
+			repository.Plugins.ScriptContent.As("script_content"),
+			repository.Plugins.ExecutionTimeout.As("execution_timeout"),
+			repository.Plugins.IsEnable.As("plugin_is_enable"),
+		).
+		LeftJoin(repository.Plugins, repository.EnvPlugins.PluginID.EqCol(repository.Plugins.ID)).
+		Where(
+			repository.EnvPlugins.EnvID.Eq(envID),
+			repository.EnvPlugins.IsEnable.Is(true),
+			repository.Plugins.IsEnable.Is(true),
+		).
+		Order(repository.EnvPlugins.ExecutionOrder.Asc()).
+		Scan(&results)
+
+	if err != nil {
+		return false, fmt.Errorf("查询环境变量插件失败: %w", err)
+	}
+
+	// 如果没有插件，直接返回允许提交
+	if len(results) == 0 {
+		*processedValue = envValue
+		return true, nil
+	}
+
+	// 依次执行插件
+	currentValue := envValue
+	for _, item := range results {
+		// 构建执行上下文
+		var configData []byte
+		if item.Config != nil {
+			configData = []byte(*item.Config)
+		} else {
+			configData = []byte("{}")
+		}
+
+		execCtx := &plugin.ExecutionContext{
+			PluginID:  item.PluginID,
+			EnvID:     envID,
+			EnvValue:  currentValue,
+			Config:    configData,
+			Timestamp: time.Now().Unix(),
+		}
+
+		// 执行插件
+		timeout := time.Duration(item.Timeout) * time.Millisecond
+		pluginResult := s.pluginService.engine.Execute(context.Background(), item.ScriptContent, execCtx, timeout)
+
+		// 记录执行日志
+		s.pluginService.logPluginExecution(item.PluginID, envID, pluginResult)
+
+		// 检查执行是否成功
+		if !pluginResult.Success {
+			return false, fmt.Errorf("插件 %s 执行失败: %s", item.PluginName, pluginResult.ErrorMessage)
+		}
+
+		// 解析插件返回结果
+		if pluginResult == nil || len(pluginResult.OutputData) == 0 {
+			// 插件没有返回数据，使用原值继续
+			continue
+		}
+
+		// 解析返回的JSON: {bool: true/false, env: "value"}
+		var result map[string]interface{}
+		if err := config.JSON.Unmarshal(pluginResult.OutputData, &result); err != nil {
+			return false, fmt.Errorf("插件 %s 返回数据格式错误: %w", item.PluginName, err)
+		}
+
+		// 检查bool字段
+		allowContinue, ok := result["bool"].(bool)
+		if !ok {
+			return false, fmt.Errorf("插件 %s 返回数据缺少bool字段或类型错误", item.PluginName)
+		}
+
+		// 获取env字段
+		envResult, ok := result["env"].(string)
+		if !ok {
+			return false, fmt.Errorf("插件 %s 返回数据缺少env字段或类型错误", item.PluginName)
+		}
+
+		// 如果bool为false，禁止提交
+		if !allowContinue {
+			*processedValue = envResult // 此时envResult包含禁止原因
+			return false, nil
+		}
+
+		// 更新当前值，用于下一个插件
+		currentValue = envResult
+	}
+
+	// 所有插件执行完成，返回最终处理后的值
+	*processedValue = currentValue
+	return true, nil
 }
