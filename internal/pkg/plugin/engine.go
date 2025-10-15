@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -159,12 +160,30 @@ func (e *Engine) setupGlobalObjects(vm *goja.Runtime, execCtx *ExecutionContext)
 		}
 	}
 
-	// 设置工具函数
+	// 设置 console 工具函数
 	if errSet := vm.Set("console", map[string]interface{}{
 		"log": func(args ...interface{}) {
 			// 这里可以集成到日志系统
 			logArgs := make([]interface{}, 0, len(args)+1)
 			logArgs = append(logArgs, "[Plugin Log]")
+			logArgs = append(logArgs, args...)
+			fmt.Println(logArgs...)
+		},
+		"info": func(args ...interface{}) {
+			logArgs := make([]interface{}, 0, len(args)+1)
+			logArgs = append(logArgs, "[Plugin Info]")
+			logArgs = append(logArgs, args...)
+			fmt.Println(logArgs...)
+		},
+		"debug": func(args ...interface{}) {
+			logArgs := make([]interface{}, 0, len(args)+1)
+			logArgs = append(logArgs, "[Plugin Debug]")
+			logArgs = append(logArgs, args...)
+			fmt.Println(logArgs...)
+		},
+		"warn": func(args ...interface{}) {
+			logArgs := make([]interface{}, 0, len(args)+1)
+			logArgs = append(logArgs, "[Plugin Warn]")
 			logArgs = append(logArgs, args...)
 			fmt.Println(logArgs...)
 		},
@@ -213,6 +232,153 @@ func (e *Engine) setupGlobalObjects(vm *goja.Runtime, execCtx *ExecutionContext)
 	}); errSet != nil {
 		config.Log.Warn(errSet.Error()) // 仅做错误记录
 	}
+
+	// 设置正则表达式工具
+	if errSet := vm.Set("refind", func(pattern string, text string) interface{} {
+		reg, err := regexp.Compile(pattern)
+		if err != nil {
+			panic(vm.ToValue(fmt.Sprintf("正则表达式编译失败: %v", err)))
+		}
+		matches := reg.FindAllStringSubmatch(text, -1)
+		return matches
+	}); errSet != nil {
+		config.Log.Warn(errSet.Error()) // 仅做错误记录
+	}
+
+	// 设置字符串替换工具
+	if errSet := vm.Set("replace", func(s string, old string, new string, count int) string {
+		if count == 0 {
+			count = 1
+		}
+		return strings.Replace(s, old, new, count)
+	}); errSet != nil {
+		config.Log.Warn(errSet.Error()) // 仅做错误记录
+	}
+
+	// 设置字符串工具集
+	if errSet := vm.Set("String", map[string]interface{}{
+		"trim": func(s string) string {
+			return strings.TrimSpace(s)
+		},
+		"trimLeft": func(s string, cutset string) string {
+			return strings.TrimLeft(s, cutset)
+		},
+		"trimRight": func(s string, cutset string) string {
+			return strings.TrimRight(s, cutset)
+		},
+		"split": func(s string, sep string) []string {
+			return strings.Split(s, sep)
+		},
+		"join": func(arr []interface{}, sep string) string {
+			strArr := make([]string, len(arr))
+			for i, v := range arr {
+				strArr[i] = fmt.Sprint(v)
+			}
+			return strings.Join(strArr, sep)
+		},
+		"contains": func(s string, substr string) bool {
+			return strings.Contains(s, substr)
+		},
+		"hasPrefix": func(s string, prefix string) bool {
+			return strings.HasPrefix(s, prefix)
+		},
+		"hasSuffix": func(s string, suffix string) bool {
+			return strings.HasSuffix(s, suffix)
+		},
+		"toUpper": func(s string) string {
+			return strings.ToUpper(s)
+		},
+		"toLower": func(s string) string {
+			return strings.ToLower(s)
+		},
+		"replace": func(s string, old string, new string, n int) string {
+			if n == 0 {
+				n = -1 // 替换所有
+			}
+			return strings.Replace(s, old, new, n)
+		},
+		"replaceAll": func(s string, old string, new string) string {
+			return strings.ReplaceAll(s, old, new)
+		},
+		"indexOf": func(s string, substr string) int {
+			return strings.Index(s, substr)
+		},
+		"lastIndexOf": func(s string, substr string) int {
+			return strings.LastIndex(s, substr)
+		},
+		"substring": func(s string, start int, end int) string {
+			if start < 0 {
+				start = 0
+			}
+			if end > len(s) {
+				end = len(s)
+			}
+			if start > end {
+				return ""
+			}
+			return s[start:end]
+		},
+		"substr": func(s string, start int, length int) string {
+			if start < 0 {
+				start = 0
+			}
+			end := start + length
+			if end > len(s) {
+				end = len(s)
+			}
+			return s[start:end]
+		},
+	}); errSet != nil {
+		config.Log.Warn(errSet.Error()) // 仅做错误记录
+	}
+
+	// 设置正则表达式工具集
+	if errSet := vm.Set("Regex", map[string]interface{}{
+		"test": func(pattern string, text string) bool {
+			matched, err := regexp.MatchString(pattern, text)
+			if err != nil {
+				return false
+			}
+			return matched
+		},
+		"match": func(pattern string, text string) interface{} {
+			reg, err := regexp.Compile(pattern)
+			if err != nil {
+				return nil
+			}
+			return reg.FindString(text)
+		},
+		"matchAll": func(pattern string, text string) []string {
+			reg, err := regexp.Compile(pattern)
+			if err != nil {
+				return []string{}
+			}
+			return reg.FindAllString(text, -1)
+		},
+		"findSubmatch": func(pattern string, text string) []string {
+			reg, err := regexp.Compile(pattern)
+			if err != nil {
+				return []string{}
+			}
+			return reg.FindStringSubmatch(text)
+		},
+		"findAllSubmatch": func(pattern string, text string) [][]string {
+			reg, err := regexp.Compile(pattern)
+			if err != nil {
+				return [][]string{}
+			}
+			return reg.FindAllStringSubmatch(text, -1)
+		},
+		"replace": func(pattern string, text string, repl string) string {
+			reg, err := regexp.Compile(pattern)
+			if err != nil {
+				return text
+			}
+			return reg.ReplaceAllString(text, repl)
+		},
+	}); errSet != nil {
+		config.Log.Warn(errSet.Error()) // 仅做错误记录
+	}
 }
 
 // wrapScript 包装用户脚本，确保有正确的结构
@@ -235,6 +401,8 @@ __result;
 // ValidateScript 验证脚本语法
 func (e *Engine) ValidateScript(script string) error {
 	vm := goja.New()
+	// 设置全局变量和函数
+	e.setupGlobalObjects(vm, &ExecutionContext{})
 	wrappedScript := e.wrapScript(script, "test_env_value")
 
 	_, err := vm.RunString(wrappedScript)
