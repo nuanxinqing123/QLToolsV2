@@ -316,18 +316,24 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		remainingCDK = cdkResp.RemainingUses
 	}
 
-	// 4. 校验正则，判断是否满足提交条件
+	// 4. 校验正则，判断是否满足提交条件，并提取匹配内容
 	if env.Regex != nil && *env.Regex != "" {
-		matched, err := regexp.MatchString(*env.Regex, req.Value)
+		re, err := regexp.Compile(*env.Regex)
 		if err != nil {
 			return nil, fmt.Errorf("正则表达式错误: %w", err)
 		}
-		if !matched {
+
+		// 查找匹配的内容
+		matched := re.FindString(req.Value)
+		if matched == "" {
 			return &schema.SubmitVariableResponse{
 				Success: false,
 				Message: "变量值格式不符合要求",
 			}, nil
 		}
+
+		// 将匹配到的内容替换原始值
+		req.Value = matched
 	}
 
 	// 5. 执行实时计算，判断是否还有空余提交位置
