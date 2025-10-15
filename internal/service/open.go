@@ -343,7 +343,7 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		}, nil
 	}
 
-	// 6. 判断是否启用插件，并且执行插件处理
+	// 6. todo 判断是否启用插件，并且执行插件处理
 	processedValue := req.Value
 	pluginResult, err := s.pluginService.ExecutePluginsForEnv(req.EnvID, req.Value)
 	if err != nil {
@@ -373,25 +373,10 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 
 	if env.Mode == _const.CreateMode {
 		// 新建模式：使用负载均衡，选择可用位置最多的面板
-		bestPanelID, err := s.selectBestPanelForSubmit(req.EnvID, panelIDs)
+		err = s.submitAndAutoEnable(req.EnvID, panelIDs, env.Name, processedValue, req.Remarks, env.IsAutoEnvEnable)
 		if err != nil {
-			return nil, fmt.Errorf("选择最佳面板失败: %w", err)
+			return nil, err
 		}
-
-		// 提交到最佳面板
-		panelEnvID, err := s.submitToPanel(bestPanelID, env.Name, processedValue, req.Remarks)
-		if err != nil {
-			return nil, fmt.Errorf("提交到面板%d失败: %w", bestPanelID, err)
-		}
-
-		// 如果需要自动启用，则启用环境变量
-		if env.IsAutoEnvEnable && panelEnvID > 0 {
-			err = s.enablePanelEnv(bestPanelID, panelEnvID)
-			if err != nil {
-				config.Log.Warn(fmt.Sprintf("自动启用面板%d变量%d失败: %v", bestPanelID, panelEnvID, err))
-			}
-		}
-
 		submittedTo = 1
 
 	} else if env.Mode == _const.UpdateMode {
@@ -408,24 +393,10 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		if updatedCount == 0 {
 			// 没有匹配到任何变量，使用新建逻辑
 			config.Log.Info("更新模式下未匹配到任何变量，使用新建逻辑")
-			bestPanelID, err := s.selectBestPanelForSubmit(req.EnvID, panelIDs)
+			err = s.submitAndAutoEnable(req.EnvID, panelIDs, env.Name, processedValue, req.Remarks, env.IsAutoEnvEnable)
 			if err != nil {
-				return nil, fmt.Errorf("选择最佳面板失败: %w", err)
+				return nil, err
 			}
-
-			panelEnvID, err := s.submitToPanel(bestPanelID, env.Name, processedValue, req.Remarks)
-			if err != nil {
-				return nil, fmt.Errorf("提交到面板%d失败: %w", bestPanelID, err)
-			}
-
-			// 如果需要自动启用，则启用环境变量
-			if env.IsAutoEnvEnable && panelEnvID > 0 {
-				err = s.enablePanelEnv(bestPanelID, panelEnvID)
-				if err != nil {
-					config.Log.Warn(fmt.Sprintf("自动启用面板%d变量%d失败: %v", bestPanelID, panelEnvID, err))
-				}
-			}
-
 			submittedTo = 1
 		} else {
 			submittedTo = int32(updatedCount)
@@ -521,6 +492,31 @@ func (s *OpenService) selectBestPanelForSubmit(envID int64, panelIDs []int64) (i
 		bestPanel.PanelID, bestPanel.UsedSlots))
 
 	return bestPanel.PanelID, nil
+}
+
+// submitAndAutoEnable 提交变量到最佳面板并根据配置自动启用
+func (s *OpenService) submitAndAutoEnable(envID int64, panelIDs []int64, envName, processedValue, remarks string, isAutoEnable bool) error {
+	// 选择最佳面板
+	bestPanelID, err := s.selectBestPanelForSubmit(envID, panelIDs)
+	if err != nil {
+		return fmt.Errorf("选择最佳面板失败: %w", err)
+	}
+
+	// 提交到最佳面板
+	panelEnvID, err := s.submitToPanel(bestPanelID, envName, processedValue, remarks)
+	if err != nil {
+		return fmt.Errorf("提交到面板%d失败: %w", bestPanelID, err)
+	}
+
+	// 如果需要自动启用，则启用环境变量
+	if isAutoEnable && panelEnvID > 0 {
+		err = s.enablePanelEnv(bestPanelID, panelEnvID)
+		if err != nil {
+			config.Log.Warn(fmt.Sprintf("自动启用面板%d变量%d失败: %v", bestPanelID, panelEnvID, err))
+		}
+	}
+
+	return nil
 }
 
 // submitToPanel 提交变量到指定面板
