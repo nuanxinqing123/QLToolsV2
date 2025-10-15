@@ -276,7 +276,7 @@ func (s *PluginService) DeletePlugin(req schema.DeletePluginRequest) (*schema.De
 			return fmt.Errorf("删除插件环境变量关联失败: %w", err)
 		}
 
-		// 执行软删除插件
+		// 执行删除插件
 		_, err = tx.Plugins.Where(
 			tx.Plugins.ID.Eq(req.ID),
 		).Delete()
