@@ -253,7 +253,7 @@ func (s *OpenService) CalculateAvailableSlots(req schema.CalculateAvailableSlots
 
 // SubmitVariable 提交变量
 func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.SubmitVariableResponse, error) {
-	// 1. 判断是否为空内容
+	// 判断是否为空内容
 	if req.Value == "" {
 		return &schema.SubmitVariableResponse{
 			Success: false,
@@ -261,7 +261,7 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		}, nil
 	}
 
-	// 2. 检查变量名是否存在并启用
+	// 检查变量名是否存在并启用
 	env, err := repository.Envs.Where(
 		repository.Envs.ID.Eq(req.EnvID),
 		repository.Envs.IsEnable.Is(true),
@@ -278,7 +278,7 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 
 	var remainingCDK int32 = 0
 
-	// 3. 检查是否启用KEY，并且用户提交的KEY是否有效
+	// 检查是否启用KEY，并且用户提交的KEY是否有效
 	if env.EnableKey {
 		if req.Key == "" {
 			return &schema.SubmitVariableResponse{
@@ -316,7 +316,7 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		remainingCDK = cdkResp.RemainingUses
 	}
 
-	// 4. 校验正则，判断是否满足提交条件，并提取匹配内容
+	// 校验正则，判断是否满足提交条件，并提取匹配内容
 	if env.Regex != nil && *env.Regex != "" {
 		re, err := regexp.Compile(*env.Regex)
 		if err != nil {
@@ -336,20 +336,7 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		req.Value = matched
 	}
 
-	// 5. 执行实时计算，判断是否还有空余提交位置
-	slotsResp, err := s.CalculateAvailableSlots(schema.CalculateAvailableSlotsRequest{EnvID: req.EnvID})
-	if err != nil {
-		return nil, fmt.Errorf("计算可用位置失败: %w", err)
-	}
-
-	if slotsResp.AvailableSlots <= 0 {
-		return &schema.SubmitVariableResponse{
-			Success: false,
-			Message: "当前服务已满，暂无可用位置",
-		}, nil
-	}
-
-	// 6. todo 判断是否启用插件，并且执行插件处理
+	// 判断是否启用插件，并且执行插件处理
 	processedValue := req.Value
 	pluginResult, err := s.pluginService.ExecutePluginsForEnv(req.EnvID, req.Value)
 	if err != nil {
@@ -360,7 +347,19 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		processedValue = string(pluginResult.OutputData)
 	}
 
-	// 7. 提交数据到所有绑定的面板，并根据IsAutoEnvEnable判断是否需要启用提交变量
+	// 执行实时计算，判断是否还有空余提交位置
+	slotsResp, err := s.CalculateAvailableSlots(schema.CalculateAvailableSlotsRequest{EnvID: req.EnvID})
+	if err != nil {
+		return nil, fmt.Errorf("计算可用位置失败: %w", err)
+	}
+	if slotsResp.AvailableSlots <= 0 {
+		return &schema.SubmitVariableResponse{
+			Success: false,
+			Message: "当前服务已满，暂无可用位置",
+		}, nil
+	}
+
+	// 提交数据到所有绑定的面板，并根据IsAutoEnvEnable判断是否需要启用提交变量
 	// 查询该环境变量绑定的启用面板
 	var panelIDs []int64
 	err = repository.EnvPanels.WithContext(context.Background()).
