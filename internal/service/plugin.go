@@ -67,6 +67,7 @@ func (s *PluginService) CreatePlugin(req schema.CreatePluginRequest) (*schema.Cr
 		IsEnable:         true, // 默认启用
 		ExecutionTimeout: int32(req.ExecutionTimeout),
 		Priority:         int32(req.Priority),
+		TriggerEvent:     req.TriggerEvent,
 	}
 
 	// 创建插件记录
