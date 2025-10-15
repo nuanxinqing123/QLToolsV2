@@ -388,3 +388,61 @@ func (s *EnvService) GetEnvPanels(req schema.GetEnvPanelsRequest) (*schema.GetEn
 		PanelIDs: panelIDs,
 	}, nil
 }
+
+// GetEnvPlugins 获取环境变量关联的插件
+func (s *EnvService) GetEnvPlugins(req schema.GetEnvPluginsRequest) (*schema.GetEnvPluginsResponse, error) {
+	// 检查环境变量是否存在
+	_, err := repository.Envs.Where(
+		repository.Envs.ID.Eq(req.EnvID),
+	).Take()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("环境变量不存在")
+		}
+		return nil, fmt.Errorf("查询环境变量失败: %w", err)
+	}
+
+	// 查询关联的插件
+	envPlugins, err := repository.EnvPlugins.Where(
+		repository.EnvPlugins.EnvID.Eq(req.EnvID),
+	).Order(repository.EnvPlugins.ExecutionOrder).Find()
+	if err != nil {
+		return nil, fmt.Errorf("查询环境变量关联插件失败: %w", err)
+	}
+
+	// 构建响应数据
+	plugins := make([]schema.EnvPluginRelationInfo, 0, len(envPlugins))
+	for _, envPlugin := range envPlugins {
+		// 查询插件详细信息
+		plugin, err := repository.Plugins.Where(
+			repository.Plugins.ID.Eq(envPlugin.PluginID),
+		).Take()
+		if err != nil {
+			// 如果插件不存在，跳过
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				continue
+			}
+			return nil, fmt.Errorf("查询插件信息失败: %w", err)
+		}
+
+		// 处理配置参数
+		config := ""
+		if envPlugin.Config != nil {
+			config = *envPlugin.Config
+		}
+
+		plugins = append(plugins, schema.EnvPluginRelationInfo{
+			PluginID:       envPlugin.PluginID,
+			PluginName:     plugin.Name,
+			IsEnable:       envPlugin.IsEnable,
+			ExecutionOrder: envPlugin.ExecutionOrder,
+			Config:         config,
+			CreatedAt:      envPlugin.CreatedAt.Format("2006-01-02 15:04:05"),
+		})
+	}
+
+	return &schema.GetEnvPluginsResponse{
+		EnvID:   req.EnvID,
+		Plugins: plugins,
+	}, nil
+}

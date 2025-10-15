@@ -30,6 +30,7 @@ func (ctrl *EnvController) EnvRouter(router *gin.RouterGroup) {
 	router.POST("/toggle-status", ctrl.ToggleEnvStatus) // 切换变量状态
 	router.POST("/panels", ctrl.UpdateEnvPanels)        // 更新环境变量的面板绑定关系
 	router.GET("/panels/:env_id", ctrl.GetEnvPanels)    // 获取变量关联的面板
+	router.GET("/plugins/:env_id", ctrl.GetEnvPlugins)  // 获取变量关联的插件
 }
 
 // AddEnv 添加环境变量
@@ -277,6 +278,38 @@ func (ctrl *EnvController) GetEnvPanels(c *gin.Context) {
 
 	// 调用服务层获取环境变量关联的面板
 	resp, err := ctrl.envService.GetEnvPanels(schema.GetEnvPanelsRequest{EnvID: envID})
+	if err != nil {
+		response.ResErrorWithMsg(c, response.CodeGenericError, err.Error())
+		return
+	}
+
+	response.ResSuccess(c, resp)
+}
+
+// GetEnvPlugins 获取环境变量关联的插件
+// @Summary 获取环境变量关联的插件
+// @Description 获取指定环境变量关联的所有插件信息
+// @Tags 环境变量管理
+// @Accept json
+// @Produce json
+// @Param env_id path int true "环境变量ID"
+// @Success 200 {object} response.Data{data=schema.GetEnvPluginsResponse} "获取成功"
+// @Failure 400 {object} response.Data "请求参数错误"
+// @Failure 404 {object} response.Data "环境变量不存在"
+// @Failure 500 {object} response.Data "获取失败"
+// @Router /api/env/plugins/{env_id} [get]
+// @Security ApiKeyAuth
+func (ctrl *EnvController) GetEnvPlugins(c *gin.Context) {
+	// 解析路径参数
+	envIDStr := c.Param("env_id")
+	envID, err := strconv.ParseInt(envIDStr, 10, 64)
+	if err != nil {
+		response.ResErrorWithMsg(c, response.CodeInvalidParam, "环境变量ID格式错误")
+		return
+	}
+
+	// 调用服务层获取环境变量关联的插件
+	resp, err := ctrl.envService.GetEnvPlugins(schema.GetEnvPluginsRequest{EnvID: envID})
 	if err != nil {
 		response.ResErrorWithMsg(c, response.CodeGenericError, err.Error())
 		return

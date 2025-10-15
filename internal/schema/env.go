@@ -122,3 +122,24 @@ type GetEnvPanelsResponse struct {
 	EnvID    int64   `json:"env_id"`    // 环境变量ID
 	PanelIDs []int64 `json:"panel_ids"` // 关联的面板ID列表
 }
+
+// GetEnvPluginsRequest 获取环境变量关联插件请求结构
+type GetEnvPluginsRequest struct {
+	EnvID int64 `form:"env_id" binding:"required"` // 环境变量ID
+}
+
+// GetEnvPluginsResponse 获取环境变量关联插件响应结构
+type GetEnvPluginsResponse struct {
+	EnvID   int64                   `json:"env_id"` // 环境变量ID
+	Plugins []EnvPluginRelationInfo `json:"plugins"` // 关联插件列表
+}
+
+// EnvPluginRelationInfo 环境变量插件关联信息
+type EnvPluginRelationInfo struct {
+	PluginID       int64  `json:"plugin_id"`       // 插件ID
+	PluginName     string `json:"plugin_name"`     // 插件名称
+	IsEnable       bool   `json:"is_enable"`       // 是否启用
+	ExecutionOrder int32  `json:"execution_order"` // 执行顺序
+	Config         string `json:"config"`          // 插件配置参数
+	CreatedAt      string `json:"created_at"`      // 创建时间
+}
