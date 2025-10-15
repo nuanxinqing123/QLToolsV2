@@ -338,14 +338,16 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 
 	// 判断是否启用插件，并且执行插件处理
 	processedValue := req.Value
-	pluginResult, err := s.pluginService.ExecutePluginsForEnv(req.EnvID, req.Value)
-	if err != nil {
-		return nil, fmt.Errorf("执行插件处理失败: %w", err)
-	}
-	if pluginResult != nil && pluginResult.Success && len(pluginResult.OutputData) > 0 {
-		// 如果插件处理成功且有输出数据，使用处理后的数据
-		processedValue = string(pluginResult.OutputData)
-	}
+
+	// todo 修复插件获取执行相关逻辑
+	//pluginResult, err := s.pluginService.ExecutePluginsForEnv(req.EnvID, req.Value)
+	//if err != nil {
+	//	return nil, fmt.Errorf("执行插件处理失败: %w", err)
+	//}
+	//if pluginResult != nil && pluginResult.Success && len(pluginResult.OutputData) > 0 {
+	//	// 如果插件处理成功且有输出数据，使用处理后的数据
+	//	processedValue = string(pluginResult.OutputData)
+	//}
 
 	// 执行实时计算，判断是否还有空余提交位置
 	slotsResp, err := s.CalculateAvailableSlots(schema.CalculateAvailableSlotsRequest{EnvID: req.EnvID})
@@ -592,6 +594,12 @@ func (s *OpenService) updateExistingVariables(panelIDs []int64, envName, regexPa
 		return 0, nil, fmt.Errorf("编译正则表达式失败: %w", err)
 	}
 
+	// 预先从用户提交的值中提取匹配正则的内容（所有面板共享此结果）
+	submittedMatch := regex.FindString(newValue)
+	if submittedMatch == "" {
+		return 0, nil, fmt.Errorf("用户提交的值不匹配正则表达式")
+	}
+
 	updatedCount := 0
 	var updatedPanelIDs []int64
 
@@ -621,8 +629,15 @@ func (s *OpenService) updateExistingVariables(panelIDs []int64, envName, regexPa
 		for _, env := range envResponse.Data {
 			// 检查变量名是否匹配
 			if env.Name == envName {
-				// 检查变量值是否匹配正则表达式
-				if regex.MatchString(env.Value) {
+				// 从API返回的变量值中提取匹配正则的内容
+				existingMatch := regex.FindString(env.Value)
+				if existingMatch == "" {
+					// API返回的值不匹配正则，跳过
+					continue
+				}
+
+				// 只有当两者提取的内容相同时，才更新该变量
+				if submittedMatch == existingMatch {
 					// 更新变量
 					updateRequest := schema.PutEnvRequest{
 						Id:      env.Id,
@@ -642,8 +657,10 @@ func (s *OpenService) updateExistingVariables(panelIDs []int64, envName, regexPa
 						continue
 					}
 
-					config.Log.Info(fmt.Sprintf("成功更新面板%d变量%d: %s", panelID, env.Id, env.Name))
+					config.Log.Info(fmt.Sprintf("成功更新面板%d变量%d: %s (匹配内容: %s)", panelID, env.Id, env.Name, submittedMatch))
 					panelUpdated = true
+					// 更新成功后立即结束，停止继续匹配该面板的其他变量
+					break
 				}
 			}
 		}
@@ -651,6 +668,8 @@ func (s *OpenService) updateExistingVariables(panelIDs []int64, envName, regexPa
 		if panelUpdated {
 			updatedCount++
 			updatedPanelIDs = append(updatedPanelIDs, panelID)
+			// 更新成功后立即返回，停止遍历其他面板
+			break
 		}
 	}
 
