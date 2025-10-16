@@ -45,20 +45,20 @@ func Start() {
 		config.Log.Fatal("数据库连接失败")
 		return
 	} else {
-		// 初始化表
-		initializer.RegisterTables(config.DB)
 		// 设置 Gorm Gen 使用的默认数据库
 		repository.SetDefault(config.DB)
+		// 初始化表
+		initializer.RegisterTables(config.DB)
 		config.Log.Info("数据库连接成功")
 	}
 
 	// 初始化缓存
 	config.Cache = initializer.Cache()
 	if config.Cache == nil {
-		config.Log.Fatal("Redis连接失败")
+		config.Log.Fatal("缓存初始化失败")
 		return
 	} else {
-		config.Log.Info("Redis连接成功")
+		config.Log.Info("缓存初始化成功")
 	}
 
 	// 初始化JSON编解码器
@@ -66,8 +66,6 @@ func Start() {
 
 	// 启动限速器清理任务
 	initializer.StartRateLimitCleanup()
-
-	router := initializer.Routers()
 
 	fmt.Println(" ")
 	switch config.Config.App.Mode {
@@ -77,12 +75,17 @@ func Start() {
 	case gin.TestMode:
 		fmt.Println("运行模式: Test模式")
 		gin.SetMode(gin.TestMode)
+	case gin.ReleaseMode:
+		fmt.Println("运行模式: Release模式")
+		gin.SetMode(gin.ReleaseMode)
 	default:
 		fmt.Println("运行模式: Release模式")
 		gin.SetMode(gin.ReleaseMode)
 	}
 	fmt.Println("监听端口: " + strconv.Itoa(config.Config.App.Port))
 	fmt.Println(" ")
+
+	router := initializer.Routers()
 
 	// 启动服务
 	srv := &http.Server{

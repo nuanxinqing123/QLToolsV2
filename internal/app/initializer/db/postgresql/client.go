@@ -60,18 +60,23 @@ func (g *_gorm) Config(prefix string, singular bool) *gorm.Config {
 		Colorful:      true,                   // 启用彩色输出
 	})
 
-	// 根据配置设置日志级别
-	switch config.Config.DB.LogLevel {
-	case "silent", "Silent":
+	if config.Config.App.Mode == gin.DebugMode {
+		// 调试模式下，根据配置设置日志级别
+		switch config.Config.DB.LogLevel {
+		case "silent", "Silent":
+			cfg.Logger = _default.LogMode(logger.Silent)
+		case "error", "Error":
+			cfg.Logger = _default.LogMode(logger.Error)
+		case "warn", "Warn":
+			cfg.Logger = _default.LogMode(logger.Warn)
+		case "info", "Info":
+			cfg.Logger = _default.LogMode(logger.Info)
+		default:
+			cfg.Logger = _default.LogMode(logger.Info)
+		}
+	} else {
+		// 非调试模式下，关闭SQL日志输出
 		cfg.Logger = _default.LogMode(logger.Silent)
-	case "error", "Error":
-		cfg.Logger = _default.LogMode(logger.Error)
-	case "warn", "Warn":
-		cfg.Logger = _default.LogMode(logger.Warn)
-	case "info", "Info":
-		cfg.Logger = _default.LogMode(logger.Info)
-	default:
-		cfg.Logger = _default.LogMode(logger.Info)
 	}
 	return cfg
 }
