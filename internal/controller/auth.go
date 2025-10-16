@@ -216,7 +216,7 @@ func (ctrl *AuthController) RefreshToken(c *gin.Context) {
 	// 调用服务层刷新Token
 	newAccessToken, err := ctrl.authService.RefreshToken(req)
 	if err != nil {
-		response.ResErrorWithMsg(c, response.CodeInvalidToken, "刷新Token失败: "+err.Error())
+		response.ResErrorWithMsg(c, response.CodeInvalidToken, err.Error())
 		return
 	}
 
