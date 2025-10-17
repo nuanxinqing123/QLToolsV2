@@ -17,7 +17,6 @@ temp/
 temp.yaml
 bin
 **/config/config.yaml
-web/dist/
 logs/*
 .idea
 .idea/*

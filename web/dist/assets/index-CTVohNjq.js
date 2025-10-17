@@ -1,0 +1,1 @@
+import{_ as o,d as t,r as n,g as r,o as s}from"./index-DYc8clNA.js";const c=t({});function a(_,p,d,i,f,m){const e=n("router-view");return s(),r(e)}const l=o(c,[["render",a],["__scopeId","data-v-039b40d2"]]);export{l as default};
