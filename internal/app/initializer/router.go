@@ -41,6 +41,9 @@ func Routers() *gin.Engine {
 		Router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 
+	// 注册前端静态资源
+	SetupWebFrontend(Router)
+
 	api := Router.Group("/api")
 
 	// 健康检查
