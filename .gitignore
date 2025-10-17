@@ -3,6 +3,7 @@
 .project
 .orig
 .swp
+.env
 .idea/
 .settings/
 .vscode/
@@ -32,3 +33,5 @@ backend/log/*
 .settings
 .vscode
 config.yaml
+# Added by goreleaser init:
+dist/
