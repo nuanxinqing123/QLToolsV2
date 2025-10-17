@@ -12,7 +12,7 @@
 - 多面板&多变量设置
 - 轮询分布上传数据
 - 变量支持限量(限额)上传
-- [开发中] 支持插件系统 & 插件在线编辑 & 调试
+- 支持插件系统 & 插件在线编辑 & 调试
 - 其余内容正在规划中...
 
 ## 🪄版本要求
@@ -25,29 +25,9 @@
 - 框架: Gin框架
 - 数据库: SQLite (使用非CGO的依赖库 _[ 相比于CGO版本性能要低一丢丢, 主要是开发方便 ]_ )
 
-## 🐳Docker运行
-```shell
-# docker 运行
-docker run --restart=always -itd --name QLToolsV2 -v $PWD/config:/QLToolsV2/config -p 1500:1500 nuanxinqing123/qltools_v2:latest
-
-# docker compose 运行
-docker-compose up -d
-```
-
-
-## Dockerfile构建运行
-```shell
-# 编译镜像
-docker build -t qltools_v2:latest .
-
-# 运行镜像
-docker run -d -p 1500:1500 qltools_v2:latest
-```
-
 ## 🎯开发计划
 
-- 开发文档: [ApiFox ->](https://apifox.com/apidoc/shared-85e6a037-263e-4a8f-8e96-3c56a924c242)
-- 开发文档 [2.0]: [ApiFox ->](https://s.apifox.cn/44061c8e-28cc-4d58-a044-666f0bdc048d/api-356480357)
+- 开发文档: [ApiFox ->](https://s.apifox.cn/44061c8e-28cc-4d58-a044-666f0bdc048d/api-356480357)
 
 【联系方式】
 
