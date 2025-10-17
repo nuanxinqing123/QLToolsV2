@@ -9,8 +9,7 @@ app:
   secret:      "QLToolsV2"
 
 db:
-  # 数据库类型【mysql、postgres】
-  type:        "mysql"
+  # 数据库类型【mysql】
   # 数据库连接地址
   host:     "127.0.0.1"
   # 数据库连接端口
