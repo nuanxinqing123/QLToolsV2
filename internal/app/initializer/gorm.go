@@ -6,22 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/initializer/db/mysql"
-	"github.com/nuanxinqing123/QLToolsV2/internal/app/initializer/db/postgresql"
-	_const "github.com/nuanxinqing123/QLToolsV2/internal/const"
 	"github.com/nuanxinqing123/QLToolsV2/internal/model"
 	"gorm.io/gorm"
 )
 
 func Gorm() *gorm.DB {
-	switch config.Config.DB.Type {
-	case _const.Mysql:
-		return mysql.GormMysql()
-	case _const.Postgres:
-		return postgresql.GormPostgreSQL()
-	default:
-		// 默认使用SQLite
-		return mysql.GormMysql()
-	}
+	return mysql.GormMysql()
 }
 
 // RegisterTables 注册数据库表专用
