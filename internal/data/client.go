@@ -17,12 +17,15 @@ import (
 
 var (
 	Client *ent.Client
+	sqlDB  *sql.DB // 保存底层数据库连接，用于正确关闭
 )
 
 // InitData 初始化数据库连接
 func InitData() (*ent.Client, error) {
 	var (
 		drv *entsql.Driver
+		db  *sql.DB
+		err error
 	)
 
 	cfg := config.Config.DB
@@ -30,7 +33,7 @@ func InitData() (*ent.Client, error) {
 	switch cfg.Type {
 	case "mysql":
 		dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s", cfg.UserName, cfg.Password, cfg.Host, cfg.Port, cfg.Name, cfg.Config)
-		db, err := sql.Open("mysql", dsn)
+		db, err = sql.Open("mysql", dsn)
 		if err != nil {
 			return nil, fmt.Errorf("failed opening connection to mysql: %v", err)
 		}
@@ -40,7 +43,7 @@ func InitData() (*ent.Client, error) {
 	case "postgres", "postgresql":
 		dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s %s",
 			cfg.Host, cfg.Port, cfg.UserName, cfg.Password, cfg.Name, cfg.Config)
-		db, err := sql.Open("postgres", dsn)
+		db, err = sql.Open("postgres", dsn)
 		if err != nil {
 			return nil, fmt.Errorf("failed opening connection to postgres: %v", err)
 		}
@@ -48,7 +51,7 @@ func InitData() (*ent.Client, error) {
 		db.SetMaxOpenConns(cfg.MaxOpenConns)
 		drv = entsql.OpenDB(dialect.Postgres, db)
 	case "sqlite3", "sqlite":
-		db, err := sql.Open("sqlite3", cfg.Name+"?_fk=1")
+		db, err = sql.Open("sqlite3", cfg.Name+"?_fk=1")
 		if err != nil {
 			return nil, fmt.Errorf("failed opening connection to sqlite: %v", err)
 		}
@@ -56,6 +59,9 @@ func InitData() (*ent.Client, error) {
 	default:
 		return nil, fmt.Errorf("unsupported database type: %s", cfg.Type)
 	}
+
+	// 保存底层数据库连接引用
+	sqlDB = db
 
 	Client = ent.NewClient(ent.Driver(drv))
 
@@ -65,4 +71,29 @@ func InitData() (*ent.Client, error) {
 	}
 
 	return Client, nil
+}
+
+// CloseData 关闭数据库连接
+func CloseData() error {
+	var errs []error
+
+	// 关闭 ent 客户端
+	if Client != nil {
+		if err := Client.Close(); err != nil {
+			errs = append(errs, fmt.Errorf("failed closing ent client: %w", err))
+		}
+	}
+
+	// 关闭底层数据库连接
+	if sqlDB != nil {
+		if err := sqlDB.Close(); err != nil {
+			errs = append(errs, fmt.Errorf("failed closing sql.DB: %w", err))
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("errors closing data connections: %v", errs)
+	}
+
+	return nil
 }

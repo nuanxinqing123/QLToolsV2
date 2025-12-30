@@ -111,5 +111,10 @@ func Start() {
 		config.Log.Fatal("Service timed out has been shut down: ", zap.Error(err))
 	}
 
+	// 关闭数据库连接
+	if err := data.CloseData(); err != nil {
+		config.Log.Error("Failed to close database connection", zap.Error(err))
+	}
+
 	config.Log.Info("Service has been shut down")
 }
