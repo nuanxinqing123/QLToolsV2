@@ -4,9 +4,9 @@ import (
 	"github.com/bluele/gcache"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config/autoload"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type Configuration struct {
@@ -18,7 +18,7 @@ type Configuration struct {
 var (
 	Config Configuration
 	Log    *zap.Logger
-	DB     *gorm.DB
+	Ent    *ent.Client
 	Cache  gcache.Cache
 	JSON   jsoniter.API
 	VP     *viper.Viper

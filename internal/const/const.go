@@ -6,10 +6,6 @@ const (
 
 	JWTIssuer = "QLToolsV2"
 
-	// Mysql 数据库类型
-	Mysql    = "mysql"
-	Postgres = "postgres"
-
 	// CreateMode 提交类型
 	CreateMode = 1 // 新建模式
 	UpdateMode = 2 // 更新模式

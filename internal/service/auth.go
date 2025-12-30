@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nuanxinqing123/QLToolsV2/internal/model"
-	"github.com/nuanxinqing123/QLToolsV2/internal/repository"
+	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent/user"
 	"github.com/nuanxinqing123/QLToolsV2/internal/schema"
 	"github.com/nuanxinqing123/QLToolsV2/internal/utils"
 	"golang.org/x/crypto/bcrypt"
@@ -22,8 +22,9 @@ func NewAuthService() *AuthService {
 
 // Register 用户注册
 func (s *AuthService) Register(obj schema.RegisterRequest) error {
+	ctx := context.Background()
 	// 检查系统是否已存在用户（只允许注册一个用户）
-	cnt, err := repository.Users.Count()
+	cnt, err := config.Ent.User.Query().Count(ctx)
 	if err != nil {
 		return fmt.Errorf("查询用户失败: %w", err)
 	}
@@ -37,15 +38,14 @@ func (s *AuthService) Register(obj schema.RegisterRequest) error {
 		return fmt.Errorf("密码加密失败: %w", err)
 	}
 
-	now := time.Now()
-	user := &model.Users{
-		CreatedAt: now,            // 创建时间（非空）
-		Username:  obj.Username,   // 用户名
-		Password:  string(hashed), // 加密后的密码
-	}
-
-	// 使用 Gorm Gen 创建记录
-	if err = repository.Users.WithContext(context.Background()).Create(user); err != nil {
+	// 使用 Ent 创建记录
+	_, err = config.Ent.User.Create().
+		SetUsername(obj.Username).
+		SetPassword(string(hashed)).
+		SetCreatedAt(time.Now()).
+		SetUpdatedAt(time.Now()).
+		Save(ctx)
+	if err != nil {
 		return fmt.Errorf("创建用户失败: %w", err)
 	}
 	return nil
@@ -53,22 +53,23 @@ func (s *AuthService) Register(obj schema.RegisterRequest) error {
 
 // Login 用户登录
 func (s *AuthService) Login(obj schema.LoginRequest) (*schema.LoginResponse, error) {
+	ctx := context.Background()
 	// 按用户名查询用户
-	user, err := repository.Users.Where(
-		repository.Users.Username.Eq(obj.Username),
-	).Take()
+	u, err := config.Ent.User.Query().
+		Where(user.UsernameEQ(obj.Username)).
+		Only(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("用户不存在或查询失败: %w", err)
 	}
 
 	// 比对密码
-	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(obj.Password)); err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(obj.Password)); err != nil {
 		return nil, errors.New("用户名或密码错误")
 	}
 
 	// 生成JWT Token对
 	jwtManager := utils.NewJWTManager()
-	accessToken, refreshToken, err := jwtManager.GenerateTokenPair(user.ID)
+	accessToken, refreshToken, err := jwtManager.GenerateTokenPair(u.ID)
 	if err != nil {
 		return nil, fmt.Errorf("生成Token失败: %w", err)
 	}

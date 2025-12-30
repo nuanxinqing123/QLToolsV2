@@ -39,18 +39,18 @@ type UpdatePluginResponse struct {
 
 // GetPluginResponse 获取插件响应结构
 type GetPluginResponse struct {
-	ID               int64  `json:"id"`                // 插件ID
-	Name             string `json:"name"`              // 插件名称
-	Description      string `json:"description"`       // 插件描述
-	Version          string `json:"version"`           // 插件版本
-	Author           string `json:"author"`            // 插件作者
-	ScriptContent    string `json:"script_content"`    // JavaScript脚本内容
-	TriggerEvent     string `json:"trigger_event"`     // 触发事件
-	IsEnable         bool   `json:"is_enable"`         // 是否启用
-	ExecutionTimeout int    `json:"execution_timeout"` // 执行超时时间(毫秒)
-	Priority         int    `json:"priority"`          // 执行优先级
-	CreatedAt        string `json:"created_at"`        // 创建时间
-	UpdatedAt        string `json:"updated_at"`        // 更新时间
+	ID               int64   `json:"id"`                // 插件ID
+	Name             string  `json:"name"`              // 插件名称
+	Description      *string `json:"description"`       // 插件描述
+	Version          string  `json:"version"`           // 插件版本
+	Author           *string `json:"author"`            // 插件作者
+	ScriptContent    string  `json:"script_content"`    // JavaScript脚本内容
+	TriggerEvent     string  `json:"trigger_event"`     // 触发事件
+	IsEnable         bool    `json:"is_enable"`         // 是否启用
+	ExecutionTimeout int     `json:"execution_timeout"` // 执行超时时间(毫秒)
+	Priority         int     `json:"priority"`          // 执行优先级
+	CreatedAt        string  `json:"created_at"`        // 创建时间
+	UpdatedAt        string  `json:"updated_at"`        // 更新时间
 }
 
 // GetPluginListRequest 获取插件列表请求结构
@@ -140,12 +140,12 @@ type GetPluginEnvsResponse struct {
 
 // PluginEnvRelationInfo 插件环境变量关联信息
 type PluginEnvRelationInfo struct {
-	EnvID          int64  `json:"env_id"`          // 环境变量ID
-	EnvName        string `json:"env_name"`        // 环境变量名称
-	IsEnable       bool   `json:"is_enable"`       // 是否启用
-	ExecutionOrder int32  `json:"execution_order"` // 执行顺序
-	Config         string `json:"config"`          // 插件配置参数
-	CreatedAt      string `json:"created_at"`      // 创建时间
+	EnvID          int64   `json:"env_id"`          // 环境变量ID
+	EnvName        string  `json:"env_name"`        // 环境变量名称
+	IsEnable       bool    `json:"is_enable"`       // 是否启用
+	ExecutionOrder int32   `json:"execution_order"` // 执行顺序
+	Config         *string `json:"config"`          // 插件配置参数
+	CreatedAt      string  `json:"created_at"`      // 创建时间
 }
 
 // GetPluginExecutionLogsRequest 获取插件执行日志请求结构
@@ -167,15 +167,15 @@ type GetPluginExecutionLogsResponse struct {
 
 // PluginExecutionLogInfo 插件执行日志信息
 type PluginExecutionLogInfo struct {
-	ID              int64  `json:"id"`               // 日志ID
-	PluginID        int64  `json:"plugin_id"`        // 插件ID
-	PluginName      string `json:"plugin_name"`      // 插件名称
-	EnvID           int64  `json:"env_id"`           // 环境变量ID
-	EnvName         string `json:"env_name"`         // 环境变量名称
-	ExecutionStatus string `json:"execution_status"` // 执行状态
-	ExecutionTime   int    `json:"execution_time"`   // 执行耗时(毫秒)
-	InputData       string `json:"input_data"`       // 输入数据
-	OutputData      string `json:"output_data"`      // 输出数据
-	ErrorMessage    string `json:"error_message"`    // 错误信息
-	CreatedAt       string `json:"created_at"`       // 创建时间
+	ID              int64   `json:"id"`               // 日志ID
+	PluginID        int64   `json:"plugin_id"`        // 插件ID
+	PluginName      string  `json:"plugin_name"`      // 插件名称
+	EnvID           int64   `json:"env_id"`           // 环境变量ID
+	EnvName         string  `json:"env_name"`         // 环境变量名称
+	ExecutionStatus string  `json:"execution_status"` // 执行状态
+	ExecutionTime   int     `json:"execution_time"`   // 执行耗时(毫秒)
+	InputData       string  `json:"input_data"`       // 输入数据
+	OutputData      *string `json:"output_data"`      // 输出数据
+	ErrorMessage    *string `json:"error_message"`    // 错误信息
+	CreatedAt       string  `json:"created_at"`       // 创建时间
 }

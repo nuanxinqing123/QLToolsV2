@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -48,12 +49,16 @@ func (s *HealthyService) CheckHealth() (res.ResCode, any) {
 
 // checkDatabase 检查数据库连接
 func (s *HealthyService) checkDatabase() bool {
-	if config.DB == nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	if config.Ent == nil {
 		return false
 	}
 
-	var result int
-	if err := config.DB.Raw("SELECT 1").Scan(&result).Error; err != nil {
+	// 执行测试查询
+	_, err := config.Ent.User.Query().Count(ctx)
+	if err != nil {
 		config.Log.Error(fmt.Sprintf("【DB】执行测试查询失败: %s", err.Error()))
 		return false
 	}

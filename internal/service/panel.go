@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nuanxinqing123/QLToolsV2/internal/model"
+	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent/panel"
 	"github.com/nuanxinqing123/QLToolsV2/internal/pkg/qinglong"
-	"github.com/nuanxinqing123/QLToolsV2/internal/repository"
 	"github.com/nuanxinqing123/QLToolsV2/internal/schema"
-	"gorm.io/gorm"
 )
 
 type PanelService struct {
@@ -27,14 +27,15 @@ func NewPanelService() *PanelService {
 
 // AddPanel 添加面板
 func (s *PanelService) AddPanel(req schema.AddPanelRequest) (*schema.AddPanelResponse, error) {
+	ctx := context.Background()
 	// 检查面板名称是否已存在
-	existingPanel, err := repository.Panels.Where(
-		repository.Panels.Name.Eq(req.Name),
-	).Take()
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	exists, err := config.Ent.Panel.Query().
+		Where(panel.NameEQ(req.Name)).
+		Exist(ctx)
+	if err != nil {
 		return nil, fmt.Errorf("查询面板失败: %w", err)
 	}
-	if existingPanel != nil {
+	if exists {
 		return nil, errors.New("面板名称已存在")
 	}
 
@@ -50,69 +51,67 @@ func (s *PanelService) AddPanel(req schema.AddPanelRequest) (*schema.AddPanelRes
 		return nil, fmt.Errorf("获取面板Token失败，错误信息: %s", tokenResp.Message)
 	}
 
-	now := time.Now()
-	panel := &model.Panels{
-		CreatedAt:    now,
-		UpdatedAt:    now,
-		Name:         req.Name,
-		URL:          req.URL,
-		ClientID:     req.ClientID,
-		ClientSecret: req.ClientSecret,
-		IsEnable:     req.IsEnable,
-		Token:        tokenResp.Data.Token,
-		Params:       int32(tokenResp.Data.Expiration),
-	}
-
 	// 创建面板记录
-	if err = repository.Panels.WithContext(context.Background()).Create(panel); err != nil {
+	p, err := config.Ent.Panel.Create().
+		SetName(req.Name).
+		SetURL(req.URL).
+		SetClientID(req.ClientID).
+		SetClientSecret(req.ClientSecret).
+		SetIsEnable(req.IsEnable).
+		SetToken(tokenResp.Data.Token).
+		SetParams(int32(tokenResp.Data.Expiration)).
+		SetCreatedAt(time.Now()).
+		SetUpdatedAt(time.Now()).
+		Save(ctx)
+	if err != nil {
 		return nil, fmt.Errorf("创建面板失败: %w", err)
 	}
 
 	return &schema.AddPanelResponse{
-		ID:      panel.ID,
+		ID:      p.ID,
 		Message: "面板添加成功",
 	}, nil
 }
 
 // UpdatePanel 更新面板
 func (s *PanelService) UpdatePanel(req schema.UpdatePanelRequest) (*schema.UpdatePanelResponse, error) {
+	ctx := context.Background()
 	// 查询面板是否存在
-	panel, err := repository.Panels.Where(
-		repository.Panels.ID.Eq(req.ID),
-	).Take()
+	p, err := config.Ent.Panel.Get(ctx, req.ID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if ent.IsNotFound(err) {
 			return nil, errors.New("面板不存在")
 		}
 		return nil, fmt.Errorf("查询面板失败: %w", err)
 	}
 
 	// 检查名称是否与其他面板冲突
-	if req.Name != panel.Name {
-		existingPanel, err := repository.Panels.Where(
-			repository.Panels.Name.Eq(req.Name),
-			repository.Panels.ID.Neq(req.ID),
-		).Take()
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if req.Name != p.Name {
+		exists, err := config.Ent.Panel.Query().
+			Where(panel.And(
+				panel.NameEQ(req.Name),
+				panel.IDNEQ(req.ID),
+			)).
+			Exist(ctx)
+		if err != nil {
 			return nil, fmt.Errorf("查询面板失败: %w", err)
 		}
-		if existingPanel != nil {
+		if exists {
 			return nil, errors.New("面板名称已存在")
 		}
 	}
 
-	// 构建更新数据
-	updates := map[string]interface{}{
-		"name":          req.Name,
-		"url":           req.URL,
-		"client_id":     req.ClientID,
-		"client_secret": req.ClientSecret,
-		"is_enable":     req.IsEnable,
-		"updated_at":    time.Now(),
-	}
+	// 执行更新
+	updater := config.Ent.Panel.UpdateOneID(req.ID).
+		SetName(req.Name).
+		SetURL(req.URL).
+		SetClientID(req.ClientID).
+		SetClientSecret(req.ClientSecret).
+		SetIsEnable(req.IsEnable).
+		SetUpdatedAt(time.Now())
 
 	// 如果连接信息发生变化，需要重新获取Token
-	needRefreshToken := req.URL != panel.URL || req.ClientID != panel.ClientID || req.ClientSecret != panel.ClientSecret
+	needRefreshToken := req.URL != p.URL || req.ClientID != p.ClientID || req.ClientSecret != p.ClientSecret
 	if needRefreshToken {
 		// 使用新的连接信息获取Token
 		qlConfig := qinglong.NewConfig(req.URL, req.ClientID, req.ClientSecret)
@@ -127,15 +126,11 @@ func (s *PanelService) UpdatePanel(req schema.UpdatePanelRequest) (*schema.Updat
 		}
 
 		// 更新Token相关字段
-		updates["token"] = tokenResp.Data.Token
-		updates["params"] = int32(tokenResp.Data.Expiration)
+		updater.SetToken(tokenResp.Data.Token).
+			SetParams(int32(tokenResp.Data.Expiration))
 	}
 
-	// 执行更新
-	_, err = repository.Panels.Where(
-		repository.Panels.ID.Eq(req.ID),
-	).Updates(updates)
-	if err != nil {
+	if err := updater.Exec(ctx); err != nil {
 		return nil, fmt.Errorf("更新面板失败: %w", err)
 	}
 
@@ -146,33 +141,31 @@ func (s *PanelService) UpdatePanel(req schema.UpdatePanelRequest) (*schema.Updat
 
 // GetPanel 获取单个面板信息
 func (s *PanelService) GetPanel(id int64) (*schema.GetPanelResponse, error) {
-	panel, err := repository.Panels.Where(
-		repository.Panels.ID.Eq(id),
-	).Take()
+	ctx := context.Background()
+	p, err := config.Ent.Panel.Get(ctx, id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if ent.IsNotFound(err) {
 			return nil, errors.New("面板不存在")
 		}
 		return nil, fmt.Errorf("查询面板失败: %w", err)
 	}
 
 	return &schema.GetPanelResponse{
-		ID:           panel.ID,
-		Name:         panel.Name,
-		URL:          panel.URL,
-		ClientID:     panel.ClientID,
-		ClientSecret: panel.ClientSecret, // 注意：敏感信息，生产环境可考虑脱敏
-		IsEnable:     panel.IsEnable,
-		Token:        panel.Token,
-		Params:       panel.Params,
-		CreatedAt:    panel.CreatedAt.Format("2006-01-02 15:04:05"),
-		UpdatedAt:    panel.UpdatedAt.Format("2006-01-02 15:04:05"),
+		ID:           p.ID,
+		Name:         p.Name,
+		URL:          p.URL,
+		ClientID:     p.ClientID,
+		ClientSecret: p.ClientSecret,
+		IsEnable:     p.IsEnable,
+		Token:        p.Token,
+		Params:       p.Params,
+		CreatedAt:    p.CreatedAt.Format("2006-01-02 15:04:05"),
+		UpdatedAt:    p.UpdatedAt.Format("2006-01-02 15:04:05"),
 	}, nil
 }
 
 // GetPanelList 获取面板列表
 func (s *PanelService) GetPanelList(req schema.GetPanelListRequest) (*schema.GetPanelListResponse, error) {
-	// 设置默认分页参数
 	if req.Page <= 0 {
 		req.Page = 1
 	}
@@ -180,73 +173,65 @@ func (s *PanelService) GetPanelList(req schema.GetPanelListRequest) (*schema.Get
 		req.PageSize = 10
 	}
 
-	// 构建查询条件
-	query := repository.Panels.WithContext(context.Background())
+	ctx := context.Background()
+	query := config.Ent.Panel.Query()
 
-	// 按名称模糊搜索
 	if req.Name != "" {
-		query = query.Where(repository.Panels.Name.Like("%" + req.Name + "%"))
+		query.Where(panel.NameContains(req.Name))
 	}
-
-	// 按启用状态筛选
 	if req.IsEnable != nil {
-		query = query.Where(repository.Panels.IsEnable.Is(*req.IsEnable))
+		query.Where(panel.IsEnableEQ(*req.IsEnable))
 	}
 
-	// 获取总数
-	total, err := query.Count()
+	total, err := query.Count(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("查询面板总数失败: %w", err)
 	}
 
-	// 分页查询
 	offset := (req.Page - 1) * req.PageSize
-	panels, err := query.Offset(offset).Limit(req.PageSize).Order(repository.Panels.CreatedAt.Desc()).Find()
+	panels, err := query.Offset(offset).
+		Limit(req.PageSize).
+		Order(ent.Desc(panel.FieldCreatedAt)).
+		All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("查询面板列表失败: %w", err)
 	}
 
-	// 转换为响应格式
 	list := make([]schema.GetPanelResponse, 0, len(panels))
-	for _, panel := range panels {
+	for _, p := range panels {
 		list = append(list, schema.GetPanelResponse{
-			ID:           panel.ID,
-			Name:         panel.Name,
-			URL:          panel.URL,
-			ClientID:     panel.ClientID,
-			ClientSecret: panel.ClientSecret, // 注意：敏感信息，生产环境可考虑脱敏
-			IsEnable:     panel.IsEnable,
-			Token:        panel.Token,
-			Params:       panel.Params,
-			CreatedAt:    panel.CreatedAt.Format("2006-01-02 15:04:05"),
-			UpdatedAt:    panel.UpdatedAt.Format("2006-01-02 15:04:05"),
+			ID:           p.ID,
+			Name:         p.Name,
+			URL:          p.URL,
+			ClientID:     p.ClientID,
+			ClientSecret: p.ClientSecret,
+			IsEnable:     p.IsEnable,
+			Token:        p.Token,
+			Params:       p.Params,
+			CreatedAt:    p.CreatedAt.Format("2006-01-02 15:04:05"),
+			UpdatedAt:    p.UpdatedAt.Format("2006-01-02 15:04:05"),
 		})
 	}
 
 	return &schema.GetPanelListResponse{
-		Total: total,
+		Total: int64(total),
 		List:  list,
 	}, nil
 }
 
 // DeletePanel 删除面板
 func (s *PanelService) DeletePanel(req schema.DeletePanelRequest) (*schema.DeletePanelResponse, error) {
+	ctx := context.Background()
 	// 检查面板是否存在
-	_, err := repository.Panels.Where(
-		repository.Panels.ID.Eq(req.ID),
-	).Take()
+	_, err := config.Ent.Panel.Get(ctx, req.ID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if ent.IsNotFound(err) {
 			return nil, errors.New("面板不存在")
 		}
 		return nil, fmt.Errorf("查询面板失败: %w", err)
 	}
 
-	// 执行软删除
-	_, err = repository.Panels.Where(
-		repository.Panels.ID.Eq(req.ID),
-	).Delete()
-	if err != nil {
+	if err := config.Ent.Panel.DeleteOneID(req.ID).Exec(ctx); err != nil {
 		return nil, fmt.Errorf("删除面板失败: %w", err)
 	}
 
@@ -257,25 +242,19 @@ func (s *PanelService) DeletePanel(req schema.DeletePanelRequest) (*schema.Delet
 
 // TogglePanelStatus 切换面板启用状态
 func (s *PanelService) TogglePanelStatus(req schema.TogglePanelStatusRequest) (*schema.TogglePanelStatusResponse, error) {
-	// 检查面板是否存在
-	_, err := repository.Panels.Where(
-		repository.Panels.ID.Eq(req.ID),
-	).Take()
+	ctx := context.Background()
+	_, err := config.Ent.Panel.Get(ctx, req.ID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if ent.IsNotFound(err) {
 			return nil, errors.New("面板不存在")
 		}
 		return nil, fmt.Errorf("查询面板失败: %w", err)
 	}
 
-	// 更新启用状态
-	_, err = repository.Panels.Where(
-		repository.Panels.ID.Eq(req.ID),
-	).Updates(map[string]interface{}{
-		"is_enable":  req.IsEnable,
-		"updated_at": time.Now(),
-	})
-	if err != nil {
+	if err := config.Ent.Panel.UpdateOneID(req.ID).
+		SetIsEnable(req.IsEnable).
+		SetUpdatedAt(time.Now()).
+		Exec(ctx); err != nil {
 		return nil, fmt.Errorf("更新面板状态失败: %w", err)
 	}
 
@@ -291,19 +270,18 @@ func (s *PanelService) TogglePanelStatus(req schema.TogglePanelStatusRequest) (*
 
 // RefreshPanelToken 刷新面板Token
 func (s *PanelService) RefreshPanelToken(req schema.RefreshPanelTokenRequest) (*schema.RefreshPanelTokenResponse, error) {
+	ctx := context.Background()
 	// 查询面板信息
-	panel, err := repository.Panels.Where(
-		repository.Panels.ID.Eq(req.ID),
-	).Take()
+	p, err := config.Ent.Panel.Get(ctx, req.ID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if ent.IsNotFound(err) {
 			return nil, errors.New("面板不存在")
 		}
 		return nil, fmt.Errorf("查询面板失败: %w", err)
 	}
 
 	// 使用面板的连接信息重新获取Token
-	qlConfig := qinglong.NewConfig(panel.URL, panel.ClientID, panel.ClientSecret)
+	qlConfig := qinglong.NewConfig(p.URL, p.ClientID, p.ClientSecret)
 	tokenResp, err := qlConfig.GetConfig()
 	if err != nil {
 		return nil, fmt.Errorf("连接面板失败，无法刷新Token: %w", err)
@@ -318,13 +296,11 @@ func (s *PanelService) RefreshPanelToken(req schema.RefreshPanelTokenRequest) (*
 	newParams := int32(tokenResp.Data.Expiration)
 
 	// 更新Token信息
-	_, err = repository.Panels.Where(
-		repository.Panels.ID.Eq(req.ID),
-	).Updates(map[string]interface{}{
-		"token":      newToken,
-		"params":     newParams,
-		"updated_at": time.Now(),
-	})
+	err = config.Ent.Panel.UpdateOneID(req.ID).
+		SetToken(newToken).
+		SetParams(newParams).
+		SetUpdatedAt(time.Now()).
+		Exec(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("更新面板Token失败: %w", err)
 	}
@@ -377,7 +353,7 @@ func (s *PanelService) TestPanelConnection(req schema.TestPanelConnectionRequest
 
 // SubmitEnvToPanel 提交环境变量到面板（集成插件执行流程）
 func (s *PanelService) SubmitEnvToPanel(panelID int64, envID int64, envValue string) (interface{}, error) {
-	// 执行环境变量的插件验证
+	// 执行环境变量的插件验证 verification logic preserved
 	result, err := s.pluginService.ExecutePluginsForEnv(envID, envValue)
 	if err != nil {
 		return nil, fmt.Errorf("执行环境变量插件失败: %w", err)
@@ -414,7 +390,6 @@ func (s *PanelService) SubmitEnvToPanel(panelID int64, envID int64, envValue str
 	}
 
 	// 这里应该是实际向面板提交数据的逻辑
-	// 例如：调用青龙面板API提交环境变量等
 	submitResult := map[string]interface{}{
 		"env_id":    envID,
 		"env_value": envValue,
@@ -428,14 +403,15 @@ func (s *PanelService) SubmitEnvToPanel(panelID int64, envID int64, envValue str
 // CreateTokenRefreshCallback 创建token刷新回调函数
 func (s *PanelService) CreateTokenRefreshCallback() qinglong.TokenRefreshCallback {
 	return func(panelID int64) (newToken string, err error) {
+		ctx := context.Background()
 		// 查询面板信息
-		panel, err := repository.Panels.Where(repository.Panels.ID.Eq(panelID)).Take()
+		p, err := config.Ent.Panel.Get(ctx, panelID)
 		if err != nil {
 			return "", fmt.Errorf("查询面板失败: %w", err)
 		}
 
 		// 使用ClientID和ClientSecret重新获取token
-		qlConfig := qinglong.NewConfig(panel.URL, panel.ClientID, panel.ClientSecret)
+		qlConfig := qinglong.NewConfig(p.URL, p.ClientID, p.ClientSecret)
 		tokenResp, err := qlConfig.GetConfig()
 		if err != nil {
 			return "", fmt.Errorf("获取新token失败: %w", err)
@@ -448,8 +424,7 @@ func (s *PanelService) CreateTokenRefreshCallback() qinglong.TokenRefreshCallbac
 		newToken = tokenResp.Data.Token
 
 		// 更新数据库中的token
-		_, err = repository.Panels.Where(repository.Panels.ID.Eq(panelID)).
-			UpdateSimple(repository.Panels.Token.Value(newToken))
+		err = config.Ent.Panel.UpdateOneID(panelID).SetToken(newToken).Exec(ctx)
 		if err != nil {
 			return "", fmt.Errorf("更新数据库token失败: %w", err)
 		}
@@ -460,18 +435,20 @@ func (s *PanelService) CreateTokenRefreshCallback() qinglong.TokenRefreshCallbac
 
 // CreateQlAPIWithAutoRefresh 创建带自动刷新功能的API实例
 func (s *PanelService) CreateQlAPIWithAutoRefresh(panelID int64) (*qinglong.QlAPI, error) {
+	ctx := context.Background()
 	// 查询面板信息
-	panel, err := repository.Panels.Where(
-		repository.Panels.ID.Eq(panelID),
-		repository.Panels.IsEnable.Is(true),
-	).Take()
+	p, err := config.Ent.Panel.Query().
+		Where(
+			panel.IDEQ(panelID),
+			panel.IsEnableEQ(true),
+		).Only(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("查询面板失败: %w", err)
 	}
 
 	// 创建带面板信息和回调函数的API实例
 	callback := s.CreateTokenRefreshCallback()
-	api := qinglong.NewAPIWithPanel(panel.URL, panel.Token, int(panel.Params), panelID, callback)
+	api := qinglong.NewAPIWithPanel(p.URL, p.Token, int(p.Params), panelID, callback)
 
 	return api, nil
 }

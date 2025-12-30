@@ -17,7 +17,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/initializer"
-	"github.com/nuanxinqing123/QLToolsV2/internal/repository"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data"
 	"go.uber.org/zap"
 )
 
@@ -39,18 +39,14 @@ func Start() {
 	// 初始化日志
 	config.Log = initializer.Zap()
 
-	// 初始化数据库
-	config.DB = initializer.Gorm()
-	if config.DB == nil {
-		config.Log.Fatal("数据库连接失败")
+	// 初始化数据库 (Ent)
+	client, err := data.InitData()
+	if err != nil {
+		config.Log.Fatal("数据库连接失败", zap.Error(err))
 		return
-	} else {
-		// 设置 Gorm Gen 使用的默认数据库
-		repository.SetDefault(config.DB)
-		// 初始化表
-		initializer.RegisterTables(config.DB)
-		config.Log.Info("数据库连接成功")
 	}
+	config.Ent = client
+	config.Log.Info("数据库连接成功 (Ent)")
 
 	// 初始化缓存
 	config.Cache = initializer.Cache()

@@ -11,10 +11,14 @@ import (
 
 	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
 	_const "github.com/nuanxinqing123/QLToolsV2/internal/const"
-	"github.com/nuanxinqing123/QLToolsV2/internal/pkg/plugin"
-	"github.com/nuanxinqing123/QLToolsV2/internal/repository"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent/cdkey"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent/env"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent/envplugin"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent/panel"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent/plugin"
+	pkgPlugin "github.com/nuanxinqing123/QLToolsV2/internal/pkg/plugin"
 	"github.com/nuanxinqing123/QLToolsV2/internal/schema"
-	"gorm.io/gorm"
 )
 
 type OpenService struct {
@@ -39,12 +43,13 @@ func (s *OpenService) getCDKMutex(cdkKey string) *sync.Mutex {
 
 // CheckCDK 检查卡密
 func (s *OpenService) CheckCDK(req schema.CheckCDKRequest) (*schema.CheckCDKResponse, error) {
+	ctx := context.Background()
 	// 查询CDK是否存在
-	cdk, err := repository.CdKeys.Where(
-		repository.CdKeys.Key.Eq(req.Key),
-	).Take()
+	c, err := config.Ent.CdKey.Query().
+		Where(cdkey.KeyEQ(req.Key)).
+		Only(ctx)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if ent.IsNotFound(err) {
 			return &schema.CheckCDKResponse{
 				Valid:         false,
 				RemainingUses: 0,
@@ -55,16 +60,16 @@ func (s *OpenService) CheckCDK(req schema.CheckCDKRequest) (*schema.CheckCDKResp
 	}
 
 	// 检查是否禁用
-	if !cdk.IsEnable {
+	if !c.IsEnable {
 		return &schema.CheckCDKResponse{
 			Valid:         false,
-			RemainingUses: cdk.Count_,
+			RemainingUses: c.Count,
 			Message:       "卡密已被禁用",
 		}, nil
 	}
 
 	// 检查使用次数是否足够
-	if cdk.Count_ <= 0 {
+	if c.Count <= 0 {
 		return &schema.CheckCDKResponse{
 			Valid:         false,
 			RemainingUses: 0,
@@ -74,49 +79,44 @@ func (s *OpenService) CheckCDK(req schema.CheckCDKRequest) (*schema.CheckCDKResp
 
 	return &schema.CheckCDKResponse{
 		Valid:         true,
-		RemainingUses: cdk.Count_,
+		RemainingUses: c.Count,
 		Message:       "卡密有效",
 	}, nil
 }
 
 // GetOnlineServices 获取在线服务
 func (s *OpenService) GetOnlineServices() (*schema.GetOnlineServicesResponse, error) {
+	ctx := context.Background()
 	// 查询所有启用的环境变量
-	query := repository.Envs.WithContext(context.Background()).Where(
-		repository.Envs.IsEnable.Is(true),
-	)
+	query := config.Ent.Env.Query().Where(env.IsEnableEQ(true))
 
 	// 获取总数
-	total, err := query.Count()
+	total, err := query.Count(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("查询环境变量总数失败: %w", err)
 	}
 
 	// 查询所有数据
-	envs, err := query.Order(repository.Envs.CreatedAt.Desc()).Find()
+	envs, err := query.Order(ent.Desc(env.FieldCreatedAt)).All(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("查询环境变量列表失败: %w", err)
 	}
 
 	// 转换为响应格式并计算可用位置数
 	var list []schema.OnlineServiceInfo
-	for _, env := range envs {
+	for _, e := range envs {
 		// 查询该环境变量绑定的启用面板ID
-		var panelIDs []int64
-		err := repository.EnvPanels.WithContext(context.Background()).
-			Select(repository.Panels.ID).
-			Join(repository.Panels, repository.EnvPanels.PanelID.EqCol(repository.Panels.ID)).
-			Where(
-				repository.EnvPanels.EnvID.Eq(env.ID),
-				repository.Panels.IsEnable.Is(true),
-			).Scan(&panelIDs)
+		panelIDs, err := config.Ent.Env.Query().
+			Where(env.IDEQ(e.ID)).
+			QueryPanels().
+			Where(panel.IsEnableEQ(true)).
+			IDs(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("查询绑定面板失败: %w", err)
 		}
 
 		// 计算可用位置数：配置变量总数 - 所有面板中该变量的实际数量
-		// 注意：Quantity是所有面板共享的总配额，不是每个面板的配额
-		totalSlots := env.Quantity
+		totalSlots := e.Quantity
 		usedSlots := int32(0)
 
 		// 遍历所有绑定的面板，统计该变量在每个面板中的数量
@@ -142,7 +142,7 @@ func (s *OpenService) GetOnlineServices() (*schema.GetOnlineServicesResponse, er
 
 			// 统计该面板中匹配的变量数量
 			for _, panelEnv := range envResponse.Data {
-				if panelEnv.Name == env.Name {
+				if panelEnv.Name == e.Name {
 					usedSlots++
 				}
 			}
@@ -156,58 +156,57 @@ func (s *OpenService) GetOnlineServices() (*schema.GetOnlineServicesResponse, er
 
 		// 调试日志：输出计算过程
 		config.Log.Debug(fmt.Sprintf("环境变量[%s] ID=%d: 绑定面板数=%d, 总配额=%d, 已使用=%d, 可用=%d",
-			env.Name, env.ID, len(panelIDs), totalSlots, usedSlots, availableSlots))
+			e.Name, e.ID, len(panelIDs), totalSlots, usedSlots, availableSlots))
 
 		list = append(list, schema.OnlineServiceInfo{
-			ID:             env.ID,
-			Name:           env.Name,
-			Remarks:        env.Remarks,
-			Quantity:       env.Quantity,
-			EnableKey:      env.EnableKey,
-			CdkLimit:       env.CdkLimit,
-			IsPrompt:       env.IsPrompt,
-			PromptLevel:    env.PromptLevel,
-			PromptContent:  env.PromptContent,
+			ID:             e.ID,
+			Name:           e.Name,
+			Remarks:        e.Remarks,
+			Quantity:       e.Quantity,
+			EnableKey:      e.EnableKey,
+			CdkLimit:       e.CdkLimit,
+			IsPrompt:       e.IsPrompt,
+			PromptLevel:    e.PromptLevel,
+			PromptContent:  e.PromptContent,
 			AvailableSlots: availableSlots,
 		})
 	}
 
 	return &schema.GetOnlineServicesResponse{
-		Total: total,
+		Total: int64(total),
 		List:  list,
 	}, nil
 }
 
 // CalculateAvailableSlots 计算剩余位置
 func (s *OpenService) CalculateAvailableSlots(req schema.CalculateAvailableSlotsRequest) (*schema.CalculateAvailableSlotsResponse, error) {
+	ctx := context.Background()
 	// 查询环境变量是否存在且启用
-	env, err := repository.Envs.Where(
-		repository.Envs.ID.Eq(req.EnvID),
-		repository.Envs.IsEnable.Is(true),
-	).Take()
+	e, err := config.Ent.Env.Query().
+		Where(
+			env.IDEQ(req.EnvID),
+			env.IsEnableEQ(true),
+		).
+		Only(ctx)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if ent.IsNotFound(err) {
 			return nil, errors.New("环境变量不存在或已禁用")
 		}
 		return nil, fmt.Errorf("查询环境变量失败: %w", err)
 	}
 
 	// 查询该环境变量绑定的启用面板ID
-	var panelIDs []int64
-	err = repository.EnvPanels.WithContext(context.Background()).
-		Select(repository.Panels.ID).
-		Join(repository.Panels, repository.EnvPanels.PanelID.EqCol(repository.Panels.ID)).
-		Where(
-			repository.EnvPanels.EnvID.Eq(req.EnvID),
-			repository.Panels.IsEnable.Is(true),
-		).Scan(&panelIDs)
+	panelIDs, err := config.Ent.Env.Query().
+		Where(env.IDEQ(req.EnvID)).
+		QueryPanels().
+		Where(panel.IsEnableEQ(true)).
+		IDs(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("查询绑定面板失败: %w", err)
 	}
 
 	// 计算总位置数和已使用位置数
-	// 注意：Quantity是所有面板共享的总配额，不是每个面板的配额
-	totalSlots := env.Quantity
+	totalSlots := e.Quantity
 	usedSlots := int32(0)
 
 	// 遍历所有绑定的面板，统计该变量在每个面板中的数量
@@ -233,7 +232,7 @@ func (s *OpenService) CalculateAvailableSlots(req schema.CalculateAvailableSlots
 
 		// 统计该面板中匹配的变量数量
 		for _, panelEnv := range envResponse.Data {
-			if panelEnv.Name == env.Name {
+			if panelEnv.Name == e.Name {
 				usedSlots++
 			}
 		}
@@ -255,6 +254,7 @@ func (s *OpenService) CalculateAvailableSlots(req schema.CalculateAvailableSlots
 
 // SubmitVariable 提交变量
 func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.SubmitVariableResponse, error) {
+	ctx := context.Background()
 	// 判断是否为空内容
 	if req.Value == "" {
 		return &schema.SubmitVariableResponse{
@@ -264,12 +264,14 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 	}
 
 	// 检查变量名是否存在并启用
-	env, err := repository.Envs.Where(
-		repository.Envs.ID.Eq(req.EnvID),
-		repository.Envs.IsEnable.Is(true),
-	).Take()
+	e, err := config.Ent.Env.Query().
+		Where(
+			env.IDEQ(req.EnvID),
+			env.IsEnableEQ(true),
+		).
+		Only(ctx)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if ent.IsNotFound(err) {
 			return &schema.SubmitVariableResponse{
 				Success: false,
 				Message: "环境变量不存在或已禁用",
@@ -281,7 +283,7 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 	var remainingCDK int32 = 0
 
 	// 检查是否启用KEY，并且用户提交的KEY是否有效
-	if env.EnableKey {
+	if e.EnableKey {
 		if req.Key == "" {
 			return &schema.SubmitVariableResponse{
 				Success: false,
@@ -308,10 +310,10 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		}
 
 		// 检查卡密次数是否足够
-		if cdkResp.RemainingUses < env.CdkLimit {
+		if cdkResp.RemainingUses < e.CdkLimit {
 			return &schema.SubmitVariableResponse{
 				Success: false,
-				Message: fmt.Sprintf("卡密剩余次数不足，需要%d次，剩余%d次", env.CdkLimit, cdkResp.RemainingUses),
+				Message: fmt.Sprintf("卡密剩余次数不足，需要%d次，剩余%d次", e.CdkLimit, cdkResp.RemainingUses),
 			}, nil
 		}
 
@@ -319,8 +321,8 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 	}
 
 	// 校验正则，判断是否满足提交条件，并提取匹配内容
-	if env.Regex != nil && *env.Regex != "" {
-		re, err := regexp.Compile(*env.Regex)
+	if e.Regex != nil && *e.Regex != "" {
+		re, err := regexp.Compile(*e.Regex)
 		if err != nil {
 			return nil, fmt.Errorf("正则表达式错误: %w", err)
 		}
@@ -365,15 +367,12 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 	}
 
 	// 提交数据到所有绑定的面板，并根据IsAutoEnvEnable判断是否需要启用提交变量
-	// 查询该环境变量绑定的启用面板
-	var panelIDs []int64
-	err = repository.EnvPanels.WithContext(context.Background()).
-		Select(repository.Panels.ID).
-		Join(repository.Panels, repository.EnvPanels.PanelID.EqCol(repository.Panels.ID)).
-		Where(
-			repository.EnvPanels.EnvID.Eq(req.EnvID),
-			repository.Panels.IsEnable.Is(true),
-		).Scan(&panelIDs)
+	// 查询该环境变量绑定的启用面板ID
+	panelIDs, err := config.Ent.Env.Query().
+		Where(env.IDEQ(req.EnvID)).
+		QueryPanels().
+		Where(panel.IsEnableEQ(true)).
+		IDs(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("查询绑定面板失败: %w", err)
 	}
@@ -381,10 +380,10 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 	// 根据模式选择提交策略
 	submittedTo := int32(0)
 
-	switch env.Mode {
+	switch e.Mode {
 	case _const.CreateMode:
 		// 新建模式：使用负载均衡，选择可用位置最多的面板
-		err = s.submitAndAutoEnable(req.EnvID, panelIDs, env.Name, processedValue, req.Remarks, env.IsAutoEnvEnable)
+		err = s.submitAndAutoEnable(req.EnvID, panelIDs, e.Name, processedValue, req.Remarks, e.IsAutoEnvEnable)
 		if err != nil {
 			return nil, err
 		}
@@ -392,11 +391,11 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 
 	case _const.UpdateMode:
 		// 更新模式：遍历所有面板，根据正则表达式匹配并更新
-		if env.RegexUpdate == nil || *env.RegexUpdate == "" {
+		if e.RegexUpdate == nil || *e.RegexUpdate == "" {
 			return nil, errors.New("更新模式下必须设置更新正则表达式")
 		}
 
-		updatedCount, _, err := s.updateExistingVariables(panelIDs, env.Name, *env.RegexUpdate, processedValue, req.Remarks)
+		updatedCount, _, err := s.updateExistingVariables(panelIDs, e.Name, *e.RegexUpdate, processedValue, req.Remarks)
 		if err != nil {
 			return nil, fmt.Errorf("更新现有变量失败: %w", err)
 		}
@@ -404,7 +403,7 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		if updatedCount == 0 {
 			// 没有匹配到任何变量，使用新建逻辑
 			config.Log.Info("更新模式下未匹配到任何变量，使用新建逻辑")
-			err = s.submitAndAutoEnable(req.EnvID, panelIDs, env.Name, processedValue, req.Remarks, env.IsAutoEnvEnable)
+			err = s.submitAndAutoEnable(req.EnvID, panelIDs, e.Name, processedValue, req.Remarks, e.IsAutoEnvEnable)
 			if err != nil {
 				return nil, err
 			}
@@ -414,19 +413,20 @@ func (s *OpenService) SubmitVariable(req schema.SubmitVariableRequest) (*schema.
 		}
 
 	default:
-		return nil, fmt.Errorf("不支持的模式: %d", env.Mode)
+		return nil, fmt.Errorf("不支持的模式: %d", e.Mode)
 	}
 
 	// 如果启用了KEY验证，扣减卡密次数
-	if env.EnableKey {
+	if e.EnableKey {
 		// 扣减卡密次数
-		_, err = repository.CdKeys.Where(
-			repository.CdKeys.Key.Eq(req.Key),
-		).UpdateSimple(repository.CdKeys.Count_.Sub(env.CdkLimit))
+		err = config.Ent.CdKey.Update().
+			Where(cdkey.KeyEQ(req.Key)).
+			AddCount(-e.CdkLimit).
+			Exec(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("扣减卡密次数失败: %w", err)
 		}
-		remainingCDK -= env.CdkLimit
+		remainingCDK -= e.CdkLimit
 	}
 
 	return &schema.SubmitVariableResponse{
@@ -446,8 +446,9 @@ type PanelLoadInfo struct {
 // selectBestPanelForSubmit 选择最佳面板进行提交（负载均衡）
 // 策略：选择该环境变量数量最少的面板，即负载最轻的面板
 func (s *OpenService) selectBestPanelForSubmit(envID int64, panelIDs []int64) (int64, error) {
+	ctx := context.Background()
 	// 获取环境变量信息
-	env, err := repository.Envs.Where(repository.Envs.ID.Eq(envID)).Take()
+	e, err := config.Ent.Env.Get(ctx, envID)
 	if err != nil {
 		return 0, fmt.Errorf("查询环境变量失败: %w", err)
 	}
@@ -478,7 +479,7 @@ func (s *OpenService) selectBestPanelForSubmit(envID int64, panelIDs []int64) (i
 		// 统计该面板中匹配的变量数量
 		envCount := int32(0)
 		for _, panelEnv := range envResponse.Data {
-			if panelEnv.Name == env.Name {
+			if panelEnv.Name == e.Name {
 				envCount++
 			}
 		}
@@ -630,11 +631,11 @@ func (s *OpenService) updateExistingVariables(panelIDs []int64, envName, regexPa
 
 		// 查找匹配的环境变量
 		panelUpdated := false
-		for _, env := range envResponse.Data {
+		for _, e := range envResponse.Data {
 			// 检查变量名是否匹配
-			if env.Name == envName {
+			if e.Name == envName {
 				// 从API返回的变量值中提取匹配正则的内容
-				existingMatch := regex.FindString(env.Value)
+				existingMatch := regex.FindString(e.Value)
 				if existingMatch == "" {
 					// API返回的值不匹配正则，跳过
 					continue
@@ -644,24 +645,24 @@ func (s *OpenService) updateExistingVariables(panelIDs []int64, envName, regexPa
 				if submittedMatch == existingMatch {
 					// 更新变量
 					updateRequest := schema.PutEnvRequest{
-						Id:      env.Id,
-						Name:    env.Name,
+						Id:      e.Id,
+						Name:    e.Name,
 						Value:   newValue,
 						Remarks: remarks,
 					}
 
 					updateResponse, err := qlAPI.PutEnvs(updateRequest)
 					if err != nil {
-						config.Log.Warn(fmt.Sprintf("更新面板%d变量%d失败: %v", panelID, env.Id, err))
+						config.Log.Warn(fmt.Sprintf("更新面板%d变量%d失败: %v", panelID, e.Id, err))
 						continue
 					}
 
 					if updateResponse.Code != 200 {
-						config.Log.Warn(fmt.Sprintf("更新面板%d变量%d失败，响应码: %d", panelID, env.Id, updateResponse.Code))
+						config.Log.Warn(fmt.Sprintf("更新面板%d变量%d失败，响应码: %d", panelID, e.Id, updateResponse.Code))
 						continue
 					}
 
-					config.Log.Info(fmt.Sprintf("成功更新面板%d变量%d: %s (匹配内容: %s)", panelID, env.Id, env.Name, submittedMatch))
+					config.Log.Info(fmt.Sprintf("成功更新面板%d变量%d: %s (匹配内容: %s)", panelID, e.Id, e.Name, submittedMatch))
 					panelUpdated = true
 					// 更新成功后立即结束，停止继续匹配该面板的其他变量
 					break
@@ -684,37 +685,18 @@ func (s *OpenService) updateExistingVariables(panelIDs []int64, envName, regexPa
 // 返回值: (是否允许继续提交, 错误)
 // processedValue: 插件处理后的值或禁止原因
 func (s *OpenService) executeEnvPlugins(envID int64, envValue string, processedValue *string) (bool, error) {
+	ctx := context.Background()
 	// 查询该环境变量绑定的启用插件，按执行顺序排序
-	var results []struct {
-		EnvPluginID    int64   `gorm:"column:id"`
-		PluginID       int64   `gorm:"column:plugin_id"`
-		ExecutionOrder int32   `gorm:"column:execution_order"`
-		Config         *string `gorm:"column:config"`
-		PluginName     string  `gorm:"column:plugin_name"`
-		ScriptContent  string  `gorm:"column:script_content"`
-		Timeout        int32   `gorm:"column:execution_timeout"`
-		IsPluginEnable bool    `gorm:"column:plugin_is_enable"`
-	}
-
-	err := repository.EnvPlugins.WithContext(context.Background()).
-		Select(
-			repository.EnvPlugins.ID,
-			repository.EnvPlugins.PluginID,
-			repository.EnvPlugins.ExecutionOrder,
-			repository.EnvPlugins.Config,
-			repository.Plugins.Name.As("plugin_name"),
-			repository.Plugins.ScriptContent.As("script_content"),
-			repository.Plugins.ExecutionTimeout.As("execution_timeout"),
-			repository.Plugins.IsEnable.As("plugin_is_enable"),
-		).
-		LeftJoin(repository.Plugins, repository.EnvPlugins.PluginID.EqCol(repository.Plugins.ID)).
+	results, err := config.Ent.EnvPlugin.Query().
 		Where(
-			repository.EnvPlugins.EnvID.Eq(envID),
-			repository.EnvPlugins.IsEnable.Is(true),
-			repository.Plugins.IsEnable.Is(true),
+			envplugin.EnvIDEQ(envID),
+			envplugin.IsEnableEQ(true),
 		).
-		Order(repository.EnvPlugins.ExecutionOrder.Asc()).
-		Scan(&results)
+		WithPlugin(func(q *ent.PluginQuery) {
+			q.Where(plugin.IsEnableEQ(true))
+		}).
+		Order(ent.Asc(envplugin.FieldExecutionOrder)).
+		All(ctx)
 
 	if err != nil {
 		return false, fmt.Errorf("查询环境变量插件失败: %w", err)
@@ -729,15 +711,20 @@ func (s *OpenService) executeEnvPlugins(envID int64, envValue string, processedV
 	// 依次执行插件
 	currentValue := envValue
 	for _, item := range results {
+		p := item.Edges.Plugin
+		if p == nil {
+			continue
+		}
+
 		// 构建执行上下文
 		var configData []byte
-		if item.Config != nil {
+		if item.Config != nil && *item.Config != "" {
 			configData = []byte(*item.Config)
 		} else {
 			configData = []byte("{}")
 		}
 
-		execCtx := &plugin.ExecutionContext{
+		execCtx := &pkgPlugin.ExecutionContext{
 			PluginID:  item.PluginID,
 			EnvID:     envID,
 			EnvValue:  currentValue,
@@ -746,15 +733,15 @@ func (s *OpenService) executeEnvPlugins(envID int64, envValue string, processedV
 		}
 
 		// 执行插件
-		timeout := time.Duration(item.Timeout) * time.Millisecond
-		pluginResult := s.pluginService.engine.Execute(context.Background(), item.ScriptContent, execCtx, timeout)
+		timeout := time.Duration(p.ExecutionTimeout) * time.Millisecond
+		pluginResult := s.pluginService.engine.Execute(context.Background(), p.ScriptContent, execCtx, timeout)
 
 		// 记录执行日志
 		s.pluginService.logPluginExecution(item.PluginID, envID, pluginResult)
 
 		// 检查执行是否成功
 		if !pluginResult.Success {
-			return false, fmt.Errorf("插件 %s 执行失败: %s", item.PluginName, pluginResult.ErrorMessage)
+			return false, fmt.Errorf("插件 %s 执行失败: %s", p.Name, pluginResult.ErrorMessage)
 		}
 
 		// 解析插件返回结果
@@ -766,19 +753,19 @@ func (s *OpenService) executeEnvPlugins(envID int64, envValue string, processedV
 		// 解析返回的JSON: {bool: true/false, env: "value"}
 		var result map[string]interface{}
 		if err := config.JSON.Unmarshal(pluginResult.OutputData, &result); err != nil {
-			return false, fmt.Errorf("插件 %s 返回数据格式错误: %w", item.PluginName, err)
+			return false, fmt.Errorf("插件 %s 返回数据格式错误: %w", p.Name, err)
 		}
 
 		// 检查bool字段
 		allowContinue, ok := result["bool"].(bool)
 		if !ok {
-			return false, fmt.Errorf("插件 %s 返回数据缺少bool字段或类型错误", item.PluginName)
+			return false, fmt.Errorf("插件 %s 返回数据缺少bool字段或类型错误", p.Name)
 		}
 
 		// 获取env字段
 		envResult, ok := result["env"].(string)
 		if !ok {
-			return false, fmt.Errorf("插件 %s 返回数据缺少env字段或类型错误", item.PluginName)
+			return false, fmt.Errorf("插件 %s 返回数据缺少env字段或类型错误", p.Name)
 		}
 
 		// 如果bool为false，禁止提交

@@ -1,10 +1,13 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"time"
 
-	"github.com/nuanxinqing123/QLToolsV2/internal/repository"
+	"github.com/nuanxinqing123/QLToolsV2/internal/app/config"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent/cdkey"
+	"github.com/nuanxinqing123/QLToolsV2/internal/data/ent/env"
 	"github.com/nuanxinqing123/QLToolsV2/internal/schema"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
@@ -21,30 +24,35 @@ func NewDashboardService() *DashboardService {
 // GetOverview 获取数据总览
 func (s *DashboardService) GetOverview() (*schema.OverviewResponse, error) {
 	var resp schema.OverviewResponse
+	ctx := context.Background()
 
 	// 1. 获取在线服务数量（启用的变量数量）
-	onlineCount, err := repository.Envs.Where(repository.Envs.IsEnable.Is(true)).Count()
+	onlineCount, err := config.Ent.Env.Query().
+		Where(env.IsEnableEQ(true)).
+		Count(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("获取在线服务数量失败: %w", err)
 	}
-	resp.OnlineServices = onlineCount
+	resp.OnlineServices = int64(onlineCount)
 
 	// 2. 获取总面板数
-	panelCount, err := repository.Panels.Count()
+	panelCount, err := config.Ent.Panel.Query().Count(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("获取总面板数失败: %w", err)
 	}
-	resp.TotalPanels = panelCount
+	resp.TotalPanels = int64(panelCount)
 
 	// 3. 获取活跃CDK数量（is_enable=true 且 count>0）
-	cdkCount, err := repository.CdKeys.Where(
-		repository.CdKeys.IsEnable.Is(true),
-		repository.CdKeys.Count_.Gt(0),
-	).Count()
+	cdkCount, err := config.Ent.CdKey.Query().
+		Where(
+			cdkey.IsEnableEQ(true),
+			cdkey.CountGT(0),
+		).
+		Count(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("获取活跃CDK数量失败: %w", err)
 	}
-	resp.ActiveCDK = cdkCount
+	resp.ActiveCDK = int64(cdkCount)
 
 	// 4. 今日提交数量（暂时返回0，等待后续实现提交记录表）
 	resp.TodaySubmit = 0
