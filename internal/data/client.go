@@ -66,10 +66,3 @@ func InitData() (*ent.Client, error) {
 
 	return Client, nil
 }
-
-// CloseData 关闭数据库连接
-func CloseData() {
-	if Client != nil {
-		_ = Client.Close()
-	}
-}

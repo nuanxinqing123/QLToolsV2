@@ -241,7 +241,7 @@ func (s *PluginService) DeletePlugin(req schema.DeletePluginRequest) (*schema.De
 	// 确保在函数结束时正确处理事务
 	defer func() {
 		if v := recover(); v != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			panic(v)
 		}
 	}()
@@ -251,14 +251,14 @@ func (s *PluginService) DeletePlugin(req schema.DeletePluginRequest) (*schema.De
 		Where(envplugin.PluginIDEQ(req.ID)).
 		Exec(ctx)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return nil, fmt.Errorf("删除插件环境变量关联失败: %w", err)
 	}
 
 	// 执行删除插件
 	err = tx.Plugin.DeleteOneID(req.ID).Exec(ctx)
 	if err != nil {
-		tx.Rollback()
+		_ = tx.Rollback()
 		return nil, fmt.Errorf("删除插件失败: %w", err)
 	}
 
@@ -361,7 +361,7 @@ func (s *PluginService) ExecutePluginsForEnv(envID int64, envValue string) (*pkg
 		}
 
 		// 构建执行上下文
-		configData := make([]byte, 0)
+		var configData []byte
 		if item.Config != nil {
 			configData = []byte(*item.Config)
 		} else {

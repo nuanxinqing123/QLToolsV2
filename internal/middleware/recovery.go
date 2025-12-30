@@ -13,12 +13,11 @@ import (
 func Recovery() gin.HandlerFunc {
 	return gin.CustomRecovery(func(c *gin.Context, recovered any) {
 		var errs validator.ValidationErrors
-		if errors.As(recovered.(validator.ValidationErrors), &errs) {
-			c.String(http.StatusBadRequest, "参数校验失败")
-			return
-		}
-		var err error
-		if errors.As(recovered.(error), &err) {
+		if err, ok := recovered.(error); ok {
+			if errors.As(err, &errs) {
+				c.String(http.StatusBadRequest, "参数校验失败")
+				return
+			}
 			config.Log.Error(err.Error())
 			c.String(http.StatusInternalServerError, err.Error())
 			return

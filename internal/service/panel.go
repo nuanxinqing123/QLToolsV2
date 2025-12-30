@@ -380,7 +380,7 @@ func (s *PanelService) SubmitEnvToPanel(panelID int64, envID int64, envValue str
 			if envVal, ok := pluginResult["env"].(string); ok {
 				errorMsg = envVal
 			}
-			return nil, fmt.Errorf(errorMsg)
+			return nil, errors.New(errorMsg)
 		}
 
 		// 如果插件返回了新的环境变量值，使用新值

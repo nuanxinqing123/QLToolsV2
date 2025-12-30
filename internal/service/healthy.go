@@ -38,7 +38,7 @@ func (s *HealthyService) CheckHealth() (res.ResCode, any) {
 	hc.Redis = true
 
 	// 确定整体状态
-	if hc.Database == true && hc.Redis == true {
+	if hc.Database && hc.Redis {
 		hc.Status = true
 	} else {
 		hc.Status = false
